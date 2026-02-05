@@ -294,7 +294,7 @@ function TermsOfService() {
         <section>
           <h2>21. CONTACT INFORMATION</h2>
           <p><strong>21.1</strong> If you have any questions about these Terms or the Service, please contact us at:</p>
-          <p>Email: support@accapicks.com<br />Website: https://accapicks.com</p>
+          <p>Email: glen.dev@outlook.com<br />Website: https://accapicks.com</p>
         </section>
 
         <section>
