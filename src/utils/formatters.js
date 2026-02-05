@@ -83,10 +83,12 @@ const COMMON_FRACTIONS = [
 const decimalToFraction = (decimal) => {
   if (decimal <= 1) return "N/A";
 
-  // For higher odds (4.0+), round to nearest X/1
+  // For higher odds (4.0+), round to one decimal place X.X/1
   if (decimal >= 4.0) {
-    const rounded = Math.round(decimal - 1);
-    return `${rounded}/1`;
+    const rounded = Math.round((decimal - 1) * 10) / 10;
+    // Remove unnecessary .0 (e.g., 20.0 becomes 20)
+    const display = rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+    return `${display}/1`;
   }
 
   // For lower odds, find the closest common fraction
