@@ -170,6 +170,9 @@ function App() {
               error={error}
             />
           )}
+          <footer className="responsible-gambling-footer">
+            18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
+          </footer>
         </div>
       </ErrorBoundary>
     </BrowserRouter>

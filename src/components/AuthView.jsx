@@ -13,6 +13,7 @@ export default function AuthView({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -78,6 +79,7 @@ export default function AuthView({
     setMode(newMode);
     setError("");
     setVerificationCode("");
+    setAgeConfirmed(false);
     if (newMode !== "verify") {
       setEmail("");
       setUsername("");
@@ -167,6 +169,20 @@ export default function AuthView({
                 required
               />
             </div>
+
+            {mode === "signup" && (
+              <div className="form-group checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={ageConfirmed}
+                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                    required
+                  />
+                  <span>I confirm I am 18 years or older</span>
+                </label>
+              </div>
+            )}
 
             <div className="auth-actions">
               <button type="submit" className="btn btn-primary" disabled={loading}>
