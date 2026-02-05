@@ -775,6 +775,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.bookmaker-row-link {
+  cursor: pointer;
+}
+
+.bookmaker-row-link:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.bookmaker-row-link.bookmaker-row-best:hover {
+  background-color: rgba(0, 212, 170, 0.18);
+  border-color: rgba(0, 212, 170, 0.4);
+}
+
+.bookmaker-row-link.bookmaker-row-other:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--border-color-light);
 }
 
 .bookmaker-row-best {
@@ -785,6 +806,14 @@
 .bookmaker-row-other {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
+}
+
+.bookmaker-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  gap: 12px;
 }
 
 .bookmaker-name {
@@ -802,6 +831,19 @@
 
 .bookmaker-odds-other {
   color: var(--text-secondary);
+}
+
+.bookmaker-visit {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: 12px;
+  transition: color var(--transition-fast);
+}
+
+.bookmaker-row-link:hover .bookmaker-visit {
+  color: var(--accent-primary);
 }
 
 /* ---- Fixture Grid ---- */
