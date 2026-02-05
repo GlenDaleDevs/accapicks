@@ -1,0 +1,32 @@
+import os
+import resend
+from typing import Optional
+
+resend.api_key = os.getenv("RESEND_API_KEY")
+
+
+def send_verification_email(to_email: str, code: str, username: str) -> Optional[dict]:
+    """Send a verification email with the 6-digit code."""
+    try:
+        response = resend.Emails.send({
+            "from": "AccaPicks <noreply@accapicks.com>",
+            "to": [to_email],
+            "subject": "Verify your AccaPicks account",
+            "html": f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h1 style="color: #333;">Welcome to AccaPicks, {username}!</h1>
+                    <p>Your verification code is:</p>
+                    <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
+                                background: #f5f5f5; padding: 20px; text-align: center;
+                                border-radius: 8px; margin: 20px 0;">
+                        {code}
+                    </div>
+                    <p>This code expires in 15 minutes.</p>
+                    <p>If you didn't create an account, you can ignore this email.</p>
+                </div>
+            """
+        })
+        return response
+    except Exception as e:
+        print(f"Failed to send verification email: {e}")
+        return None

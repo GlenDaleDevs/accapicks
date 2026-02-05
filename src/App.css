@@ -199,6 +199,15 @@
   max-width: 400px;
 }
 
+.verification-code-input {
+  font-size: 28px !important;
+  letter-spacing: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-family: 'Inter', monospace;
+  padding: 16px !important;
+}
+
 .form-group {
   margin-bottom: 12px;
 }
