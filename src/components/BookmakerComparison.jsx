@@ -1,4 +1,4 @@
-import { BOOKMAKER_URLS } from "../utils/constants";
+import { BOOKMAKER_URLS, BOOKMAKER_DISPLAY_NAMES } from "../utils/constants";
 
 export default function BookmakerComparison({ data }) {
   if (!data || typeof data !== "object") return null;
@@ -27,7 +27,7 @@ export default function BookmakerComparison({ data }) {
                 <strong
                   className={isBest ? "bookmaker-name bookmaker-name-best" : "bookmaker-name bookmaker-name-other"}
                 >
-                  {bookmaker}
+                  {BOOKMAKER_DISPLAY_NAMES[bookmaker] || bookmaker}
                 </strong>
                 <span className={isBest ? "bookmaker-odds-best" : "bookmaker-odds-other"}>
                   {d.total_odds}x {isBest && "BEST"}
