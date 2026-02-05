@@ -27,4 +27,4 @@ COPY --from=frontend /app/dist ./dist
 
 EXPOSE 8000
 
-CMD uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+CMD echo "Starting app on port ${PORT:-8000}" && python -c "print('Python works')" && uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level debug
