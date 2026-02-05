@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AuthView({
   onLogin,
@@ -15,6 +15,14 @@ export default function AuthView({
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Switch to verify mode when pendingVerificationEmail is set after signup
+  useEffect(() => {
+    if (pendingVerificationEmail) {
+      setMode("verify");
+      setEmail(pendingVerificationEmail);
+    }
+  }, [pendingVerificationEmail]);
 
   const displayError = externalError || error;
 

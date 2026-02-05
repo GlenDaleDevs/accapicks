@@ -66,7 +66,29 @@ FastAPI auto-generated docs available at http://localhost:8000/docs when the bac
 ODDS_API_KEY=<the-odds-api key>
 SECRET_KEY=<32-byte hex string for JWT signing>
 ALLOWED_ORIGINS=http://localhost:5173,https://accapicks.com,https://www.accapicks.com
+RESEND_API_KEY=<resend api key for email verification>
 ```
+
+## Deployment (Railway)
+
+**Pre-deployment checklist:**
+1. Verify Railway is pointed at correct branch (`main`)
+2. Check all environment variables are set in Railway
+3. Confirm DATABASE_URL uses public Postgres URL
+
+**Custom domain setup:**
+1. Add domain in Railway → Settings → Networking
+2. Railway provides unique validation URLs (e.g., `r4qsmodn.up.railway.app`)
+3. In Namecheap: ALIAS for `@`, CNAME for `www` → Railway's URLs
+4. Wait for green checkmarks before testing
+
+**Resend (email) setup — all records required:**
+1. TXT `resend._domainkey` → DKIM key (domain verification)
+2. TXT `send` → SPF record (`v=spf1 include:amazonses.com ~all`)
+3. MX `send` → `feedback-smtp.eu-west-1.amazonses.com` priority 10 (in Mail Settings → Custom MX)
+4. TXT `_dmarc` → DMARC policy (optional but recommended)
+
+**Important:** The MX record is required for Resend verification, not optional. Add it via Namecheap's Mail Settings section with host `send`.
 
 ## API Route Structure
 
