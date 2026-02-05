@@ -49,29 +49,59 @@ export const formatDisplayDate = (dateStr) => {
   });
 };
 
-const gcd = (a, b) => {
-  return b === 0 ? a : gcd(b, a % b);
-};
+// Common UK bookmaker fractional odds (sorted by decimal value)
+const COMMON_FRACTIONS = [
+  { decimal: 1.10, fraction: "1/10" },
+  { decimal: 1.20, fraction: "1/5" },
+  { decimal: 1.25, fraction: "1/4" },
+  { decimal: 1.33, fraction: "1/3" },
+  { decimal: 1.40, fraction: "2/5" },
+  { decimal: 1.50, fraction: "1/2" },
+  { decimal: 1.57, fraction: "4/7" },
+  { decimal: 1.62, fraction: "8/13" },
+  { decimal: 1.67, fraction: "4/6" },
+  { decimal: 1.73, fraction: "8/11" },
+  { decimal: 1.80, fraction: "4/5" },
+  { decimal: 1.83, fraction: "5/6" },
+  { decimal: 1.91, fraction: "10/11" },
+  { decimal: 2.00, fraction: "EVS" },
+  { decimal: 2.10, fraction: "11/10" },
+  { decimal: 2.20, fraction: "6/5" },
+  { decimal: 2.25, fraction: "5/4" },
+  { decimal: 2.38, fraction: "11/8" },
+  { decimal: 2.50, fraction: "6/4" },
+  { decimal: 2.63, fraction: "13/8" },
+  { decimal: 2.75, fraction: "7/4" },
+  { decimal: 2.88, fraction: "15/8" },
+  { decimal: 3.00, fraction: "2/1" },
+  { decimal: 3.25, fraction: "9/4" },
+  { decimal: 3.50, fraction: "5/2" },
+  { decimal: 3.75, fraction: "11/4" },
+  { decimal: 4.00, fraction: "3/1" },
+];
 
 const decimalToFraction = (decimal) => {
-  const fraction = decimal - 1;
+  if (decimal <= 1) return "N/A";
 
-  if (fraction === 0) return "EVS";
-  if (fraction < 0) return "ERROR";
-
-  const precision = 1000;
-  let numerator = Math.round(fraction * precision);
-  let denominator = precision;
-
-  const divisor = gcd(numerator, denominator);
-  numerator = numerator / divisor;
-  denominator = denominator / divisor;
-
-  if (denominator === 1) {
-    return `${numerator}/1`;
+  // For higher odds (4.0+), round to nearest X/1
+  if (decimal >= 4.0) {
+    const rounded = Math.round(decimal - 1);
+    return `${rounded}/1`;
   }
 
-  return `${numerator}/${denominator}`;
+  // For lower odds, find the closest common fraction
+  let closest = COMMON_FRACTIONS[0];
+  let minDiff = Math.abs(decimal - closest.decimal);
+
+  for (const entry of COMMON_FRACTIONS) {
+    const diff = Math.abs(decimal - entry.decimal);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = entry;
+    }
+  }
+
+  return closest.fraction;
 };
 
 export const formatOdds = (decimalOdds, format = "decimal") => {
