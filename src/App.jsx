@@ -32,8 +32,33 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteCode = urlParams.get('invite');
+    if (inviteCode) {
+      localStorage.setItem('pendingInvite', inviteCode);
+    }
+  }, []);
+
+  useEffect(() => {
     if (isLoggedIn) {
       loadGroups();
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      const pendingInvite = localStorage.getItem('pendingInvite');
+      if (pendingInvite) {
+        handleJoinGroup(pendingInvite)
+          .catch(err => {
+            console.error('Auto-join failed:', err);
+            alert(err.message || 'Failed to join group from invite link');
+          })
+          .finally(() => {
+            localStorage.removeItem('pendingInvite');
+            window.history.replaceState({}, '', window.location.pathname);
+          });
+      }
     }
   }, [isLoggedIn]);
 
