@@ -1,11 +1,10 @@
 export default function BookmakerComparison({ data }) {
   if (!data || typeof data !== "object") return null;
 
-  const entries = Object.entries(data);
+  const entries = Object.entries(data).sort((a, b) => b[1].total_odds - a[1].total_odds);
   if (entries.length === 0) return null;
 
-  const allOdds = entries.map(([, d]) => d.total_odds);
-  const bestOdds = Math.max(...allOdds);
+  const bestOdds = entries[0]?.[1].total_odds;
 
   return (
     <div className="bookmaker-section">
