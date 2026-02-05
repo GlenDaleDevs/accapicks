@@ -13,6 +13,9 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)  # Must be unique
     hashed_password = Column(String, nullable=False)  # We never store plain passwords!
     is_active = Column(Boolean, default=True)  # Can disable accounts if needed
+    email_verified = Column(Boolean, default=False)  # Email verification status
+    verification_code = Column(String, nullable=True)  # 6-digit verification code
+    verification_code_expires = Column(DateTime(timezone=True), nullable=True)  # Code expiry
     created_at = Column(DateTime(timezone=True), server_default=func.now())  # Auto timestamp
 
     # Relationships

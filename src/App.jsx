@@ -15,6 +15,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [groups, setGroups] = useState([]);
   const [error, setError] = useState("");
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
 
   useEffect(() => {
     const token = api.getStoredToken();
@@ -61,11 +62,34 @@ function App() {
     setError("");
     try {
       const data = await api.signup(email, username, password);
+      // Signup now requires verification - don't set token yet
+      if (data.requires_verification) {
+        setPendingVerificationEmail(email);
+      }
+    } catch (err) {
+      throw new Error(err.response?.data?.detail || "Signup failed");
+    }
+  };
+
+  const handleVerify = async (email, code) => {
+    setError("");
+    try {
+      const data = await api.verifyEmail(email, code);
       api.setAuthToken(data.access_token);
       setUser(data.user);
       setIsLoggedIn(true);
+      setPendingVerificationEmail("");
     } catch (err) {
-      throw new Error(err.response?.data?.detail || "Signup failed");
+      throw new Error(err.response?.data?.detail || "Verification failed");
+    }
+  };
+
+  const handleResendCode = async (email) => {
+    setError("");
+    try {
+      await api.resendVerificationCode(email);
+    } catch (err) {
+      throw new Error(err.response?.data?.detail || "Failed to resend code");
     }
   };
 
@@ -107,7 +131,10 @@ function App() {
             <AuthView
               onLogin={handleLogin}
               onSignup={handleSignup}
+              onVerify={handleVerify}
+              onResendCode={handleResendCode}
               error={error}
+              pendingVerificationEmail={pendingVerificationEmail}
             />
           ) : (
             <AppContent

@@ -32,10 +32,29 @@ class UserResponse(BaseModel):
     email: str
     username: str
     is_active: bool
+    email_verified: bool = False
     created_at: datetime
-    
+
     class Config:
         from_attributes = True  # Allows SQLAlchemy models to work with Pydantic
+
+
+# Schema for email verification request
+class VerifyEmailRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=6, max_length=6)
+
+
+# Schema for resend verification code request
+class ResendCodeRequest(BaseModel):
+    email: EmailStr
+
+
+# Schema for signup response (requires verification)
+class SignupResponse(BaseModel):
+    message: str
+    email: str
+    requires_verification: bool = True
 
 # Schema for token response (what we send after successful login)
 class Token(BaseModel):
