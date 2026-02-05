@@ -24,12 +24,23 @@
 }
 
 .btn-primary {
-  background-color: var(--accent-primary);
-  color: var(--text-inverse);
+  background: linear-gradient(135deg, #00d4aa, #00e8bb);
+  color: white;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  height: 52px;
+  border-radius: 10px;
 }
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--accent-primary-hover);
-  box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+  background: linear-gradient(135deg, #00e8bb, #00f5cc);
+  box-shadow: 0 8px 20px rgba(0, 212, 170, 0.4);
+  transform: translateY(-2px);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-secondary {
@@ -184,19 +195,64 @@
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--accent-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   letter-spacing: -1px;
+  animation: logoFadeIn 800ms ease-out;
 }
 
-.auth-subtitle {
-  color: var(--text-secondary);
+@keyframes logoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.auth-tagline {
+  color: rgba(255, 255, 255, 0.85);
   margin: 0 0 32px 0;
-  font-size: 16px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  animation: taglineFadeIn 800ms ease-out 200ms both;
+}
+
+@keyframes taglineFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.auth-form-container {
+  background: rgba(26, 44, 56, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 400px;
+  animation: formFadeIn 800ms ease-out 400ms both;
+}
+
+@keyframes formFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .auth-form {
   width: 100%;
-  max-width: 400px;
 }
 
 .verification-code-input {
@@ -210,6 +266,23 @@
 
 .form-group {
   margin-bottom: 12px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+  height: 48px;
+  border-radius: 10px;
+  border: 1.5px solid #2a3a48;
+  transition: all var(--transition-fast);
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
+  border: 2px solid #00d4aa;
+  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+  outline: none;
 }
 
 .checkbox-group {
