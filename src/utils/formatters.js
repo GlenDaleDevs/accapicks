@@ -48,3 +48,40 @@ export const formatDisplayDate = (dateStr) => {
     day: "numeric",
   });
 };
+
+const gcd = (a, b) => {
+  return b === 0 ? a : gcd(b, a % b);
+};
+
+const decimalToFraction = (decimal) => {
+  const fraction = decimal - 1;
+
+  if (fraction === 0) return "EVS";
+  if (fraction < 0) return "ERROR";
+
+  const precision = 1000;
+  let numerator = Math.round(fraction * precision);
+  let denominator = precision;
+
+  const divisor = gcd(numerator, denominator);
+  numerator = numerator / divisor;
+  denominator = denominator / divisor;
+
+  if (denominator === 1) {
+    return `${numerator}/1`;
+  }
+
+  return `${numerator}/${denominator}`;
+};
+
+export const formatOdds = (decimalOdds, format = "decimal") => {
+  const odds = typeof decimalOdds === "string" ? parseFloat(decimalOdds) : decimalOdds;
+
+  if (isNaN(odds)) return "N/A";
+
+  if (format === "fractional") {
+    return decimalToFraction(odds);
+  }
+
+  return odds.toFixed(2);
+};

@@ -1,6 +1,7 @@
 import { BOOKMAKER_URLS, BOOKMAKER_DISPLAY_NAMES } from "../utils/constants";
+import { formatOdds } from "../utils/formatters";
 
-export default function BookmakerComparison({ data }) {
+export default function BookmakerComparison({ data, oddsFormat = "decimal" }) {
   if (!data || typeof data !== "object") return null;
 
   const entries = Object.entries(data)
@@ -30,7 +31,7 @@ export default function BookmakerComparison({ data }) {
                   {BOOKMAKER_DISPLAY_NAMES[bookmaker] || bookmaker}
                 </strong>
                 <span className={isBest ? "bookmaker-odds-best" : "bookmaker-odds-other"}>
-                  {d.total_odds}x {isBest && "BEST"}
+                  {formatOdds(d.total_odds, oddsFormat)} {isBest && "BEST"}
                 </span>
               </div>
               {url && (

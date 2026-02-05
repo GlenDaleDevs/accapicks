@@ -18,6 +18,9 @@ function App() {
   const [groups, setGroups] = useState([]);
   const [error, setError] = useState("");
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
+  const [oddsFormat, setOddsFormat] = useState(() => {
+    return localStorage.getItem("oddsFormat") || "decimal";
+  });
 
   useEffect(() => {
     const token = api.getStoredToken();
@@ -63,6 +66,10 @@ function App() {
       }
     }
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    localStorage.setItem("oddsFormat", oddsFormat);
+  }, [oddsFormat]);
 
   const loadGroups = async () => {
     try {
@@ -176,6 +183,8 @@ function App() {
                     onCreateGroup={handleCreateGroup}
                     onJoinGroup={handleJoinGroup}
                     error={error}
+                    oddsFormat={oddsFormat}
+                    setOddsFormat={setOddsFormat}
                   />
                 )}
                 <footer className="responsible-gambling-footer">
@@ -192,7 +201,7 @@ function App() {
   );
 }
 
-function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error }) {
+function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error, oddsFormat, setOddsFormat }) {
   const navigate = useNavigate();
 
   const handleLogoutWithNav = () => {
@@ -202,7 +211,7 @@ function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error 
 
   return (
     <div>
-      <TopBar user={user} onLogout={handleLogoutWithNav} />
+      <TopBar user={user} onLogout={handleLogoutWithNav} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} />
       <Routes>
         <Route
           path="/"
@@ -221,7 +230,7 @@ function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error 
         />
         <Route
           path="/groups/:groupId/accas/:accaId"
-          element={<AccaDetail user={user} />}
+          element={<AccaDetail user={user} oddsFormat={oddsFormat} />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

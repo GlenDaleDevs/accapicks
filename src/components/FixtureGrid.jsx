@@ -1,5 +1,5 @@
 import { LEAGUE_NAME_MAP } from "../utils/constants";
-import { formatDisplayDate } from "../utils/formatters";
+import { formatDisplayDate, formatOdds } from "../utils/formatters";
 
 export default function FixtureGrid({
   acca,
@@ -10,6 +10,7 @@ export default function FixtureGrid({
   onSelectLeague,
   onCancel,
   error,
+  oddsFormat = "decimal",
 }) {
   // Build set of already-taken pick descriptions in this acca
   const takenPicks = new Set((acca?.bets || []).map((b) => b.description));
@@ -100,7 +101,7 @@ export default function FixtureGrid({
                             {homeTaken ? "Taken" : "Home"}
                           </div>
                           <div className={homeTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
-                            {match.home_odds}
+                            {formatOdds(match.home_odds, oddsFormat)}
                           </div>
                         </button>
                         <button
@@ -112,7 +113,7 @@ export default function FixtureGrid({
                             {drawTaken ? "Taken" : "Draw"}
                           </div>
                           <div className={drawTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
-                            {match.draw_odds}
+                            {formatOdds(match.draw_odds, oddsFormat)}
                           </div>
                         </button>
                         <button
@@ -124,7 +125,7 @@ export default function FixtureGrid({
                             {awayTaken ? "Taken" : "Away"}
                           </div>
                           <div className={awayTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
-                            {match.away_odds}
+                            {formatOdds(match.away_odds, oddsFormat)}
                           </div>
                         </button>
                       </div>
