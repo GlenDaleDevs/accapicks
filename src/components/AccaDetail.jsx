@@ -315,7 +315,7 @@ export default function AccaDetail({ user }) {
         </h3>
         <p className="acca-status-odds">Combined Odds: {calculateCombinedOdds()}x</p>
         <p className="acca-status-count">
-          {acca.bets.length} bet{acca.bets.length !== 1 ? "s" : ""} in this acca
+          {acca.bets.length} pick{acca.bets.length !== 1 ? "s" : ""} in this acca
         </p>
         {acca.leagues && (
           <p className="acca-status-meta">
@@ -542,10 +542,10 @@ export default function AccaDetail({ user }) {
         </div>
       )}
 
-      <h3 className="section-title">Bets:</h3>
+      <h3 className="section-title">Picks:</h3>
 
       {acca.bets.length === 0 ? (
-        <p className="empty-state">No bets yet. Be the first to add one!</p>
+        <p className="empty-state">No picks yet. Be the first to add one!</p>
       ) : (
         <div>
           {acca.bets.map((bet) => (

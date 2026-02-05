@@ -163,7 +163,7 @@ def get_acca(
 
 # Compare bookmakers for an acca
 @router.get("/accas/{acca_id}/compare-bookmakers")
-def compare_bookmakers(
+async def compare_bookmakers(
     acca_id: int,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -196,13 +196,21 @@ def compare_bookmakers(
     # Extract bet descriptions to compare
     bet_descriptions = [bet.description for bet in bets]
 
-    # Compare bookmakers
+    # Try comparison with cached odds first
     comparison = odds_api.compare_bookmakers_for_acca(bet_descriptions)
+
+    # If no cached odds found, fetch fresh odds for the acca's leagues
+    if not comparison and acca.leagues:
+        for league in acca.leagues:
+            await asyncio.to_thread(odds_api.get_football_matches, league)
+
+        # Try comparison again with fresh odds
+        comparison = odds_api.compare_bookmakers_for_acca(bet_descriptions)
 
     if not comparison:
         raise HTTPException(
             status_code=404,
-            detail="No matching odds found. Odds data may not be cached yet — try loading the fixtures first."
+            detail="No matching odds found for the bets in this acca"
         )
 
     return comparison
