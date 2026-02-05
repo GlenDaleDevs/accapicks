@@ -212,6 +212,30 @@
   margin-bottom: 12px;
 }
 
+.checkbox-group {
+  margin-bottom: 16px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+.checkbox-label span {
+  flex: 1;
+}
+
 .auth-actions {
   display: flex;
   gap: 10px;
@@ -1108,3 +1132,23 @@
 
 .text-right { text-align: right; }
 .font-bold { font-weight: 700; }
+
+/* ---- Responsible Gambling Footer ---- */
+.responsible-gambling-footer {
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.responsible-gambling-footer a {
+  color: var(--text-muted);
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+}
+
+.responsible-gambling-footer a:hover {
+  color: var(--text-secondary);
+}
