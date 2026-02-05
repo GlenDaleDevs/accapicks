@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, Link } from "react-router-dom";
 import * as api from "./api/client";
 import "./App.css";
 
@@ -9,6 +9,8 @@ import TopBar from "./components/TopBar";
 import GroupsList from "./components/GroupsList";
 import GroupDetail from "./components/GroupDetail";
 import AccaDetail from "./components/AccaDetail";
+import TermsOfService from "./components/TermsOfService";
+import PrivacyPolicy from "./components/PrivacyPolicy";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -150,30 +152,41 @@ function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
-        <div className="app-container">
-          {!isLoggedIn ? (
-            <AuthView
-              onLogin={handleLogin}
-              onSignup={handleSignup}
-              onVerify={handleVerify}
-              onResendCode={handleResendCode}
-              error={error}
-              pendingVerificationEmail={pendingVerificationEmail}
-            />
-          ) : (
-            <AppContent
-              user={user}
-              groups={groups}
-              onLogout={handleLogout}
-              onCreateGroup={handleCreateGroup}
-              onJoinGroup={handleJoinGroup}
-              error={error}
-            />
-          )}
-          <footer className="responsible-gambling-footer">
-            18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
-          </footer>
-        </div>
+        <Routes>
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route
+            path="/*"
+            element={
+              <div className="app-container">
+                {!isLoggedIn ? (
+                  <AuthView
+                    onLogin={handleLogin}
+                    onSignup={handleSignup}
+                    onVerify={handleVerify}
+                    onResendCode={handleResendCode}
+                    error={error}
+                    pendingVerificationEmail={pendingVerificationEmail}
+                  />
+                ) : (
+                  <AppContent
+                    user={user}
+                    groups={groups}
+                    onLogout={handleLogout}
+                    onCreateGroup={handleCreateGroup}
+                    onJoinGroup={handleJoinGroup}
+                    error={error}
+                  />
+                )}
+                <footer className="responsible-gambling-footer">
+                  18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
+                  <br />
+                  <Link to="/terms">Terms of Service</Link> | <Link to="/privacy">Privacy Policy</Link>
+                </footer>
+              </div>
+            }
+          />
+        </Routes>
       </ErrorBoundary>
     </BrowserRouter>
   );
