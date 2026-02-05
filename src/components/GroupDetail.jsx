@@ -1,0 +1,276 @@
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { LEAGUE_NAME_MAP } from "../utils/constants";
+import * as api from "../api/client";
+import AccaWizard from "./AccaWizard";
+import Leaderboard from "./Leaderboard";
+
+export default function GroupDetail({ user }) {
+  const { groupId } = useParams();
+  const navigate = useNavigate();
+  const [group, setGroup] = useState(null);
+  const [accas, setAccas] = useState([]);
+  const [showAccaWizard, setShowAccaWizard] = useState(false);
+  const [showSettled, setShowSettled] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [loadingGroup, setLoadingGroup] = useState(true);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (groupId) {
+      loadGroupData();
+    }
+  }, [groupId]);
+
+  const loadGroupData = async () => {
+    setLoadingGroup(true);
+    try {
+      const [groupData, accasData, leaderboardData] = await Promise.all([
+        api.getGroup(groupId),
+        api.getAccasByGroup(groupId),
+        api.getGroupLeaderboard(groupId)
+      ]);
+      setGroup(groupData);
+      setAccas(accasData);
+      setLeaderboard(leaderboardData);
+    } catch (err) {
+      console.error("Error loading group data:", err);
+      setError(err.response?.data?.detail || "Failed to load group");
+    } finally {
+      setLoadingGroup(false);
+    }
+  };
+
+  const loadAccas = async () => {
+    try {
+      const data = await api.getAccasByGroup(groupId);
+      setAccas(data);
+    } catch (err) {
+      console.error("Error loading accas:", err);
+    }
+  };
+
+  const loadLeaderboard = async () => {
+    setLoadingLeaderboard(true);
+    try {
+      const data = await api.getGroupLeaderboard(groupId);
+      setLeaderboard(data);
+    } catch (err) {
+      console.error("Error loading leaderboard:", err);
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  };
+
+  const copyInviteLink = () => {
+    const inviteLink = `${window.location.origin}?invite=${group.invite_code}`;
+    navigator.clipboard.writeText(inviteLink);
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 2000);
+  };
+
+  const handleWizardCreate = async (wizardData) => {
+    setError("");
+    try {
+      const data = await api.createAcca(
+        groupId,
+        wizardData.name,
+        wizardData.matchDates,
+        wizardData.leagues,
+        wizardData.betType,
+      );
+      await loadAccas();
+      setShowAccaWizard(false);
+      navigate(`/groups/${groupId}/accas/${data.id}`);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to create acca");
+    }
+  };
+
+  if (loadingGroup) {
+    return <div className="loading-message">Loading group...</div>;
+  }
+
+  if (error && !group) {
+    return <div className="alert-error">{error}</div>;
+  }
+
+  if (!group) {
+    return <div className="alert-error">Group not found</div>;
+  }
+
+  return (
+    <>
+      <button
+        className="btn btn-ghost mb-20"
+        onClick={() => navigate("/")}
+      >
+        &larr; Back to Groups
+      </button>
+
+      <h2 className="section-title">{group.name}</h2>
+
+      {/* Invite Section */}
+      <div className="invite-section">
+        <h3 className="invite-title">Invite Friends</h3>
+        <p className="invite-text">Share this code with your mates:</p>
+        <div className="invite-code-row">
+          <code className="invite-code">{group.invite_code}</code>
+          <button className="btn btn-primary" onClick={copyInviteLink}>
+            {copiedInvite ? "Copied!" : "Copy Link"}
+          </button>
+        </div>
+      </div>
+
+      {/* Leaderboard Display */}
+      <Leaderboard
+        leaderboard={leaderboard}
+        loading={loadingLeaderboard}
+        accas={accas}
+      />
+
+      {/* Create Acca Wizard */}
+      {!showAccaWizard ? (
+        <button
+          className="btn btn-primary mb-20"
+          onClick={() => setShowAccaWizard(true)}
+        >
+          + Create New Acca
+        </button>
+      ) : (
+        <AccaWizard
+          onCreated={handleWizardCreate}
+          onCancel={() => {
+            setShowAccaWizard(false);
+            setError("");
+          }}
+          error={error}
+        />
+      )}
+
+      {/* Active Accas Section */}
+      <h3 className="section-title">Active Accas</h3>
+
+      {/* Active Acca List */}
+      {(() => {
+        const activeAccas = accas.filter(
+          (a) => a.status === "open" || a.status === "locked"
+        );
+        const settledAccas = accas.filter((a) => a.status === "settled");
+
+        return (
+          <>
+            {activeAccas.length === 0 ? (
+              <p className="empty-state">
+                No active accumulators. Create one to get started!
+              </p>
+            ) : (
+              <div>
+                {activeAccas.map((acca) => (
+                  <div
+                    key={acca.id}
+                    onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
+                    className="card card-clickable"
+                  >
+                    <div className="card-header">
+                      <h3 className="group-card-name">{acca.name}</h3>
+                      {acca.status === "locked" && (
+                        <span className="badge badge-locked">LOCKED</span>
+                      )}
+                      {acca.status === "open" && (
+                        <span className="badge badge-open">OPEN</span>
+                      )}
+                    </div>
+                    <div className="acca-card-meta">
+                      {acca.leagues && (
+                        <small className="acca-card-leagues">
+                          {acca.leagues.map((k) => LEAGUE_NAME_MAP[k] || k).join(", ")}
+                        </small>
+                      )}
+                      {acca.match_dates && (
+                        <small className="acca-card-dates">
+                          {[...acca.match_dates]
+                            .sort()
+                            .map((d) => {
+                              const dt = new Date(d + "T00:00:00");
+                              return dt.toLocaleDateString("en-GB", {
+                                month: "short",
+                                day: "numeric",
+                              });
+                            })
+                            .join(", ")}
+                        </small>
+                      )}
+                    </div>
+                    <small className="acca-card-status">
+                      Status: {acca.status} | Created{" "}
+                      {new Date(acca.created_at).toLocaleDateString()}
+                    </small>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Settled Accas Toggle */}
+            <button
+              className="btn btn-secondary mb-20"
+              onClick={() => setShowSettled(!showSettled)}
+            >
+              {showSettled
+                ? "Hide Settled Accas"
+                : `Show Settled Accas (${settledAccas.length})`}
+            </button>
+
+            {showSettled && (
+              settledAccas.length === 0 ? (
+                <p className="empty-state">No settled accumulators yet.</p>
+              ) : (
+                <div>
+                  {settledAccas.map((acca) => (
+                      <div
+                        key={acca.id}
+                        onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
+                        className="card card-clickable"
+                      >
+                        <div className="card-header">
+                          <h3 className="group-card-name">{acca.name}</h3>
+                          <span className="badge badge-settled">SETTLED</span>
+                        </div>
+                        <div className="acca-card-meta">
+                          {acca.leagues && (
+                            <small className="acca-card-leagues">
+                              {acca.leagues.map((k) => LEAGUE_NAME_MAP[k] || k).join(", ")}
+                            </small>
+                          )}
+                          {acca.match_dates && (
+                            <small className="acca-card-dates">
+                              {[...acca.match_dates]
+                                .sort()
+                                .map((d) => {
+                                  const dt = new Date(d + "T00:00:00");
+                                  return dt.toLocaleDateString("en-GB", {
+                                    month: "short",
+                                    day: "numeric",
+                                  });
+                                })
+                                .join(", ")}
+                            </small>
+                          )}
+                        </div>
+                        <small className="acca-card-status">
+                          Status: {acca.status} | Created{" "}
+                          {new Date(acca.created_at).toLocaleDateString()}
+                        </small>
+                      </div>
+                    ))}
+                </div>
+              )
+            )}
+          </>
+        );
+      })()}
+    </>
+  );
+}

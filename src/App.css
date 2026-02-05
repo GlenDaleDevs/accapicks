@@ -1,0 +1,1101 @@
+/* ============================================
+   AccaPicks - Component Styles
+   ============================================ */
+
+/* ---- Layout ---- */
+.app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 24px;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: var(--text-inverse);
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-primary-hover);
+  box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--border-color);
+  border-color: var(--border-color-light);
+}
+
+.btn-success {
+  background-color: var(--color-success);
+  color: #fff;
+}
+.btn-success:hover:not(:disabled) {
+  background-color: #2ad96a;
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  background-color: #f55;
+}
+
+.btn-warning {
+  background-color: var(--color-warning);
+  color: var(--text-inverse);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+.btn-ghost:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: var(--border-color-light);
+  background-color: var(--bg-surface);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-icon {
+  padding: 6px 10px;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+}
+
+/* ---- Cards ---- */
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all var(--transition-fast);
+}
+
+.card-clickable {
+  cursor: pointer;
+}
+.card-clickable:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* ---- Status Badges ---- */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-open {
+  background-color: rgba(0, 212, 170, 0.15);
+  color: var(--accent-primary);
+}
+
+.badge-locked {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning);
+}
+
+.badge-won {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--color-success);
+}
+
+.badge-lost {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+}
+
+.badge-role {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-admin {
+  background-color: rgba(0, 212, 170, 0.15);
+  color: var(--accent-primary);
+}
+
+.badge-member {
+  background-color: rgba(139, 156, 170, 0.15);
+  color: var(--text-secondary);
+}
+
+/* ---- Login / Auth Page ---- */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+}
+
+.auth-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -1px;
+}
+
+.auth-subtitle {
+  color: var(--text-secondary);
+  margin: 0 0 32px 0;
+  font-size: 16px;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ---- Error Alert ---- */
+.alert-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--color-danger);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* ---- Top Bar ---- */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.top-bar-welcome {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.top-bar-username {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+/* ---- Section Headers ---- */
+.section-title {
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+/* ---- Invite Section ---- */
+.invite-section {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.invite-title {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.invite-text {
+  margin: 0 0 12px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.invite-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.invite-code {
+  padding: 10px 16px;
+  background-color: var(--bg-primary);
+  border: 2px dashed var(--accent-primary);
+  border-radius: var(--radius-md);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  font-family: 'Inter', monospace;
+  letter-spacing: 2px;
+}
+
+/* ---- Members ---- */
+.member-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.member-name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.member-email {
+  color: var(--text-muted);
+  margin-left: 10px;
+  font-size: 13px;
+}
+
+/* ---- Leaderboard ---- */
+.leaderboard-container {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.leaderboard-stat-box {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.leaderboard-stat-label {
+  margin: 0 0 4px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.leaderboard-stat-value {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.leaderboard-stat-detail {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.leaderboard-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 8px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.leaderboard-row-first {
+  border-color: var(--accent-primary);
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), var(--bg-primary));
+}
+
+.leaderboard-rank {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.leaderboard-record {
+  margin: 4px 0 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.leaderboard-winrate {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.leaderboard-winrate-first {
+  color: var(--accent-primary);
+}
+
+.leaderboard-winrate-other {
+  color: var(--accent-secondary);
+}
+
+.leaderboard-total {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---- Acca List Cards ---- */
+.acca-card-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.acca-card-leagues {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.acca-card-dates {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.acca-card-status {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ---- Wizard ---- */
+.wizard-container {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.wizard-steps {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.wizard-step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all var(--transition-fast);
+}
+
+.wizard-step-active {
+  background-color: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+.wizard-step-done {
+  background-color: var(--color-success);
+  color: #fff;
+}
+
+.wizard-step-pending {
+  background-color: var(--bg-elevated);
+  color: var(--text-muted);
+}
+
+/* ---- Calendar ---- */
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.calendar-month-label {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.calendar-dayname {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 4px;
+}
+
+.calendar-day {
+  padding: 8px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  font-size: 14px;
+}
+
+.calendar-day:hover:not(.calendar-day-past) {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-color-light);
+}
+
+.calendar-day-past {
+  color: var(--text-muted);
+  cursor: default;
+  opacity: 0.4;
+}
+
+.calendar-day-selected {
+  background-color: var(--accent-primary) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.calendar-info {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ---- League checkbox items ---- */
+.league-option {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.league-option:hover {
+  border-color: var(--border-color-light);
+  background-color: var(--bg-surface-hover);
+}
+
+.league-option-selected {
+  border-color: var(--accent-primary);
+  background-color: rgba(0, 212, 170, 0.08);
+}
+
+.league-option input[type="checkbox"] {
+  width: auto;
+  margin-right: 12px;
+  accent-color: var(--accent-primary);
+}
+
+.league-option-name {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ---- Bet type radio items ---- */
+.bettype-option {
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.bettype-option-active {
+  border-color: var(--accent-primary);
+  background-color: rgba(0, 212, 170, 0.08);
+}
+
+.bettype-option-disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.bettype-option input[type="radio"] {
+  width: auto;
+  margin-right: 12px;
+  accent-color: var(--accent-primary);
+}
+
+.bettype-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bettype-desc {
+  margin: 3px 0 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.bettype-title-disabled {
+  color: var(--text-muted);
+}
+
+.bettype-desc-disabled {
+  color: var(--text-muted);
+}
+
+/* ---- Wizard Step 4: Summary ---- */
+.wizard-summary {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.wizard-summary h4 {
+  margin: 0 0 10px 0;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.wizard-summary p {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ---- Acca Detail / Status Banner ---- */
+.acca-status-banner {
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+
+.acca-status-open {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(0, 212, 170, 0.02));
+  border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.acca-status-locked {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.acca-status-won {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.02));
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.acca-status-lost {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.02));
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.acca-status-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.acca-status-title-open { color: var(--accent-primary); }
+.acca-status-title-locked { color: var(--color-warning); }
+.acca-status-title-won { color: var(--color-success); }
+.acca-status-title-lost { color: var(--color-danger); }
+
+.acca-status-odds {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.acca-status-count {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.acca-status-meta {
+  margin: 6px 0 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ---- Lock Countdown ---- */
+.lock-countdown {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lock-countdown-open {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: var(--color-warning);
+}
+
+.lock-countdown-locked {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning);
+  font-weight: 700;
+}
+
+/* ---- Bookmaker Comparison ---- */
+.bookmaker-section {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.bookmaker-section-title {
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.bookmaker-section-desc {
+  margin: 0 0 16px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.bookmaker-row {
+  margin: 6px 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bookmaker-row-best {
+  background-color: rgba(0, 212, 170, 0.12);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+}
+
+.bookmaker-row-other {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+
+.bookmaker-name {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.bookmaker-name-best { color: var(--accent-primary); }
+.bookmaker-name-other { color: var(--text-primary); }
+
+.bookmaker-odds-best {
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.bookmaker-odds-other {
+  color: var(--text-secondary);
+}
+
+/* ---- Fixture Grid ---- */
+.fixture-date-header {
+  color: var(--text-primary);
+  background-color: var(--bg-elevated);
+  padding: 10px 14px;
+  margin: 0 0 8px 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fixture-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.fixture-teams-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background-color: var(--bg-surface);
+}
+
+.fixture-team {
+  color: var(--text-primary);
+  font-weight: 600;
+  flex: 1;
+}
+
+.fixture-team-away {
+  text-align: right;
+}
+
+.fixture-kickoff {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 0 12px;
+}
+
+.fixture-odds-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  padding: 8px;
+  background-color: var(--bg-primary);
+}
+
+.fixture-odds-btn {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.fixture-odds-btn:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface-hover);
+}
+
+.fixture-odds-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.fixture-odds-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.fixture-odds-taken {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: var(--bg-primary);
+  border-color: transparent;
+}
+
+.fixture-odds-taken:hover {
+  border-color: transparent;
+  background-color: var(--bg-primary);
+}
+
+.fixture-odds-value-taken {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+/* ---- Bet Cards ---- */
+.bet-card {
+  padding: 16px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+}
+
+.bet-card-pending {
+  background-color: var(--bg-surface);
+}
+
+.bet-card-won {
+  background-color: rgba(34, 197, 94, 0.06);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.bet-card-lost {
+  background-color: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.bet-card-void {
+  background-color: rgba(139, 156, 170, 0.06);
+  border-color: rgba(139, 156, 170, 0.2);
+}
+
+.bet-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.bet-description {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.bet-picked-by {
+  margin: 4px 0 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.bet-odds {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.bet-result {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bet-result-won { color: var(--color-success); }
+.bet-result-lost { color: var(--color-danger); }
+.bet-result-void { color: var(--text-secondary); }
+
+.btn-remove-pick {
+  margin-top: 6px;
+  padding: 4px 10px;
+  background-color: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.btn-remove-pick:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.bet-result-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ---- Form Panel ---- */
+.form-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.form-panel-title {
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+  font-size: 18px;
+}
+
+/* ---- Bet Preview ---- */
+.bet-preview {
+  padding: 12px 14px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.bet-preview-desc {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.bet-preview-odds {
+  margin: 4px 0 0 0;
+  color: var(--accent-primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.bet-preview-source {
+  margin: 4px 0 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* ---- Loading Message ---- */
+.loading-message {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* ---- League Selector Buttons ---- */
+.league-select-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.league-select-btn:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface-hover);
+}
+
+/* ---- Group Card extras ---- */
+.group-card-name {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-size: 17px;
+}
+
+.group-card-desc {
+  margin: 0 0 8px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.group-card-date {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ---- Checkbox for custom bet ---- */
+.custom-bet-toggle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.custom-bet-toggle input[type="checkbox"] {
+  width: auto;
+  accent-color: var(--accent-primary);
+}
+
+/* ---- Misc helpers ---- */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-accent { color: var(--accent-primary); }
+.text-success { color: var(--color-success); }
+.text-danger { color: var(--color-danger); }
+.text-warning { color: var(--color-warning); }
+
+.mb-0 { margin-bottom: 0; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+
+.flex { display: flex; }
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.gap-8 { gap: 8px; }
+.gap-10 { gap: 10px; }
+
+.text-right { text-align: right; }
+.font-bold { font-weight: 700; }
