@@ -22,7 +22,7 @@ function PrivacyPolicy() {
           <p>
             <strong>Data Controller:</strong><br />
             AccaPicks<br />
-            Email: privacy@accapicks.com
+            Email: glen.dev@outlook.com
           </p>
           <p>If you have any questions about this Privacy Policy or how we handle your data, please contact us using the details above.</p>
         </section>
@@ -345,7 +345,7 @@ function PrivacyPolicy() {
           <p>We do not currently use automated decision-making or profiling that produces legal or similarly significant effects.</p>
           <h3>10.9 How to Exercise Your Rights</h3>
           <p>To exercise any of these rights, contact us at:</p>
-          <p>Email: privacy@accapicks.com<br />Subject: Data Rights Request</p>
+          <p>Email: glen.dev@outlook.com<br />Subject: Data Rights Request</p>
           <p>Please include:</p>
           <ul>
             <li>Your username and registered email address</li>
@@ -387,7 +387,7 @@ function PrivacyPolicy() {
             <li>Terminate the account</li>
             <li>Notify the user (if possible)</li>
           </ul>
-          <p>Parents and Guardians: If you believe your child under 18 has provided personal data to us, please contact us immediately at privacy@accapicks.com so we can delete it.</p>
+          <p>Parents and Guardians: If you believe your child under 18 has provided personal data to us, please contact us immediately at glen.dev@outlook.com so we can delete it.</p>
         </section>
 
         <section>
@@ -433,7 +433,7 @@ function PrivacyPolicy() {
           <p>AccaPicks</p>
           <h3>15.2 Contact Details</h3>
           <p>For privacy-related inquiries, data rights requests, or complaints:</p>
-          <p>Email: privacy@accapicks.com<br />Subject: Privacy Inquiry / Data Rights Request</p>
+          <p>Email: glen.dev@outlook.com<br />Subject: Privacy Inquiry / Data Rights Request</p>
           <p>Response Time: We aim to respond to all inquiries within 5 business days and resolve data rights requests within one month.</p>
           <h3>15.3 Supervisory Authority</h3>
           <p>You have the right to lodge a complaint with the UK's supervisory authority for data protection:</p>
