@@ -90,15 +90,12 @@ export default function AuthView({
   return (
     <div className="auth-container">
       <h1 className="auth-title">AccaPicks</h1>
-      <p className="auth-subtitle">
-        {mode === "signup" && "Create your account"}
-        {mode === "login" && "Login to start creating accumulators"}
-        {mode === "verify" && "Enter verification code"}
-      </p>
+      <p className="auth-tagline">Find out who sends the best picks in your group chat!</p>
 
       {displayError && <div className="alert-error">{displayError}</div>}
 
-      <form className="auth-form" onSubmit={handleSubmit}>
+      <div className="auth-form-container">
+        <form className="auth-form" onSubmit={handleSubmit}>
         {mode === "verify" ? (
           <>
             <div className="form-group">
@@ -199,6 +196,7 @@ export default function AuthView({
           </>
         )}
       </form>
+      </div>
     </div>
   );
 }
