@@ -19,6 +19,9 @@ backend/.env
 # Backend
 backend/accapicks.db
 accapicks.db
+backend/pickonebet.db
+pickonebet.db
+*.db
 backend/venv/
 __pycache__/
 *.pyc
