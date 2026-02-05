@@ -1,4 +1,6 @@
-export default function BetCard({ bet, accaStatus, isOwnBet, onRemove, onMarkResult }) {
+import { formatOdds } from "../utils/formatters";
+
+export default function BetCard({ bet, accaStatus, isOwnBet, onRemove, onMarkResult, oddsFormat = "decimal" }) {
   const cardClass = bet.result === "won"
     ? "bet-card-won"
     : bet.result === "lost"
@@ -21,7 +23,7 @@ export default function BetCard({ bet, accaStatus, isOwnBet, onRemove, onMarkRes
           <p className="bet-picked-by">Picked by: {bet.username}</p>
         </div>
         <div className="text-right">
-          <div className="bet-odds">{bet.odds}</div>
+          <div className="bet-odds">{formatOdds(bet.odds, oddsFormat)}</div>
           {bet.result && (
             <span className={`bet-result ${resultClass}`}>
               {bet.result.toUpperCase()}

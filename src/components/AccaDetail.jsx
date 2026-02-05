@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
-import { formatCountdown, formatDisplayDate } from "../utils/formatters";
+import { formatCountdown, formatDisplayDate, formatOdds } from "../utils/formatters";
 import * as api from "../api/client";
 import BetCard from "./BetCard";
 import FixtureGrid from "./FixtureGrid";
 import BookmakerComparison from "./BookmakerComparison";
 
-export default function AccaDetail({ user }) {
+export default function AccaDetail({ user, oddsFormat = "decimal" }) {
   const { groupId, accaId } = useParams();
   const navigate = useNavigate();
   const [acca, setAcca] = useState(null);
@@ -313,7 +313,7 @@ export default function AccaDetail({ user }) {
         >
           Status: {getAccaStatusDisplay()}
         </h3>
-        <p className="acca-status-odds">Combined Odds: {calculateCombinedOdds()}x</p>
+        <p className="acca-status-odds">Combined Odds: {formatOdds(calculateCombinedOdds(), oddsFormat)}</p>
         <p className="acca-status-count">
           {acca.bets.length} pick{acca.bets.length !== 1 ? "s" : ""} in this acca
         </p>
@@ -341,7 +341,7 @@ export default function AccaDetail({ user }) {
         </button>
       </div>
 
-      <BookmakerComparison data={bookmakerComparison} />
+      <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} />
 
       {/* Add Pick - Fixture Grid Flow */}
       {acca.status === "open" && !showFixtureGrid && !showAddBet && (
@@ -390,6 +390,7 @@ export default function AccaDetail({ user }) {
             setError("");
           }}
           error={error}
+          oddsFormat={oddsFormat}
         />
       )}
 
@@ -556,6 +557,7 @@ export default function AccaDetail({ user }) {
               isOwnBet={user && bet.user_id === user.id}
               onRemove={handleRemovePick}
               onMarkResult={handleMarkBetResult}
+              oddsFormat={oddsFormat}
             />
           ))}
         </div>
