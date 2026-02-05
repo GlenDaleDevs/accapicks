@@ -18,7 +18,9 @@ export default function AuthView({
 
   // Switch to verify mode when pendingVerificationEmail is set after signup
   useEffect(() => {
+    console.log("useEffect triggered, pendingVerificationEmail:", pendingVerificationEmail);
     if (pendingVerificationEmail) {
+      console.log("Switching to verify mode");
       setMode("verify");
       setEmail(pendingVerificationEmail);
     }

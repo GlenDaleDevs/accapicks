@@ -62,11 +62,14 @@ function App() {
     setError("");
     try {
       const data = await api.signup(email, username, password);
+      console.log("Signup response:", data);
       // Signup now requires verification - don't set token yet
       if (data.requires_verification) {
+        console.log("Setting pendingVerificationEmail:", email);
         setPendingVerificationEmail(email);
       }
     } catch (err) {
+      console.error("Signup error:", err);
       throw new Error(err.response?.data?.detail || "Signup failed");
     }
   };
