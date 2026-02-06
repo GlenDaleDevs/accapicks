@@ -114,6 +114,7 @@ async def auto_settle_bets():
             settle_locked_accas(db)
         except Exception as e:
             logger.error(f"Error in auto settle: {e}")
+            db.rollback()
         finally:
             db.close()
 
