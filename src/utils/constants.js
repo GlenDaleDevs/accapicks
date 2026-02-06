@@ -2,6 +2,9 @@ export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/ap
 
 export const LEAGUE_OPTIONS = [
   { key: "soccer_epl", name: "Premier League" },
+  { key: "soccer_efl_champ", name: "Championship" },
+  { key: "soccer_england_league1", name: "League One" },
+  { key: "soccer_england_league2", name: "League Two" },
   { key: "soccer_spain_la_liga", name: "La Liga" },
   { key: "soccer_germany_bundesliga", name: "Bundesliga" },
   { key: "soccer_italy_serie_a", name: "Serie A" },
