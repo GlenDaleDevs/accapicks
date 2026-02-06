@@ -151,6 +151,13 @@ export default function AuthView({
   return (
     <div className="landing-container">
       <div className="landing-hero">
+        <div className="goalpost">
+          <div className="goalpost-crossbar"></div>
+          <div className="goalpost-left-post"></div>
+          <div className="goalpost-right-post"></div>
+          <div className="goalpost-net"></div>
+          <div className="goalpost-line"></div>
+        </div>
         <h1 className="landing-brand">AccaPicks</h1>
         <h2 className="landing-headline">One group. One acca. Bragging rights.</h2>
         <p className="landing-subtitle">The acca tracker for your group chat.</p>
