@@ -11,16 +11,16 @@ TIER 1 (COMPLETED)
 [x] Automated bet settlement
 [x] Landing page with hero + features
 
-TIER 2: MUST-DO BEFORE LAUNCH
-------------------------------
-[ ] 1. Meta tags + favicon (og:title, og:description, og:image, twitter:card, proper favicon)
-[ ] 2. Cookie consent banner (GDPR requirement — localStorage used without disclosure)
-[ ] 3. GDPR account deletion endpoint (right to erasure)
-[ ] 4. Leave group functionality (users currently stuck in groups forever)
-[ ] 5. Delete/archive accas (old accas clutter the group view)
-[ ] 6. Basic error feedback — toast notifications or better error display for network errors, 429s, etc.
-[ ] 7. Input validation — max lengths on group names, acca names, bet descriptions (both frontend + backend)
-[ ] 8. Rate limit error messages — show "try again in X seconds" instead of generic failure
+TIER 2 (COMPLETED)
+------------------
+[x] 1. Meta tags + favicon (og:title, og:description, og:image, twitter:card, SVG favicon)
+[x] 2. Cookie consent banner (GDPR/PECR compliant, essential storage only)
+[x] 3. GDPR account deletion endpoint (POST /auth/delete-account with cascade)
+[x] 4. Leave group functionality (DELETE /groups/{id}/leave with admin transfer)
+[x] 5. Delete accas (DELETE /accas/{id}, creator/admin only, open status only)
+[x] 6. Toast notification system (module-level pattern, replaces all alert() calls)
+[x] 7. Input validation — max lengths on all Pydantic schemas + frontend inputs
+[x] 8. Rate limit error messages — custom 429 handler with retry_after + toast
 
 TIER 3: STRONGLY RECOMMENDED
 ------------------------------
