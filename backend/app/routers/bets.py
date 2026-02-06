@@ -1,16 +1,19 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
+from ..limiter import limiter
 
 router = APIRouter()
 
 
 # Add a bet to an acca
 @router.post("/bets", response_model=schemas.BetResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 def create_bet(
+    request: Request,
     bet: schemas.BetCreate,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -112,7 +115,9 @@ def create_bet(
 
 # Remove a bet (only by the user who placed it, and only while acca is open)
 @router.delete("/bets/{bet_id}", status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 def delete_bet(
+    request: Request,
     bet_id: int,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -144,7 +149,9 @@ def delete_bet(
 
 # Update bet result (mark as won/lost/void)
 @router.put("/bets/{bet_id}/result")
+@limiter.limit("20/minute")
 def update_bet_result(
+    request: Request,
     bet_id: int,
     body: schemas.BetResultUpdate,
     db: Session = Depends(get_db),
@@ -162,6 +169,14 @@ def update_bet_result(
     acca = db.query(models.Acca).filter(models.Acca.id == bet.acca_id).first()
     if not acca:
         raise HTTPException(status_code=404, detail="Acca not found")
+
+    # Verify user is a member of the group
+    membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == acca.group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+    if not membership:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a member of this group")
 
     # Only allow acca creator to update results
     if acca.created_by != user_id:

@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from .. import odds_api
 from .auth import get_current_user
+from ..limiter import limiter
 
 router = APIRouter()
 
 
 # Get available football matches with odds
 @router.get("/odds/matches")
-def get_matches(sport: str = "soccer_epl", user_id: int = Depends(get_current_user)):
+@limiter.limit("30/minute")
+def get_matches(request: Request, sport: str = "soccer_epl", user_id: int = Depends(get_current_user)):
     """
     Get upcoming matches with odds
     Available sports: soccer_epl, soccer_spain_la_liga, soccer_germany_bundesliga, soccer_italy_serie_a
@@ -26,7 +28,9 @@ def get_matches(sport: str = "soccer_epl", user_id: int = Depends(get_current_us
 
 # Get filtered matches for specific leagues and date range
 @router.get("/odds/matches/filtered")
+@limiter.limit("30/minute")
 def get_filtered_matches(
+    request: Request,
     leagues: str,
     date_from: str,
     date_to: str,

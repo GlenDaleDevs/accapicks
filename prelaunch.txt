@@ -37,7 +37,7 @@ TIER 4: NICE-TO-HAVE (POST-LAUNCH)
 ------------------------------------
 [ ] 17. PWA manifest + service worker (installable app, offline support)
 [ ] 17b. Web Push Notifications — "nudge your mates" to add picks (requires PWA/service worker)
-[ ] 18. Username availability check (real-time during signup)
+[x] 18. Username availability check (real-time during signup, case-insensitive)
 [ ] 19. Password strength meter (real-time feedback during typing)
 [ ] 20. Social sharing buttons (WhatsApp, Twitter for invite links)
 [ ] 21. Advanced stats (win rate, ROI, most-picked bets per user)
