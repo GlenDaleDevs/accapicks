@@ -5,10 +5,12 @@ export default function AuthView({
   onSignup,
   onVerify,
   onResendCode,
+  onForgotPassword,
+  onResetPassword,
   error: externalError,
   pendingVerificationEmail,
 }) {
-  const [mode, setMode] = useState(pendingVerificationEmail ? "verify" : "login"); // login, signup, verify
+  const [mode, setMode] = useState(pendingVerificationEmail ? "verify" : "login"); // login, signup, verify, forgot, reset
   const [email, setEmail] = useState(pendingVerificationEmail || "");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -16,6 +18,7 @@ export default function AuthView({
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     if (pendingVerificationEmail) {
@@ -29,6 +32,7 @@ export default function AuthView({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
     setLoading(true);
 
     try {
@@ -51,6 +55,14 @@ export default function AuthView({
         await onSignup(email, username, password);
       } else if (mode === "verify") {
         await onVerify(email, verificationCode);
+      } else if (mode === "forgot") {
+        await onForgotPassword(email);
+        setSuccessMessage("If an account exists with that email, we've sent a reset code.");
+        switchMode("reset");
+      } else if (mode === "reset") {
+        await onResetPassword(email, verificationCode, password);
+        setSuccessMessage("Password reset successful!");
+        setTimeout(() => switchMode("login"), 2000);
       } else {
         await onLogin(email, password);
       }
@@ -63,6 +75,7 @@ export default function AuthView({
 
   const handleResendCode = async () => {
     setError("");
+    setSuccessMessage("");
     setLoading(true);
     try {
       await onResendCode(email);
@@ -75,12 +88,28 @@ export default function AuthView({
     }
   };
 
+  const handleResendResetCode = async () => {
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+    try {
+      await onForgotPassword(email);
+      setError("");
+      alert("Reset code sent! Check your email.");
+    } catch (err) {
+      setError(err.message || "Failed to resend code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const switchMode = (newMode) => {
     setMode(newMode);
     setError("");
+    setSuccessMessage("");
     setVerificationCode("");
     setAgeConfirmed(false);
-    if (newMode !== "verify") {
+    if (newMode !== "verify" && newMode !== "reset") {
       setEmail("");
       setUsername("");
       setPassword("");
@@ -93,6 +122,7 @@ export default function AuthView({
       <p className="auth-tagline">Find out who sends the best picks in your group chat!</p>
 
       {displayError && <div className="alert-error">{displayError}</div>}
+      {successMessage && <div className="alert-success">{successMessage}</div>}
 
       <div className="auth-form-container">
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -126,6 +156,76 @@ export default function AuthView({
                 {loading ? "Verifying..." : "Verify Email"}
               </button>
               <button type="button" className="btn btn-ghost" onClick={handleResendCode} disabled={loading}>
+                Resend Code
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={() => switchMode("login")}>
+                Back to Login
+              </button>
+            </div>
+          </>
+        ) : mode === "forgot" ? (
+          <>
+            <h2 className="auth-mode-title">Reset Password</h2>
+            <div className="form-group">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="auth-actions">
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? "Sending..." : "Send Reset Code"}
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={() => switchMode("login")}>
+                Back to Login
+              </button>
+            </div>
+          </>
+        ) : mode === "reset" ? (
+          <>
+            <h2 className="auth-mode-title">Enter Reset Code</h2>
+            <p className="auth-feedback">Check your email for a 6-digit reset code</p>
+            <div className="form-group">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                readOnly
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="000000"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
+                required
+                className="verification-code-input"
+                autoComplete="one-time-code"
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="New Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="auth-actions">
+              <button type="submit" className="btn btn-primary" disabled={loading || verificationCode.length !== 6}>
+                {loading ? "Resetting..." : "Reset Password"}
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={handleResendResetCode} disabled={loading}>
                 Resend Code
               </button>
               <button type="button" className="btn btn-ghost" onClick={() => switchMode("login")}>
@@ -192,6 +292,11 @@ export default function AuthView({
               >
                 {mode === "signup" ? "Already have an account?" : "Need an account?"}
               </button>
+              {mode === "login" && (
+                <button type="button" className="btn btn-ghost" onClick={() => switchMode("forgot")}>
+                  Forgot password?
+                </button>
+              )}
             </div>
           </>
         )}

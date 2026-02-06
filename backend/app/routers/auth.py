@@ -6,7 +6,7 @@ import secrets
 from .. import models, schemas, auth
 from ..database import get_db
 from ..limiter import limiter
-from ..email import send_verification_email
+from ..email import send_verification_email, send_password_reset_email
 
 
 def generate_verification_code() -> str:
@@ -222,6 +222,70 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
         "email": user.email,
         "requires_verification": True
     }
+
+
+# Forgot password endpoint
+@router.post("/auth/forgot-password")
+@limiter.limit("3/minute")
+def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Request password reset code (anti-enumeration protection)"""
+
+    user = db.query(models.User).filter(models.User.email == data.email).first()
+
+    # Anti-enumeration: return success even if user not found or not verified
+    if not user or not user.email_verified:
+        return {"message": "If an account exists with that email, a reset code has been sent."}
+
+    # Generate reset code
+    reset_code = generate_verification_code()
+    code_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+
+    user.verification_code = reset_code
+    user.verification_code_expires = code_expires
+    db.commit()
+
+    # Send reset email
+    send_password_reset_email(user.email, reset_code, user.username)
+
+    return {"message": "If an account exists with that email, a reset code has been sent."}
+
+
+# Reset password endpoint
+@router.post("/auth/reset-password")
+@limiter.limit("5/minute")
+def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password with verification code"""
+
+    user = db.query(models.User).filter(models.User.email == data.email).first()
+    if not user or not user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset code"
+        )
+
+    # Check code
+    if user.verification_code != data.code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset code"
+        )
+
+    # Check expiry
+    if not user.verification_code_expires or datetime.now(timezone.utc) > user.verification_code_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset code expired. Please request a new one."
+        )
+
+    # Hash new password
+    user.hashed_password = auth.hash_password(data.new_password)
+
+    # Clear verification code
+    user.verification_code = None
+    user.verification_code_expires = None
+    db.commit()
+
+    return {"message": "Password reset successful. You can now log in."}
 
 
 # Get current user profile
