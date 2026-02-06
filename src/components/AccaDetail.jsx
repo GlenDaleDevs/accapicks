@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatCountdown, formatDisplayDate, formatOdds } from "../utils/formatters";
+import { showToast } from "../utils/toast";
 import * as api from "../api/client";
 import BetCard from "./BetCard";
 import FixtureGrid from "./FixtureGrid";
@@ -211,6 +212,20 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     }
   };
 
+  const handleDeleteAcca = async () => {
+    if (!window.confirm("Are you sure? This will delete the acca and all picks.")) {
+      return;
+    }
+
+    try {
+      await api.deleteAcca(accaId);
+      showToast("Acca deleted successfully", "success");
+      navigate(`/groups/${groupId}`);
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Failed to delete acca", "error");
+    }
+  };
+
   // Legacy form helpers
   const getSelectedMatchDetails = () => {
     if (!selectedMatch) return null;
@@ -275,6 +290,8 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
   };
 
   const userAlreadyPicked = user && acca.bets.some((b) => b.user_id === user.id);
+  const isAccaCreator = user && acca.created_by === user.id;
+  const canDeleteAcca = isAccaCreator && acca.status === "open";
 
   return (
     <>
@@ -285,7 +302,18 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         &larr; Back to Accas
       </button>
 
-      <h2 className="section-title">{acca.name}</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h2 className="section-title" style={{ marginBottom: 0 }}>{acca.name}</h2>
+        {canDeleteAcca && (
+          <button
+            className="btn btn-danger"
+            onClick={handleDeleteAcca}
+            style={{ fontSize: "14px", padding: "8px 16px" }}
+          >
+            Delete
+          </button>
+        )}
+      </div>
 
       {/* Lock countdown / status */}
       {acca.locks_at && acca.status === "open" && (
@@ -524,6 +552,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
                   value={betDescription}
                   onChange={(e) => setBetDescription(e.target.value)}
                   required
+                  maxLength={200}
                 />
               </div>
 
@@ -534,6 +563,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
                   value={betOdds}
                   onChange={(e) => setBetOdds(e.target.value)}
                   required
+                  maxLength={20}
                 />
               </div>
 

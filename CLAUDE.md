@@ -171,5 +171,5 @@ RESEND_API_KEY=<resend api key for email verification>
 
 ## Rules (learned from mistakes)
 
-<!-- Add rules here as mistakes happen. Format: "- Never do X because Y" -->
-<!-- When Claude makes a mistake, say "add that as a rule" to append it here -->
+- Always save assessments, feature plans, and multi-item lists to a .txt file in the project root — context compaction will lose them otherwise
+- Always follow the planner → critic → implement pipeline for non-trivial changes. If you think a task is simple enough to skip planning, ask the user first — don't skip silently

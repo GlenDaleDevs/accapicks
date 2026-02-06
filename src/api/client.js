@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URL } from "../utils/constants";
+import { showToast } from "../utils/toast";
 
 // Auth token management
 export const setAuthToken = (token) => {
@@ -14,7 +15,7 @@ export const setAuthToken = (token) => {
 
 export const getStoredToken = () => localStorage.getItem("token");
 
-// Auto-logout on 401
+// Auto-logout on 401, rate limit handling on 429
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -22,6 +23,14 @@ axios.interceptors.response.use(
       localStorage.removeItem("token");
       delete axios.defaults.headers.common["Authorization"];
       window.location.href = "/";
+    } else if (error.response?.status === 429) {
+      const retryAfter = error.response?.data?.retry_after || error.response?.headers?.["retry-after"];
+      const parsed = retryAfter ? parseInt(retryAfter, 10) : null;
+      const seconds = parsed && !isNaN(parsed) ? Math.max(1, parsed) : null;
+      const message = seconds
+        ? `Too many requests. Please try again in ${seconds} seconds.`
+        : "Too many requests. Please try again shortly.";
+      showToast(message, "warning");
     }
     return Promise.reject(error);
   }
@@ -186,5 +195,20 @@ export const changePassword = async (currentPassword, newPassword) => {
     current_password: currentPassword,
     new_password: newPassword
   });
+  return response.data;
+};
+
+export const deleteAccount = async (password) => {
+  const response = await axios.post(`${API_URL}/auth/delete-account`, { password });
+  return response.data;
+};
+
+export const leaveGroup = async (groupId) => {
+  const response = await axios.delete(`${API_URL}/groups/${groupId}/leave`);
+  return response.data;
+};
+
+export const deleteAcca = async (accaId) => {
+  const response = await axios.delete(`${API_URL}/accas/${accaId}`);
   return response.data;
 };

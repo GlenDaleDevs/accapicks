@@ -273,3 +273,96 @@ def get_group_leaderboard(
     leaderboard.sort(key=lambda x: (x["win_rate"], x["won"]), reverse=True)
 
     return leaderboard
+
+
+# Leave group endpoint
+@router.delete("/groups/{group_id}/leave")
+@limiter.limit("3/minute")
+def leave_group(
+    request: Request,
+    group_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Leave a group (destructive operation)"""
+
+    try:
+        # Verify user is a member
+        membership = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == group_id,
+            models.GroupMember.user_id == user_id
+        ).first()
+
+        if not membership:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not a member of this group"
+            )
+
+        # Get the group
+        group = db.query(models.Group).filter(models.Group.id == group_id).first()
+        if not group:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Group not found"
+            )
+
+        # Count other members
+        other_members = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == group_id,
+            models.GroupMember.user_id != user_id
+        ).all()
+
+        if not other_members:
+            # User is sole member - delete everything
+            # Delete all bets in group's accas
+            acca_ids = [a.id for a in group.accas]
+            if acca_ids:
+                db.query(models.Bet).filter(models.Bet.acca_id.in_(acca_ids)).delete(synchronize_session=False)
+            # Delete all accas
+            db.query(models.Acca).filter(models.Acca.group_id == group_id).delete(synchronize_session=False)
+            # Delete all memberships
+            db.query(models.GroupMember).filter(models.GroupMember.group_id == group_id).delete(synchronize_session=False)
+            # Delete group
+            db.delete(group)
+        else:
+            # Other members exist
+            # If user is admin, promote longest-serving member
+            if membership.role == "admin":
+                new_admin = min(other_members, key=lambda m: m.joined_at)
+                new_admin.role = "admin"
+
+                # Transfer Group.created_by if needed
+                if group.created_by == user_id:
+                    group.created_by = new_admin.user_id
+
+                # Transfer Acca.created_by for accas in this group
+                db.query(models.Acca).filter(
+                    models.Acca.group_id == group_id,
+                    models.Acca.created_by == user_id
+                ).update({"created_by": new_admin.user_id}, synchronize_session=False)
+
+            # Delete user's bets from ALL accas in this group
+            # Note: This includes locked/settled accas due to FK constraint (Bet.user_id NOT NULL)
+            acca_ids = [a.id for a in group.accas]
+            if acca_ids:
+                db.query(models.Bet).filter(
+                    models.Bet.acca_id.in_(acca_ids),
+                    models.Bet.user_id == user_id
+                ).delete(synchronize_session=False)
+
+            # Delete the membership
+            db.delete(membership)
+
+        db.commit()
+        return {"message": "Left group successfully"}
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to leave group: {str(e)}"
+        )

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api/client";
+import { showToast } from "../utils/toast";
 
-export default function UserSettings({ user, oddsFormat, setOddsFormat }) {
+export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout }) {
   const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -10,6 +11,9 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -55,6 +59,23 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat }) {
       month: "long",
       year: "numeric"
     });
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    setError("");
+    setDeletingAccount(true);
+    try {
+      await api.deleteAccount(deletePassword);
+      showToast("Account deleted successfully", "success");
+      if (onLogout) {
+        onLogout();
+      }
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Failed to delete account", "error");
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   return (
@@ -119,6 +140,7 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat }) {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
+              maxLength={128}
             />
           </div>
           <div className="form-group">
@@ -128,6 +150,7 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat }) {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
+              maxLength={128}
             />
           </div>
           <div className="form-group">
@@ -137,6 +160,7 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat }) {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              maxLength={128}
             />
           </div>
           <button
@@ -148,6 +172,57 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat }) {
             {loading ? "Changing Password..." : "Change Password"}
           </button>
         </form>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="settings-section" style={{ marginTop: "40px", borderColor: "#ef4444" }}>
+        <h3 className="settings-section-title" style={{ color: "#ef4444" }}>Danger Zone</h3>
+        <p style={{ marginBottom: "16px", color: "#6b7280" }}>
+          This will permanently delete your account and remove you from all groups. This action cannot be undone.
+        </p>
+
+        {!showDeleteConfirmation ? (
+          <button
+            className="btn btn-danger"
+            onClick={() => setShowDeleteConfirmation(true)}
+            style={{ width: "100%" }}
+          >
+            Delete Account
+          </button>
+        ) : (
+          <form onSubmit={handleDeleteAccount}>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="Enter your current password to confirm"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                required
+                maxLength={128}
+              />
+            </div>
+            <div className="btn-group" style={{ marginTop: "8px" }}>
+              <button
+                type="submit"
+                className="btn btn-danger"
+                disabled={deletingAccount}
+              >
+                {deletingAccount ? "Deleting..." : "Confirm Delete"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => {
+                  setShowDeleteConfirmation(false);
+                  setDeletePassword("");
+                }}
+                disabled={deletingAccount}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -190,6 +190,7 @@ export default function AccaWizard({ onCreated, onCancel, error }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Acca name"
+              maxLength={100}
             />
           </div>
           <div className="wizard-summary">

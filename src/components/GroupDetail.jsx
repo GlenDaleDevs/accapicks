@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
 import * as api from "../api/client";
+import { showToast } from "../utils/toast";
 import AccaWizard from "./AccaWizard";
 import Leaderboard from "./Leaderboard";
 
@@ -86,6 +87,20 @@ export default function GroupDetail({ user }) {
       navigate(`/groups/${groupId}/accas/${data.id}`);
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to create acca");
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!window.confirm("Are you sure you want to leave this group? Your picks will be removed.")) {
+      return;
+    }
+
+    try {
+      await api.leaveGroup(groupId);
+      showToast("Successfully left the group", "success");
+      navigate("/");
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Failed to leave group", "error");
     }
   };
 
@@ -271,6 +286,16 @@ export default function GroupDetail({ user }) {
           </>
         );
       })()}
+
+      {/* Leave Group */}
+      <div style={{ marginTop: "40px", paddingTop: "20px", borderTop: "1px solid #e5e7eb" }}>
+        <button
+          className="btn btn-danger"
+          onClick={handleLeaveGroup}
+        >
+          Leave Group
+        </button>
+      </div>
     </>
   );
 }

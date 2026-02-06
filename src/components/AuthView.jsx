@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Landing.css";
+import { showToast } from "../utils/toast";
 
 export default function AuthView({
   onLogin,
@@ -81,7 +82,7 @@ export default function AuthView({
     try {
       await onResendCode(email);
       setError(""); // Clear any previous error
-      alert("Verification code sent! Check your email.");
+      showToast("Verification code sent! Check your email.", "success");
     } catch (err) {
       setError(err.message || "Failed to resend code");
     } finally {
@@ -96,7 +97,7 @@ export default function AuthView({
     try {
       await onForgotPassword(email);
       setError("");
-      alert("Reset code sent! Check your email.");
+      showToast("Reset code sent! Check your email.", "success");
     } catch (err) {
       setError(err.message || "Failed to resend code");
     } finally {
@@ -174,6 +175,7 @@ export default function AuthView({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                maxLength={254}
               />
             </div>
             <div className="form-group">
@@ -212,6 +214,7 @@ export default function AuthView({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                maxLength={254}
               />
             </div>
             <div className="auth-actions">
@@ -235,6 +238,7 @@ export default function AuthView({
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 readOnly
+                maxLength={254}
               />
             </div>
             <div className="form-group">
@@ -258,6 +262,7 @@ export default function AuthView({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                maxLength={128}
               />
             </div>
             <div className="auth-actions">
@@ -281,6 +286,7 @@ export default function AuthView({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                maxLength={254}
               />
             </div>
 
@@ -292,6 +298,7 @@ export default function AuthView({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
+                  maxLength={20}
                 />
               </div>
             )}
@@ -303,6 +310,7 @@ export default function AuthView({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                maxLength={128}
               />
             </div>
 
