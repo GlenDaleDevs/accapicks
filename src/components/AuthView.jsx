@@ -95,7 +95,7 @@ export default function AuthView({
         setSuccessMessage("Password reset successful!");
         setTimeout(() => switchMode("login"), 2000);
       } else {
-        await onLogin(email, password);
+        await onLogin(email.trim(), password);
       }
     } catch (err) {
       setError(err.message || "Something went wrong");
@@ -311,7 +311,8 @@ export default function AuthView({
           <>
             <div className="form-group">
               <input
-                type="email"
+                type={mode === "signup" ? "email" : "text"}
+                inputMode="email"
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -319,6 +320,7 @@ export default function AuthView({
                 placeholder={mode === "signup" ? "Email" : "Email or Username"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
                 maxLength={254}
               />
             </div>
