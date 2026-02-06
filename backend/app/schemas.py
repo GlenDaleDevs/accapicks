@@ -72,6 +72,17 @@ class ResetPasswordRequest(BaseModel):
         return validate_password_strength(v)
 
 
+# Schema for change password request
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def password_strength(cls, v):
+        return validate_password_strength(v)
+
+
 # Schema for signup response (requires verification)
 class SignupResponse(BaseModel):
     message: str

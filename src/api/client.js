@@ -179,3 +179,11 @@ export const trackBookmakerClick = async (bookmakerKey, accaId, source) => {
     // Fire-and-forget: catch silently so navigation is never blocked
   }
 };
+
+export const changePassword = async (currentPassword, newPassword) => {
+  const response = await axios.put(`${API_URL}/auth/change-password`, {
+    current_password: currentPassword,
+    new_password: newPassword
+  });
+  return response.data;
+};
