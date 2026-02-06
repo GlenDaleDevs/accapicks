@@ -6,6 +6,7 @@ import * as api from "../api/client";
 import BetCard from "./BetCard";
 import FixtureGrid from "./FixtureGrid";
 import BookmakerComparison from "./BookmakerComparison";
+import BetSlip from "./BetSlip";
 
 export default function AccaDetail({ user, oddsFormat = "decimal" }) {
   const { groupId, accaId } = useParams();
@@ -562,6 +563,12 @@ export default function AccaDetail({ user, oddsFormat = "decimal" }) {
           ))}
         </div>
       )}
+
+      <BetSlip
+        acca={acca}
+        oddsFormat={oddsFormat}
+        bookmakerComparison={bookmakerComparison}
+      />
     </>
   );
 }

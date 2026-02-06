@@ -1248,6 +1248,113 @@
 .text-right { text-align: right; }
 .font-bold { font-weight: 700; }
 
+/* ---- Bet Slip ---- */
+.bet-slip {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-top: 24px;
+}
+
+.bet-slip-picks {
+  margin-bottom: 16px;
+}
+
+.bet-slip-pick-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 0;
+  color: var(--text-primary);
+}
+
+.bet-slip-pick-number {
+  font-weight: 700;
+  color: var(--text-secondary);
+  min-width: 20px;
+}
+
+.bet-slip-pick-description {
+  flex: 1;
+}
+
+.bet-slip-pick-odds {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.bet-slip-summary {
+  padding: 12px 0;
+  border-top: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.bet-slip-combined-odds {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.bet-slip-combined-odds strong {
+  color: var(--accent-primary);
+  font-size: 18px;
+}
+
+.bet-slip-best-bookmaker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.bet-slip-bookmaker-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  transition: color var(--transition-fast);
+}
+
+.bet-slip-bookmaker-link:hover {
+  color: var(--accent-secondary);
+}
+
+.bet-slip-hint {
+  margin: 8px 0 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.btn-copy {
+  width: 100%;
+  padding: 12px 20px;
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-copy:hover {
+  background-color: var(--accent-secondary);
+  box-shadow: var(--shadow-md);
+}
+
+.bet-slip-error {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--color-danger);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
 /* ---- Responsible Gambling Footer ---- */
 .responsible-gambling-footer {
   text-align: center;
