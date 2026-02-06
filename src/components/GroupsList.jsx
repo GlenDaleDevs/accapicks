@@ -64,6 +64,7 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   required
+                  maxLength={100}
                 />
               </div>
 
@@ -73,6 +74,7 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
                   value={groupDescription}
                   onChange={(e) => setGroupDescription(e.target.value)}
                   style={{ minHeight: "60px" }}
+                  maxLength={500}
                 />
               </div>
 

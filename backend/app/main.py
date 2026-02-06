@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from .database import engine, Base, SessionLocal
@@ -30,10 +29,22 @@ async def lifespan(app):
     lock_task.cancel()
     settle_task.cancel()
 
+# Custom rate limit handler
+def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    retry_after = 60  # default fallback
+    return JSONResponse(
+        status_code=429,
+        content={
+            "detail": "Too many requests. Please try again shortly.",
+            "retry_after": retry_after
+        },
+        headers={"Retry-After": str(retry_after)}
+    )
+
 # Create the FastAPI app
 app = FastAPI(title="AccaPicks API", lifespan=lifespan)
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 
 # CORS - allowed origins for frontend
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")

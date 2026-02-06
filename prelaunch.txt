@@ -1,0 +1,55 @@
+ACCAPICKS PRE-LAUNCH PLAN
+==========================
+Last updated: 2026-02-06
+
+TIER 1 (COMPLETED)
+------------------
+[x] Forgot password flow
+[x] Bet slip (copy-to-clipboard)
+[x] Affiliate link infrastructure
+[x] Password change / User settings
+[x] Automated bet settlement
+[x] Landing page with hero + features
+
+TIER 2: MUST-DO BEFORE LAUNCH
+------------------------------
+[ ] 1. Meta tags + favicon (og:title, og:description, og:image, twitter:card, proper favicon)
+[ ] 2. Cookie consent banner (GDPR requirement — localStorage used without disclosure)
+[ ] 3. GDPR account deletion endpoint (right to erasure)
+[ ] 4. Leave group functionality (users currently stuck in groups forever)
+[ ] 5. Delete/archive accas (old accas clutter the group view)
+[ ] 6. Basic error feedback — toast notifications or better error display for network errors, 429s, etc.
+[ ] 7. Input validation — max lengths on group names, acca names, bet descriptions (both frontend + backend)
+[ ] 8. Rate limit error messages — show "try again in X seconds" instead of generic failure
+
+TIER 3: STRONGLY RECOMMENDED
+------------------------------
+[ ] 9. Group admin features — remove members, admin role actually enforced
+[ ] 10. Email notifications — new acca created, acca settled, user joined group
+[ ] 11. Mobile responsiveness audit — media queries, touch targets, viewport fixes
+[ ] 12. Loading states — skeleton screens or spinners during data fetch
+[ ] 13. Verification code cleanup — expire old codes, prevent reuse
+[ ] 14. Proper logging — replace print() with structured logging, consider Sentry
+[ ] 15. Leaderboard improvements — tie-breaking, historical tracking
+[ ] 16. Acca status UX — explain "locked" to users, show countdown to lock time
+
+TIER 4: NICE-TO-HAVE (POST-LAUNCH)
+------------------------------------
+[ ] 17. PWA manifest + service worker (installable app, offline support)
+[ ] 18. Username availability check (real-time during signup)
+[ ] 19. Password strength meter (real-time feedback during typing)
+[ ] 20. Social sharing buttons (WhatsApp, Twitter for invite links)
+[ ] 21. Advanced stats (win rate, ROI, most-picked bets per user)
+[ ] 22. Bet description editing (currently must delete + recreate)
+[ ] 23. Search/filter — search groups, filter accas by status/date
+[ ] 24. Affiliate admin panel UI (currently no way to manage links without DB access)
+[ ] 25. Dark/light mode toggle
+[ ] 26. Bet history export (CSV/PDF — also GDPR-friendly)
+
+NOTES
+-----
+- CSRF protection: FastAPI uses Bearer tokens (not cookies), so CSRF risk is minimal.
+  Only a concern if we add cookie-based auth later.
+- Accessibility (a11y): Important but can be incrementally improved post-launch.
+  Focus on keyboard navigation and contrast ratios first.
+- API versioning: Not needed for MVP with small user base. Add when breaking changes needed.

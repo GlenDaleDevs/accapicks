@@ -12,6 +12,9 @@ import AccaDetail from "./components/AccaDetail";
 import UserSettings from "./components/UserSettings";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
+import CookieConsent from "./components/CookieConsent";
+import ToastContainer from "./components/ToastContainer";
+import { showToast } from "./utils/toast";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -71,7 +74,7 @@ function App() {
         handleJoinGroup(pendingInvite)
           .catch(err => {
             console.error('Auto-join failed:', err);
-            alert(err.message || 'Failed to join group from invite link');
+            showToast(err.message || 'Failed to join group from invite link', 'error');
           })
           .finally(() => {
             localStorage.removeItem('pendingInvite');
@@ -180,7 +183,7 @@ function App() {
     try {
       await api.joinGroup(inviteCode);
       loadGroups();
-      alert("Successfully joined group!");
+      showToast("Successfully joined group!", "success");
     } catch (err) {
       throw new Error(
         err.response?.data?.detail || "Failed to join group",
@@ -191,6 +194,7 @@ function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
+        <ToastContainer />
         <Routes>
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -231,6 +235,7 @@ function App() {
             }
           />
         </Routes>
+        <CookieConsent />
       </ErrorBoundary>
     </BrowserRouter>
   );
@@ -269,7 +274,7 @@ function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error,
         />
         <Route
           path="/settings"
-          element={<UserSettings user={user} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} />}
+          element={<UserSettings user={user} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} onLogout={handleLogoutWithNav} />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

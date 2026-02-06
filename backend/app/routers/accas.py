@@ -1,10 +1,11 @@
 import asyncio
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from .. import models, schemas, odds_api
 from ..database import get_db
 from .auth import get_current_user
+from ..limiter import limiter
 
 router = APIRouter()
 
@@ -220,3 +221,71 @@ async def compare_bookmakers(
         )
 
     return comparison
+
+
+# Delete acca endpoint
+@router.delete("/accas/{acca_id}")
+@limiter.limit("3/minute")
+def delete_acca(
+    request: Request,
+    acca_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Delete an acca (only if open and user is creator or group admin)"""
+
+    try:
+        # Get acca
+        acca = db.query(models.Acca).filter(models.Acca.id == acca_id).first()
+        if not acca:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Acca not found"
+            )
+
+        # Verify user is either acca creator OR group admin
+        membership = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == acca.group_id,
+            models.GroupMember.user_id == user_id
+        ).first()
+
+        if not membership:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not a member of this group"
+            )
+
+        is_creator = acca.created_by == user_id
+        is_admin = membership.role == "admin"
+
+        if not is_creator and not is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only the acca creator or group admin can delete this acca"
+            )
+
+        # Verify acca is open
+        if acca.status != "open":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Can only delete accas with 'open' status"
+            )
+
+        # Delete all bets in the acca
+        db.query(models.Bet).filter(models.Bet.acca_id == acca_id).delete(synchronize_session=False)
+
+        # Delete the acca
+        db.delete(acca)
+        db.commit()
+
+        return {"message": "Acca deleted successfully"}
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete acca: {str(e)}"
+        )

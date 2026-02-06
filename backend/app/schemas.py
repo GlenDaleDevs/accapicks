@@ -17,8 +17,8 @@ def validate_password_strength(v):
 # Schema for user registration (what we receive)
 class UserCreate(BaseModel):
     email: EmailStr  # Validates it's a proper email format
-    username: str
-    password: str
+    username: str = Field(min_length=3, max_length=20, pattern=r"^[a-zA-Z0-9_]+$")
+    password: str = Field(min_length=8, max_length=128)
 
     @field_validator("password")
     @classmethod
@@ -27,8 +27,8 @@ class UserCreate(BaseModel):
 
 # Schema for user login (what we receive)
 class UserLogin(BaseModel):
-    identifier: str  # Can be email or username
-    password: str
+    identifier: str = Field(min_length=1, max_length=254)  # Can be email or username
+    password: str = Field(min_length=1, max_length=128)
 
 
 # Schema for user response (what we send back, no password!)
@@ -64,7 +64,7 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
     code: str = Field(min_length=6, max_length=6)
-    new_password: str
+    new_password: str = Field(min_length=8, max_length=128)
 
     @field_validator("new_password")
     @classmethod
@@ -74,8 +74,8 @@ class ResetPasswordRequest(BaseModel):
 
 # Schema for change password request
 class ChangePasswordRequest(BaseModel):
-    current_password: str
-    new_password: str
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
 
     @field_validator("new_password")
     @classmethod
@@ -165,10 +165,26 @@ class BetResponse(BaseModel):
 # Schema for creating an acca (what we receive)
 class AccaCreate(BaseModel):
     group_id: int
-    name: str
+    name: str = Field(min_length=1, max_length=100)
     match_dates: list[str]  # ["2026-02-08", "2026-02-09"]
     leagues: list[str]  # ["soccer_epl", "soccer_spain_la_liga"]
-    bet_type: str = "h2h"
+    bet_type: str = Field(default="h2h")
+
+    @field_validator("match_dates")
+    @classmethod
+    def validate_match_dates(cls, v):
+        if len(v) > 7:
+            raise ValueError("Maximum 7 match dates allowed")
+        return v
+
+    @field_validator("leagues")
+    @classmethod
+    def validate_leagues(cls, v):
+        if len(v) < 1:
+            raise ValueError("At least 1 league required")
+        if len(v) > 5:
+            raise ValueError("Maximum 5 leagues allowed")
+        return v
 
 # Schema for acca response (what we send back)
 class AccaResponse(BaseModel):
@@ -226,3 +242,8 @@ class BookmakerClickRequest(BaseModel):
         if v is not None and v not in ("comparison", "betslip"):
             raise ValueError("source must be 'comparison' or 'betslip'")
         return v
+
+
+# Schema for account deletion
+class DeleteAccountRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=128)
