@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./Landing.css";
 
 export default function AuthView({
   onLogin,
@@ -117,9 +118,47 @@ export default function AuthView({
   };
 
   return (
-    <div className="auth-container">
-      <h1 className="auth-title">AccaPicks</h1>
-      <p className="auth-tagline">Find out who sends the best picks in your group chat!</p>
+    <div className="landing-container">
+      <div className="landing-hero">
+        <h1 className="landing-brand">AccaPicks</h1>
+        <h2 className="landing-headline">One group. One acca. Bragging rights.</h2>
+        <p className="landing-subtitle">The acca tracker for your group chat.</p>
+      </div>
+
+      <div className="landing-features">
+        <div className="landing-feature">
+          <div className="landing-feature-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <span className="landing-feature-text">Build accas together</span>
+        </div>
+        <div className="landing-feature">
+          <div className="landing-feature-icon">
+            <svg viewBox="0 0 24 24">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+          <span className="landing-feature-text">Compare bookmakers</span>
+        </div>
+        <div className="landing-feature">
+          <div className="landing-feature-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+          </div>
+          <span className="landing-feature-text">Group Leaderboards</span>
+        </div>
+      </div>
 
       {displayError && <div className="alert-error">{displayError}</div>}
       {successMessage && <div className="alert-success">{successMessage}</div>}
