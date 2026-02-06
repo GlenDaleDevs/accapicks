@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
+import { formatCountdown } from "../utils/formatters";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
 import AccaWizard from "./AccaWizard";
 import Leaderboard from "./Leaderboard";
+import Skeleton from "./Skeleton";
 
 export default function GroupDetail({ user, onRefreshGroups }) {
   const { groupId } = useParams();
@@ -18,12 +20,31 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [loadingGroup, setLoadingGroup] = useState(true);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [error, setError] = useState("");
+  const [accaCountdowns, setAccaCountdowns] = useState({});
 
   useEffect(() => {
     if (groupId) {
       loadGroupData();
     }
   }, [groupId]);
+
+  // Countdown updater for open accas
+  useEffect(() => {
+    const openAccas = accas.filter((a) => a.status === "open" && a.locks_at);
+    if (openAccas.length === 0) return;
+
+    const update = () => {
+      const countdowns = {};
+      openAccas.forEach((acca) => {
+        countdowns[acca.id] = formatCountdown(acca.locks_at);
+      });
+      setAccaCountdowns(countdowns);
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [accas]);
 
   const loadGroupData = async () => {
     setLoadingGroup(true);
@@ -106,7 +127,25 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   };
 
   if (loadingGroup) {
-    return <div className="loading-message">Loading group...</div>;
+    return (
+      <div>
+        <button className="btn btn-ghost mb-20" disabled>
+          &larr; Back to Groups
+        </button>
+        <Skeleton width="200px" height="24px" count={1} />
+        <div style={{ marginTop: "20px" }}>
+          <Skeleton width="100%" height="80px" count={1} />
+        </div>
+        <div style={{ marginTop: "20px" }}>
+          <Skeleton width="100%" height="120px" count={1} />
+        </div>
+        <div style={{ marginTop: "20px" }}>
+          <Skeleton width="60%" height="20px" count={1} />
+          <Skeleton width="80%" height="16px" count={1} />
+          <Skeleton width="70%" height="16px" count={1} />
+        </div>
+      </div>
+    );
   }
 
   if (error && !group) {
@@ -224,6 +263,16 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                       Status: {acca.status} | Created{" "}
                       {new Date(acca.created_at).toLocaleDateString()}
                     </small>
+                    {acca.status === "open" && acca.locks_at && (
+                      <small className="acca-card-countdown">
+                        Locks in {accaCountdowns[acca.id] || "..."}
+                      </small>
+                    )}
+                    {acca.status === "locked" && (
+                      <small className="acca-card-locked-status">
+                        Matches in progress
+                      </small>
+                    )}
                   </div>
                 ))}
               </div>

@@ -1,9 +1,11 @@
 import requests
 import os
 import time
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 ODDS_API_KEY = os.getenv('ODDS_API_KEY')
 ODDS_API_BASE_URL = 'https://api.the-odds-api.com/v4'
@@ -51,7 +53,7 @@ def get_football_matches(sport='soccer_epl'):
         _cache[sport] = {"data": data, "timestamp": time.time()}
         return data
     except Exception as e:
-        print(f"Error fetching odds for {sport}: {e}")
+        logger.error(f"Error fetching odds for {sport}: {e}")
         return []
 
 def format_match_for_display(match, league=None):
@@ -123,7 +125,7 @@ def get_scores(sport, days_from=3):
         _scores_cache[cache_key] = {"data": data, "timestamp": time.time()}
         return data
     except Exception as e:
-        print(f"Error fetching scores for {sport}: {e}")
+        logger.error(f"Error fetching scores for {sport}: {e}")
         return []
 
 def compare_bookmakers_for_acca(bets):

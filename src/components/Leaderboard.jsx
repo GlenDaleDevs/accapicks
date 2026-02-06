@@ -1,9 +1,13 @@
+import Skeleton from "./Skeleton";
+
 export default function Leaderboard({ leaderboard, loading, accas }) {
   return (
     <div className="leaderboard-container">
       <h3 className="section-title">Group Leaderboard</h3>
       {loading ? (
-        <p className="text-secondary">Loading leaderboard...</p>
+        <div>
+          <Skeleton width="100%" height="60px" count={3} />
+        </div>
       ) : leaderboard.length === 0 ? (
         <p className="empty-state">
           No stats yet. Start placing bets and marking results!

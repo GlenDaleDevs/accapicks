@@ -1,0 +1,130 @@
+/* ============================================
+   AccaPicks - Mobile Responsive Overrides
+   ============================================ */
+
+/* ================================================
+   480px breakpoint - Small phones
+   (iPhone SE, Galaxy S, etc.)
+   ================================================ */
+
+@media (max-width: 480px) {
+  /* Reduce container padding for narrow screens */
+  .app-container {
+    padding: 12px 16px;
+  }
+
+  /* Allow invite code row to wrap on small screens */
+  .invite-code-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Minimum touch target size for small buttons */
+  .btn-sm {
+    min-height: 44px;
+  }
+
+  /* Minimum touch target size for fixture odds buttons */
+  .fixture-odds-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Allow bet card header to wrap on narrow screens */
+  .bet-card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Minimum touch target for calendar days */
+  .calendar-day {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* Allow top bar to wrap if needed, reduce padding */
+  .top-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 12px;
+  }
+
+  /* Horizontal scroll for wizard steps if they overflow */
+  .wizard-steps {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  /* Reduce section title font size */
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  /* Reduce acca status banner padding and font */
+  .acca-status-banner {
+    padding: 12px 16px;
+  }
+
+  .acca-status-title {
+    font-size: 14px;
+  }
+
+  .acca-status-odds,
+  .acca-status-count {
+    font-size: 13px;
+  }
+
+  /* Allow bookmaker row to wrap on narrow screens */
+  .bookmaker-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Stack fixture teams vertically on very narrow screens */
+  .fixture-teams-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .fixture-team-away {
+    text-align: left;
+  }
+
+  .fixture-kickoff {
+    padding: 0;
+    margin-top: 4px;
+  }
+}
+
+/* ================================================
+   768px breakpoint - Tablets & Cookie/Toast
+   ================================================ */
+
+@media (max-width: 768px) {
+  /* Cookie consent: stack vertically on tablets */
+  .cookie-consent-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .cookie-consent-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Toast notifications: center at top on tablets/mobile */
+  .toast-container {
+    top: 10px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    max-width: calc(100% - 32px);
+    width: 100%;
+  }
+
+  .toast {
+    width: 100%;
+  }
+}

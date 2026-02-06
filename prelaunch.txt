@@ -25,7 +25,7 @@ TIER 2 (COMPLETED)
 TIER 3: STRONGLY RECOMMENDED
 ------------------------------
 [ ] 9. Group admin features — remove members, admin role actually enforced
-[ ] 10. Email notifications — new acca created, acca settled, user joined group
+[DROPPED] 10. Email notifications — replaced by push notifications (future feature)
 [ ] 11. Mobile responsiveness audit — media queries, touch targets, viewport fixes
 [ ] 12. Loading states — skeleton screens or spinners during data fetch
 [ ] 13. Verification code cleanup — expire old codes, prevent reuse
@@ -36,6 +36,7 @@ TIER 3: STRONGLY RECOMMENDED
 TIER 4: NICE-TO-HAVE (POST-LAUNCH)
 ------------------------------------
 [ ] 17. PWA manifest + service worker (installable app, offline support)
+[ ] 17b. Web Push Notifications — "nudge your mates" to add picks (requires PWA/service worker)
 [ ] 18. Username availability check (real-time during signup)
 [ ] 19. Password strength meter (real-time feedback during typing)
 [ ] 20. Social sharing buttons (WhatsApp, Twitter for invite links)

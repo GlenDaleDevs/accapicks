@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
 from . import models
 from .odds_api import get_scores
+
+logger = logging.getLogger(__name__)
 
 
 def settle_locked_accas(db: Session):
@@ -66,7 +69,7 @@ def settle_locked_accas(db: Session):
                     # Score not found - check if it's been >72 hours
                     time_since_kickoff = now - bet.commence_time
                     if time_since_kickoff >= timedelta(hours=72):
-                        print(f"WARNING: Bet {bet.id} (event {bet.event_id}) not settled after 72 hours. Manual review required.")
+                        logger.warning(f"Bet {bet.id} (event {bet.event_id}) not settled after 72 hours. Manual review required.")
                     continue
 
                 # Check if match is completed
@@ -101,7 +104,7 @@ def settle_locked_accas(db: Session):
                         away_score = score_int
 
                 if home_score is None or away_score is None:
-                    print(f"WARNING: Could not parse scores for bet {bet.id} (event {bet.event_id})")
+                    logger.warning(f"Could not parse scores for bet {bet.id} (event {bet.event_id})")
                     continue
 
                 # Determine actual result
@@ -142,5 +145,5 @@ def settle_locked_accas(db: Session):
             db.commit()
 
         except Exception as e:
-            print(f"Error settling acca {acca.id}: {e}")
+            logger.error(f"Error settling acca {acca.id}: {e}")
             db.rollback()

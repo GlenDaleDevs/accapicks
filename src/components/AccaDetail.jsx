@@ -8,6 +8,7 @@ import BetCard from "./BetCard";
 import FixtureGrid from "./FixtureGrid";
 import BookmakerComparison from "./BookmakerComparison";
 import BetSlip from "./BetSlip";
+import Skeleton from "./Skeleton";
 
 export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLinks = {} }) {
   const { groupId, accaId } = useParams();
@@ -125,7 +126,14 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         >
           &larr; Back to Accas
         </button>
-        <div className="loading-message">Loading acca...</div>
+        <Skeleton width="250px" height="28px" count={1} />
+        <div style={{ marginTop: "20px" }}>
+          <Skeleton width="100%" height="100px" count={1} />
+        </div>
+        <div style={{ marginTop: "20px" }}>
+          <Skeleton width="90%" height="80px" count={1} />
+          <Skeleton width="85%" height="80px" count={1} />
+        </div>
       </div>
     );
   }
@@ -317,9 +325,14 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
 
       {/* Lock countdown / status */}
       {acca.locks_at && acca.status === "open" && (
-        <div className="lock-countdown lock-countdown-open">
-          Locks: {lockCountdown}
-        </div>
+        <>
+          <div className="lock-countdown lock-countdown-open">
+            Locks: {lockCountdown}
+          </div>
+          <p className="bet-settlement-info">
+            The acca locks when the first match starts. Make sure all picks are in!
+          </p>
+        </>
       )}
 
       {acca.status === "locked" && (
@@ -328,7 +341,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
             LOCKED - No more picks allowed
           </div>
           <p className="bet-settlement-info">
-            Results will update automatically after matches finish
+            This acca locked when the first match kicked off. Results are being tracked automatically.
           </p>
         </>
       )}

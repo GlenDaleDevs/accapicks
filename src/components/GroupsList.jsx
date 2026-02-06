@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Skeleton from "./Skeleton";
 
-export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError }) {
+export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError, loading }) {
   const navigate = useNavigate();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
@@ -144,7 +145,11 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
         )}
       </div>
 
-      {groups.length === 0 ? (
+      {loading ? (
+        <div>
+          <Skeleton width="100%" height="80px" count={3} />
+        </div>
+      ) : groups.length === 0 ? (
         <p className="empty-state">
           No groups yet. Create one or join with an invite code!
         </p>
