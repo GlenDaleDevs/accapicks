@@ -14,7 +14,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from .database import engine, Base, SessionLocal
 from . import models
-from .routers import auth, groups, accas, bets, odds, users
+from .routers import auth, groups, accas, bets, odds, users, affiliate
 from .limiter import limiter
 
 load_dotenv()
@@ -54,6 +54,7 @@ app.include_router(accas.router, prefix="/api", tags=["accas"])
 app.include_router(bets.router, prefix="/api", tags=["bets"])
 app.include_router(odds.router, prefix="/api", tags=["odds"])
 app.include_router(users.router, prefix="/api", tags=["users"])
+app.include_router(affiliate.router, prefix="/api", tags=["affiliate"])
 
 # Background task: auto-lock accas when locks_at time has passed
 async def auto_lock_accas():

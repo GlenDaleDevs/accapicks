@@ -183,3 +183,16 @@ class BetResultUpdate(BaseModel):
         if v not in ("won", "lost", "void"):
             raise ValueError("Result must be 'won', 'lost', or 'void'")
         return v
+
+# Schema for bookmaker click tracking
+class BookmakerClickRequest(BaseModel):
+    bookmaker_key: str
+    acca_id: Optional[int] = None
+    source: Optional[str] = None
+
+    @field_validator("source")
+    @classmethod
+    def validate_source(cls, v):
+        if v is not None and v not in ("comparison", "betslip"):
+            raise ValueError("source must be 'comparison' or 'betslip'")
+        return v
