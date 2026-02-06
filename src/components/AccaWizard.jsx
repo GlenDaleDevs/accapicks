@@ -7,7 +7,6 @@ export default function AccaWizard({ onCreated, onCancel, error }) {
   const [step, setStep] = useState(1);
   const [dates, setDates] = useState([]);
   const [leagues, setLeagues] = useState([]);
-  const [betType, setBetType] = useState("h2h");
   const [name, setName] = useState("");
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
@@ -41,14 +40,14 @@ export default function AccaWizard({ onCreated, onCancel, error }) {
 
   const handleCreate = () => {
     const accaName = name || generateName();
-    onCreated({ name: accaName, matchDates: dates, leagues, betType });
+    onCreated({ name: accaName, matchDates: dates, leagues, betType: "h2h" });
   };
 
   return (
     <div className="wizard-container">
       {/* Step indicator */}
       <div className="wizard-steps">
-        {[1, 2, 3, 4].map((s) => (
+        {[1, 2].map((s) => (
           <div
             key={s}
             className={`wizard-step-dot ${
@@ -93,11 +92,11 @@ export default function AccaWizard({ onCreated, onCancel, error }) {
         </div>
       )}
 
-      {/* Step 2: League Selection */}
+      {/* Step 2: League Selection + Name + Confirm */}
       {step === 2 && (
         <div>
           <h3 className="section-title">Select Leagues</h3>
-          <p className="section-subtitle">Choose which leagues to include</p>
+          <p className="section-subtitle">Choose which leagues to include (1-5)</p>
           <div className="mb-16">
             {LEAGUE_OPTIONS.map((league) => (
               <label
@@ -108,111 +107,37 @@ export default function AccaWizard({ onCreated, onCancel, error }) {
                   type="checkbox"
                   checked={leagues.includes(league.key)}
                   onChange={() => toggleLeague(league.key)}
+                  disabled={leagues.length >= 5 && !leagues.includes(league.key)}
                 />
                 <span className="league-option-name">{league.name}</span>
               </label>
             ))}
           </div>
-          <p className="section-subtitle">
-            Selected: {leagues.length} league{leagues.length !== 1 ? "s" : ""}
-          </p>
+          <div className="form-group">
+            <label className="form-label">Acca Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={generateName()}
+              maxLength={100}
+            />
+          </div>
+          <div className="wizard-summary">
+            <p className="section-subtitle">
+              {leagues.length} league{leagues.length !== 1 ? "s" : ""}, {dates.length} date{dates.length !== 1 ? "s" : ""}
+            </p>
+          </div>
           <div className="btn-group">
             <button className="btn btn-ghost" onClick={() => setStep(1)}>
               Back
             </button>
             <button
-              className="btn btn-primary"
-              onClick={() => setStep(3)}
-              disabled={leagues.length === 0}
+              className="btn btn-success"
+              onClick={handleCreate}
+              disabled={leagues.length === 0 || leagues.length > 5}
             >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Bet Type Selection */}
-      {step === 3 && (
-        <div>
-          <h3 className="section-title">Select Bet Type</h3>
-          <div className="mb-16">
-            <label className="bettype-option bettype-option-active">
-              <input
-                type="radio"
-                name="betType"
-                value="h2h"
-                checked={betType === "h2h"}
-                onChange={() => setBetType("h2h")}
-              />
-              <div>
-                <strong className="bettype-title">Win / Draw / Lose Only</strong>
-                <p className="bettype-desc">
-                  Pick a team to win or a draw for each match
-                </p>
-              </div>
-            </label>
-            <label className="bettype-option bettype-option-disabled">
-              <input type="radio" name="betType" value="all" disabled />
-              <div>
-                <strong className="bettype-title-disabled">
-                  All Bet Types (Coming Soon)
-                </strong>
-                <p className="bettype-desc-disabled">
-                  Over/under, both teams to score, correct score, etc.
-                </p>
-              </div>
-            </label>
-          </div>
-          <div className="btn-group">
-            <button className="btn btn-ghost" onClick={() => setStep(2)}>
-              Back
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setName(generateName());
-                setStep(4);
-              }}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 4: Name & Summary */}
-      {step === 4 && (
-        <div>
-          <h3 className="section-title">Name Your Acca</h3>
-          <div className="form-group">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Acca name"
-              maxLength={100}
-            />
-          </div>
-          <div className="wizard-summary">
-            <h4>Summary</h4>
-            <p>
-              <strong>Dates:</strong>{" "}
-              {[...dates].sort().map((d) => formatDisplayDate(d)).join(", ")}
-            </p>
-            <p>
-              <strong>Leagues:</strong>{" "}
-              {leagues.map((k) => LEAGUE_NAME_MAP[k]).join(", ")}
-            </p>
-            <p>
-              <strong>Bet Type:</strong> Win / Draw / Lose
-            </p>
-          </div>
-          <div className="btn-group">
-            <button className="btn btn-ghost" onClick={onCancel}>
-              Cancel
-            </button>
-            <button className="btn btn-success" onClick={handleCreate}>
-              Create & Add Picks
+              Create Acca
             </button>
           </div>
         </div>
