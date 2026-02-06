@@ -117,6 +117,12 @@ class BetCreate(BaseModel):
     acca_id: int
     description: str = Field(min_length=1, max_length=200)
     odds: str = Field(min_length=1, max_length=20)
+    event_id: Optional[str] = None
+    home_team: Optional[str] = None
+    away_team: Optional[str] = None
+    pick_type: Optional[str] = None
+    sport_key: Optional[str] = None
+    commence_time: Optional[str] = None
 
     @field_validator("odds")
     @classmethod
@@ -129,6 +135,13 @@ class BetCreate(BaseModel):
             raise ValueError("Odds must be a positive number")
         return v
 
+    @field_validator("pick_type")
+    @classmethod
+    def validate_pick_type(cls, v):
+        if v is not None and v not in ("home", "away", "draw"):
+            raise ValueError("pick_type must be 'home', 'away', or 'draw'")
+        return v
+
 # Schema for bet response (what we send back)
 class BetResponse(BaseModel):
     id: int
@@ -139,7 +152,13 @@ class BetResponse(BaseModel):
     odds: str
     result: Optional[str]
     created_at: datetime
-    
+    event_id: Optional[str] = None
+    home_team: Optional[str] = None
+    away_team: Optional[str] = None
+    pick_type: Optional[str] = None
+    sport_key: Optional[str] = None
+    commence_time: Optional[datetime] = None
+
     class Config:
         from_attributes = True
 

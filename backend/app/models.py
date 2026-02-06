@@ -69,7 +69,7 @@ class Acca(Base):
 # Bet model - represents one person's bet in an acca
 class Bet(Base):
     __tablename__ = "bets"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     acca_id = Column(Integer, ForeignKey("accas.id"), nullable=False, index=True)  # Which acca this bet belongs to
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)  # Who created this bet
@@ -77,6 +77,14 @@ class Bet(Base):
     odds = Column(String, nullable=False)  # e.g., "2.5" or "5/2"
     result = Column(String, nullable=True)  # won, lost, void (null = pending)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Settlement fields
+    event_id = Column(String, nullable=True)  # The-Odds-API match ID
+    home_team = Column(String, nullable=True)
+    away_team = Column(String, nullable=True)
+    pick_type = Column(String, nullable=True)  # "home", "away", or "draw"
+    sport_key = Column(String, nullable=True)  # e.g., "soccer_epl"
+    commence_time = Column(DateTime(timezone=True), nullable=True)  # Match kickoff time
 
     # Relationships
     user = relationship("User", back_populates="bets")

@@ -10,7 +10,9 @@ ODDS_API_BASE_URL = 'https://api.the-odds-api.com/v4'
 
 # Simple in-memory cache: { sport_key: { "data": [...], "timestamp": float } }
 _cache = {}
+_scores_cache = {}  # Separate cache for scores
 CACHE_TTL_SECONDS = int(os.getenv('ODDS_CACHE_TTL', '1800'))  # 30 minutes default
+SCORES_CACHE_TTL_SECONDS = 600  # 10 minutes for scores
 ODDS_REGIONS = os.getenv('ODDS_REGIONS', 'uk')
 ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h')
 
@@ -72,6 +74,7 @@ def format_match_for_display(match, league=None):
     draw_odds = next((o['price'] for o in markets if o['name'] == 'Draw'), None)
 
     result = {
+        'id': match['id'],
         'home_team': home_team,
         'away_team': away_team,
         'commence_time': commence_time,
@@ -83,6 +86,45 @@ def format_match_for_display(match, league=None):
     if league:
         result['league'] = league
     return result
+
+def get_scores(sport, days_from=3):
+    """
+    Get scores for completed matches from The-Odds-API.
+    Results are cached for 10 minutes.
+
+    Args:
+        sport: Sport key (e.g., 'soccer_epl')
+        days_from: Number of days in the past to fetch scores for (default 3)
+
+    Returns:
+        List of score objects with: id, sport_key, home_team, away_team,
+        commence_time, completed, scores
+    """
+    cache_key = f"{sport}_scores"
+
+    # Check cache
+    if cache_key in _scores_cache:
+        age = time.time() - _scores_cache[cache_key]["timestamp"]
+        if age < SCORES_CACHE_TTL_SECONDS:
+            return _scores_cache[cache_key]["data"]
+
+    url = f'{ODDS_API_BASE_URL}/sports/{sport}/scores/'
+
+    params = {
+        'apiKey': ODDS_API_KEY,
+        'daysFrom': days_from
+    }
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        # Store in cache
+        _scores_cache[cache_key] = {"data": data, "timestamp": time.time()}
+        return data
+    except Exception as e:
+        print(f"Error fetching scores for {sport}: {e}")
+        return []
 
 def compare_bookmakers_for_acca(bets):
     """

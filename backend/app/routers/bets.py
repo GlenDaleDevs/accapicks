@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from .. import models, schemas
@@ -71,7 +72,13 @@ def create_bet(
         acca_id=bet.acca_id,
         user_id=user_id,
         description=bet.description,
-        odds=odds_str
+        odds=odds_str,
+        event_id=bet.event_id,
+        home_team=bet.home_team,
+        away_team=bet.away_team,
+        pick_type=bet.pick_type,
+        sport_key=bet.sport_key,
+        commence_time=datetime.fromisoformat(bet.commence_time.replace("Z", "+00:00")) if bet.commence_time else None,
     )
 
     db.add(new_bet)
@@ -93,7 +100,13 @@ def create_bet(
         "description": new_bet.description,
         "odds": new_bet.odds,
         "result": new_bet.result,
-        "created_at": new_bet.created_at
+        "created_at": new_bet.created_at,
+        "event_id": new_bet.event_id,
+        "home_team": new_bet.home_team,
+        "away_team": new_bet.away_team,
+        "pick_type": new_bet.pick_type,
+        "sport_key": new_bet.sport_key,
+        "commence_time": new_bet.commence_time,
     }
 
 
@@ -137,7 +150,7 @@ def update_bet_result(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
 ):
-    """Mark a bet as won/lost/void and update acca status if all settled"""
+    """Mark a bet as won/lost/void and update acca status if all settled (manual only)"""
     result = body.result
 
     # Get the bet
@@ -150,17 +163,20 @@ def update_bet_result(
     if not acca:
         raise HTTPException(status_code=404, detail="Acca not found")
 
-    # Verify user is a member of the group
-    membership = db.query(models.GroupMember).filter(
-        models.GroupMember.group_id == acca.group_id,
-        models.GroupMember.user_id == user_id
-    ).first()
-
-    if not membership:
+    # Only allow acca creator to update results
+    if acca.created_by != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this group"
+            detail="Only the acca creator can update results"
         )
+
+    # Only allow manual override for bets without event_id, or bets pending 72+ hours
+    if bet.event_id is not None:
+        if bet.commence_time and (datetime.now(timezone.utc) - bet.commence_time).total_seconds() < 72 * 3600:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This bet will be settled automatically. Manual override available after 72 hours."
+            )
 
     # Update bet result
     bet.result = result
@@ -175,7 +191,22 @@ def update_bet_result(
     all_settled = all(b.result in ["won", "lost", "void"] for b in all_bets)
 
     if all_settled:
-        acca.status = "settled"
+        # Determine acca status based on bet results
+        non_void_bets = [b for b in all_bets if b.result != "void"]
+
+        if not non_void_bets:
+            # All bets voided
+            acca.status = "settled"
+        elif all(b.result == "won" for b in non_void_bets):
+            # All non-void bets won
+            acca.status = "won"
+        elif any(b.result == "lost" for b in all_bets):
+            # Any bet lost means acca lost
+            acca.status = "lost"
+        else:
+            # Mixed or unclear
+            acca.status = "settled"
+
         try:
             db.commit()
         except Exception:

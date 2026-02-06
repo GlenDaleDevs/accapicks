@@ -126,11 +126,12 @@ export const compareBookmakers = async (accaId) => {
 };
 
 // Bets
-export const createBet = async (accaId, description, odds) => {
+export const createBet = async (accaId, description, odds, structuredData = {}) => {
   const response = await axios.post(`${API_URL}/bets`, {
     acca_id: accaId,
     description,
     odds,
+    ...structuredData,
   });
   return response.data;
 };

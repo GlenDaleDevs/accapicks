@@ -24,9 +24,11 @@ Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app):
-    task = asyncio.create_task(auto_lock_accas())
+    lock_task = asyncio.create_task(auto_lock_accas())
+    settle_task = asyncio.create_task(auto_settle_bets())
     yield
-    task.cancel()
+    lock_task.cancel()
+    settle_task.cancel()
 
 # Create the FastAPI app
 app = FastAPI(title="AccaPicks API", lifespan=lifespan)
@@ -74,6 +76,19 @@ async def auto_lock_accas():
         except Exception as e:
             print(f"Auto-lock error: {e}")
             db.rollback()
+        finally:
+            db.close()
+
+# Background task: auto-settle locked accas
+async def auto_settle_bets():
+    while True:
+        await asyncio.sleep(300)  # Every 5 minutes
+        db = SessionLocal()
+        try:
+            from .settlement import settle_locked_accas
+            settle_locked_accas(db)
+        except Exception as e:
+            print(f"Error in auto settle: {e}")
         finally:
             db.close()
 
