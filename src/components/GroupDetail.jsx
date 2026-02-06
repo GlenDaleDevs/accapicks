@@ -6,7 +6,7 @@ import { showToast } from "../utils/toast";
 import AccaWizard from "./AccaWizard";
 import Leaderboard from "./Leaderboard";
 
-export default function GroupDetail({ user }) {
+export default function GroupDetail({ user, onRefreshGroups }) {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
@@ -98,6 +98,7 @@ export default function GroupDetail({ user }) {
     try {
       await api.leaveGroup(groupId);
       showToast("Successfully left the group", "success");
+      if (onRefreshGroups) onRefreshGroups();
       navigate("/");
     } catch (err) {
       showToast(err.response?.data?.detail || "Failed to leave group", "error");
