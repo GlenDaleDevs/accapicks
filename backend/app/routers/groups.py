@@ -1,3 +1,4 @@
+import logging
 import secrets
 import string
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -7,6 +8,8 @@ from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -230,13 +233,15 @@ def get_group_leaderboard(
                 "won": 0,
                 "lost": 0,
                 "void": 0,
-                "pending": 0
+                "pending": 0,
+                "won_bets": []  # Track won bets for best_odds_won calculation
             }
 
         user_stats[bet.user_id]["total"] += 1
 
         if bet.result == "won":
             user_stats[bet.user_id]["won"] += 1
+            user_stats[bet.user_id]["won_bets"].append(bet)
         elif bet.result == "lost":
             user_stats[bet.user_id]["lost"] += 1
         elif bet.result == "void":
@@ -258,6 +263,17 @@ def get_group_leaderboard(
             settled = stats["won"] + stats["lost"]
             win_rate = (stats["won"] / settled * 100) if settled > 0 else 0
 
+            # Calculate best_odds_won
+            best_odds_won = 0.0
+            for won_bet in stats["won_bets"]:
+                try:
+                    odds_value = float(won_bet.odds)
+                    if odds_value > best_odds_won:
+                        best_odds_won = odds_value
+                except (ValueError, TypeError):
+                    # Skip non-numeric odds
+                    continue
+
             leaderboard.append({
                 "user_id": user.id,
                 "username": user.username,
@@ -266,13 +282,123 @@ def get_group_leaderboard(
                 "lost": stats["lost"],
                 "void": stats["void"],
                 "pending": stats["pending"],
-                "win_rate": round(win_rate, 1)
+                "win_rate": round(win_rate, 1),
+                "best_odds_won": round(best_odds_won, 2)
             })
 
-    # Sort by win rate (then by total wins as tiebreaker)
-    leaderboard.sort(key=lambda x: (x["win_rate"], x["won"]), reverse=True)
+    # Sort by win_rate, won, -lost, best_odds_won (all descending)
+    leaderboard.sort(key=lambda x: (x["win_rate"], x["won"], -x["lost"], x["best_odds_won"]), reverse=True)
+
+    # Add rank field with proper tie handling
+    for i, entry in enumerate(leaderboard):
+        if i == 0:
+            entry["rank"] = 1
+        else:
+            prev = leaderboard[i - 1]
+            # Same rank if all tie-breaking fields are equal
+            if (entry["win_rate"] == prev["win_rate"] and
+                entry["won"] == prev["won"] and
+                entry["lost"] == prev["lost"] and
+                entry["best_odds_won"] == prev["best_odds_won"]):
+                entry["rank"] = prev["rank"]
+            else:
+                entry["rank"] = i + 1
 
     return leaderboard
+
+
+# Remove member endpoint (admin only)
+@router.delete("/groups/{group_id}/members/{target_user_id}")
+@limiter.limit("3/minute")
+def remove_member(
+    request: Request,
+    group_id: int,
+    target_user_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Remove a member from the group (admin only)"""
+
+    # Cannot remove yourself
+    if target_user_id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Use leave-group to leave"
+        )
+
+    # Verify requesting user is a member
+    requester_membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+
+    if not requester_membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this group"
+        )
+
+    # Verify requesting user is admin
+    if requester_membership.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can remove members"
+        )
+
+    # Find target user's membership
+    target_membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == target_user_id
+    ).first()
+
+    if not target_membership:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target user is not a member of this group"
+        )
+
+    # If target is an admin, check if they're the last admin
+    if target_membership.role == "admin":
+        admin_count = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == group_id,
+            models.GroupMember.role == "admin"
+        ).count()
+
+        member_count = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == group_id
+        ).count()
+
+        if admin_count == 1 and member_count > 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot remove the last admin while other members exist"
+            )
+
+    try:
+        # Delete target user's bets from ALL accas (Bet.user_id is NOT NULL)
+        group = db.query(models.Group).filter(models.Group.id == group_id).first()
+        acca_ids = [a.id for a in group.accas]
+        if acca_ids:
+            db.query(models.Bet).filter(
+                models.Bet.acca_id.in_(acca_ids),
+                models.Bet.user_id == target_user_id
+            ).delete(synchronize_session=False)
+
+        # Delete the membership
+        db.delete(target_membership)
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to remove member: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to remove member"
+        )
+
+    return {"message": "Member removed successfully"}
 
 
 # Leave group endpoint
