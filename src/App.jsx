@@ -220,6 +220,7 @@ function App() {
                     onLogout={handleLogout}
                     onCreateGroup={handleCreateGroup}
                     onJoinGroup={handleJoinGroup}
+                    onRefreshGroups={loadGroups}
                     error={error}
                     oddsFormat={oddsFormat}
                     setOddsFormat={setOddsFormat}
@@ -241,7 +242,7 @@ function App() {
   );
 }
 
-function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error, oddsFormat, setOddsFormat, bookmakerLinks }) {
+function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks }) {
   const navigate = useNavigate();
 
   const handleLogoutWithNav = () => {
@@ -266,7 +267,7 @@ function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error,
         />
         <Route
           path="/groups/:groupId"
-          element={<GroupDetail user={user} />}
+          element={<GroupDetail user={user} onRefreshGroups={onRefreshGroups} />}
         />
         <Route
           path="/groups/:groupId/accas/:accaId"
