@@ -22,16 +22,16 @@ TIER 2 (COMPLETED)
 [x] 7. Input validation — max lengths on all Pydantic schemas + frontend inputs
 [x] 8. Rate limit error messages — custom 429 handler with retry_after + toast
 
-TIER 3: STRONGLY RECOMMENDED
+TIER 3 (COMPLETED)
 ------------------------------
-[ ] 9. Group admin features — remove members, admin role actually enforced
+[x] 9. Group admin features — remove members, admin role enforced
 [DROPPED] 10. Email notifications — replaced by push notifications (future feature)
-[ ] 11. Mobile responsiveness audit — media queries, touch targets, viewport fixes
-[ ] 12. Loading states — skeleton screens or spinners during data fetch
-[ ] 13. Verification code cleanup — expire old codes, prevent reuse
-[ ] 14. Proper logging — replace print() with structured logging, consider Sentry
-[ ] 15. Leaderboard improvements — tie-breaking, historical tracking
-[ ] 16. Acca status UX — explain "locked" to users, show countdown to lock time
+[x] 11. Mobile responsiveness audit — media queries, touch targets, viewport fixes
+[x] 12. Loading states — skeleton screens during data fetch
+[x] 13. Verification code cleanup — expire old codes, delete stale unverified accounts
+[x] 14. Proper logging — structured logging via Python stdlib, LOG_LEVEL env var
+[x] 15. Leaderboard improvements — rank ties, best odds won
+[x] 16. Acca status UX — countdown timers, locked/open explanations
 
 TIER 4: NICE-TO-HAVE (POST-LAUNCH)
 ------------------------------------
