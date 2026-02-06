@@ -49,7 +49,7 @@ def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(get
     """Create a new user account (requires email verification)"""
 
     # Check if email already exists
-    existing_email = db.query(models.User).filter(models.User.email == user.email).first()
+    existing_email = db.query(models.User).filter(func.lower(models.User.email) == user.email.lower()).first()
     if existing_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -129,10 +129,11 @@ def check_username(request: Request, username: str, db: Session = Depends(get_db
 def login(request: Request, credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     """Login with email or username"""
 
-    # Find user by email OR username
+    # Find user by email OR username (case-insensitive)
+    identifier_lower = credentials.identifier.lower()
     user = db.query(models.User).filter(
-        (models.User.email == credentials.identifier) |
-        (models.User.username == credentials.identifier)
+        (func.lower(models.User.email) == identifier_lower) |
+        (func.lower(models.User.username) == identifier_lower)
     ).first()
 
     # Check if user exists
@@ -177,7 +178,7 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
 def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session = Depends(get_db)):
     """Verify email with 6-digit code"""
 
-    user = db.query(models.User).filter(models.User.email == data.email).first()
+    user = db.query(models.User).filter(func.lower(models.User.email) == data.email.lower()).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -230,7 +231,7 @@ def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session
 def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session = Depends(get_db)):
     """Resend verification code to email"""
 
-    user = db.query(models.User).filter(models.User.email == data.email).first()
+    user = db.query(models.User).filter(func.lower(models.User.email) == data.email.lower()).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -267,7 +268,7 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
 def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
     """Request password reset code (anti-enumeration protection)"""
 
-    user = db.query(models.User).filter(models.User.email == data.email).first()
+    user = db.query(models.User).filter(func.lower(models.User.email) == data.email.lower()).first()
 
     # Anti-enumeration: return success even if user not found or not verified
     if not user or not user.email_verified:
@@ -293,7 +294,7 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
 def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
     """Reset password with verification code"""
 
-    user = db.query(models.User).filter(models.User.email == data.email).first()
+    user = db.query(models.User).filter(func.lower(models.User.email) == data.email.lower()).first()
     if not user or not user.email_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
