@@ -1,5 +1,5 @@
 ---
-name: backend-developer
+name: backend-dev
 description: Backend Python/FastAPI developer for all code under backend/app/. Use for API endpoints, models, auth, and server logic.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet

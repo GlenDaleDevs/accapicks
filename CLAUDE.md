@@ -1,6 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Developer Context
+
+- Electrical & Electronic Engineering degree; moderate proficiency in C++, Python, and React
+- Solo developer building this as a side project
+- Prefers clean, readable code — split large files into smaller, focused modules
+- Keep files under ~200 lines where practical; extract components/utilities when files grow
+- Prefer simple, direct solutions over clever abstractions
 
 ## Project Overview
 
@@ -56,7 +62,7 @@ FastAPI auto-generated docs available at http://localhost:8000/docs when the bac
 
 1. Users authenticate via JWT (stored in localStorage, sent as Bearer token)
 2. Groups use 6-character invite codes for joining
-3. Accas are created with selected leagues/dates, status progresses: open → locked → settled
+3. Accas are created with selected leagues/dates, status progresses: open -> locked -> settled
 4. Each user adds one bet per acca; acca auto-locks when first match starts (`locks_at` field)
 5. Odds data fetched from The-Odds-API, cached 30 minutes to reduce API calls
 
@@ -77,89 +83,84 @@ RESEND_API_KEY=<resend api key for email verification>
 3. Confirm DATABASE_URL uses public Postgres URL
 
 **Custom domain setup:**
-1. Add domain in Railway → Settings → Networking
+1. Add domain in Railway -> Settings -> Networking
 2. Railway provides unique validation URLs (e.g., `r4qsmodn.up.railway.app`)
-3. In Namecheap: ALIAS for `@`, CNAME for `www` → Railway's URLs
+3. In Namecheap: ALIAS for `@`, CNAME for `www` -> Railway's URLs
 4. Wait for green checkmarks before testing
 
-**Resend (email) setup — all records required:**
-1. TXT `resend._domainkey` → DKIM key (domain verification)
-2. TXT `send` → SPF record (`v=spf1 include:amazonses.com ~all`)
-3. MX `send` → `feedback-smtp.eu-west-1.amazonses.com` priority 10 (in Mail Settings → Custom MX)
-4. TXT `_dmarc` → DMARC policy (optional but recommended)
+**Resend (email) setup -- all records required:**
+1. TXT `resend._domainkey` -> DKIM key (domain verification)
+2. TXT `send` -> SPF record (`v=spf1 include:amazonses.com ~all`)
+3. MX `send` -> `feedback-smtp.eu-west-1.amazonses.com` priority 10 (in Mail Settings -> Custom MX)
+4. TXT `_dmarc` -> DMARC policy (optional but recommended)
 
 **Important:** The MX record is required for Resend verification, not optional. Add it via Namecheap's Mail Settings section with host `send`.
 
 ## API Route Structure
 
-- `POST /api/auth/signup` and `/api/auth/login` — auth (rate-limited: 5/min signup, 10/min login)
-- `/api/groups` — CRUD + join via invite code + leaderboard
-- `/api/accas` — create, list by group, get detail with bets, bookmaker comparison
-- `/api/bets` — add/delete/update result (won/lost/void)
-- `/api/odds/matches` and `/api/odds/matches/filtered` — fetch matches from The-Odds-API
+- `POST /api/auth/signup` and `/api/auth/login` -- auth (rate-limited: 5/min signup, 10/min login)
+- `/api/groups` -- CRUD + join via invite code + leaderboard
+- `/api/accas` -- create, list by group, get detail with bets, bookmaker comparison
+- `/api/bets` -- add/delete/update result (won/lost/void)
+- `/api/odds/matches` and `/api/odds/matches/filtered` -- fetch matches from The-Odds-API
 
-## Agent Delegation
+## Agent Workflow
 
-Always delegate tasks to the appropriate specialized agent: `react-frontend-dev` for `src/` changes, `fastapi-backend-dev` for `backend/app/` changes, `database-specialist` for schema/migration/query work, `odds-api-specialist` for The-Odds-API integration, `test-specialist` for writing/running tests, `devops-config` for build/deploy/config changes, `code-reviewer` for reviewing code. Prefer parallel agent launches when tasks are independent.
+### Agents
+| Agent | Model | Role |
+|---|---|---|
+| `planner` | Opus | Scopes work, identifies files, proposes approach. Read-only. |
+| `critic` | Opus | Devil's advocate — challenges the plan before implementation. Read-only. |
+| `frontend-dev` | Sonnet | Implements frontend code under `src/` |
+| `backend-dev` | Sonnet | Implements backend code under `backend/app/` |
+| `database` | Sonnet | Schema design, models, migrations |
+| `odds-api` | Sonnet | The-Odds-API integration |
+| `code-reviewer` | Sonnet | Reviews written code for bugs/security. Read-only. |
+| `tester` | Sonnet | Writes and runs tests |
+| `devops` | Sonnet | Build, deploy, config files |
+| `web-design-planner` | Sonnet | Visual design direction and UI/UX recommendations |
+| `legal-gambling-compliance` | Sonnet | UK gambling law, GDPR, legal documents |
 
---
+### Pipeline (for non-trivial changes)
+1. **planner** -- scopes the work, identifies affected files, defines agent tasks
+2. **critic** -- challenges the plan, finds gaps, suggests improvements
+3. **Implementation agents** (frontend-dev, backend-dev, database, etc.) -- run in parallel where independent
+4. **code-reviewer** -- reviews all changes for bugs, security, consistency
+5. **tester** -- writes/runs tests for new code
 
-Post-Init Token Efficiency Addendum
-Scope
+### Skip to step 3 for:
+- Single-file bug fixes
+- Copy/text changes
+- Config tweaks
+- Changes where the approach is obvious
 
-Applies after initial project ingestion.
-Assume the project structure is already known.
+### Always run in parallel when possible:
+- Frontend + backend for full-stack features
+- Code review + test writing (after implementation)
+- Multiple independent implementation agents
 
-Communication Defaults:
+## Output Rules
 
-Be concise by default.
-Do not restate the task.
-Avoid meta commentary (“Here’s what I’ll do”, “Let me know if…”).
-Skip summaries unless explicitly requested.
+- No preambles ("Here's what I'll do"), no summaries, no meta commentary
+- No restating the task
+- For code changes: output the edit, not a description of the edit
+- For bug fixes: state root cause in one line, then fix
+- Explain only non-obvious decisions, in 1-3 bullets max
+- Prefer: short bullet lists, diffs, file-scoped code blocks
+- Ask a clarifying question only if truly blocked; otherwise assume and proceed
+- Assume developer-level knowledge and codebase familiarity
 
-Reasoning:
-Perform analysis internally.
-Do not expose chain-of-thought.
-Provide conclusions, actions, or code only.
+**Soft overrides:** If asked for "details", "explanation", "walkthrough", or "review" -- comply but stay concise.
 
-Questions:
-Ask a clarifying question only if blocked.
-Otherwise, make reasonable assumptions and proceed.
+## Code Style Rules
 
-Code Changes:
-Touch the minimum necessary files.
-Do not re-describe existing code.
-Prefer small, targeted edits over refactors.
-Use existing patterns and utilities.
+- Keep files focused and small (~200 lines max); split when growing
+- Small, targeted edits over broad refactors
+- Use existing patterns and utilities; don't reinvent
+- No unnecessary abstractions, feature flags, or over-engineering
+- Touch only the minimum necessary files
 
-Output Format:
-Prefer:
-Short bullet lists
-Diffs
-File-scoped code blocks
-Avoid long prose explanations.
-No decorative formatting.
+## Rules (learned from mistakes)
 
-Explanations
-Explain only non-obvious decisions.
-Limit explanations to 1–3 short bullets.
-Omit rationale for standard practices.
-
-Reviews & Feedback
-Focus on actionable issues only.
-No stylistic nitpicks unless requested.
-No “nice to have” suggestions by default.
-
-Assumptions
-Assume developer-level knowledge.
-Assume familiarity with the codebase.
-Assume speed > pedagogy.
-
-Soft Overrides
-If the user asks for:
-“details”
-“explanation”
-“walkthrough”
-“review”
-
-→ comply, but remain concise.
+<!-- Add rules here as mistakes happen. Format: "- Never do X because Y" -->
+<!-- When Claude makes a mistake, say "add that as a rule" to append it here -->

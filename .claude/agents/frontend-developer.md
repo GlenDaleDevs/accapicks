@@ -1,5 +1,5 @@
 ---
-name: frontend-developer
+name: frontend-dev
 description: Frontend React/Vite developer for all code under src/. Use for UI components, API client changes, and frontend utilities.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet

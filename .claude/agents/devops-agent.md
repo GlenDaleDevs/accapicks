@@ -1,5 +1,5 @@
 ---
-name: devops-agent
+name: devops
 description: DevOps and deployment specialist for build config, environment setup, CI/CD, and infrastructure. Use for Vite config, Docker, deployment, and env vars.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
