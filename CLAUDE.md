@@ -173,3 +173,9 @@ RESEND_API_KEY=<resend api key for email verification>
 
 - Always save assessments, feature plans, and multi-item lists to a .txt file in the project root — context compaction will lose them otherwise
 - Always follow the planner → critic → implement pipeline for non-trivial changes. If you think a task is simple enough to skip planning, ask the user first — don't skip silently
+- After implementing code review fixes, always build (`npm run build`) before committing to catch syntax/import errors
+- When adding new acca/bet statuses or enum values in the backend, check that the frontend filters and badge displays handle ALL possible values (e.g. "won", "lost", "settled" — not just "settled")
+- Case sensitivity matters everywhere: login, signup, email lookups, username checks — always use func.lower() or .lower() for user-facing string comparisons
+- Mobile keyboard behaviour is controlled by HTML input attributes: use `type="email"` for email-only fields, `type="text"` + `inputMode="email"` for fields that accept email OR other text (like username). Never use `type="email"` on a field that accepts non-email input
+- When deleting user data (account deletion, leave group, remove member), consider the cascade effect on related data like acca status — deleting bets can leave accas in an inconsistent state
+- The-Odds-API sport keys for English lower leagues: `soccer_efl_champ` (Championship), `soccer_england_league1` (League One), `soccer_england_league2` (League Two)
