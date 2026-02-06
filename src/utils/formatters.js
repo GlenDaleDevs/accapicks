@@ -117,3 +117,27 @@ export const formatOdds = (decimalOdds, format = "decimal") => {
 
   return odds.toFixed(2);
 };
+
+export const formatBetSlipText = (acca, oddsFormat, bestBookmakerName) => {
+  if (!acca || !acca.bets || acca.bets.length === 0) return "";
+
+  const lines = [];
+  lines.push(`PickOneBet Acca: ${acca.name}`);
+  lines.push("---");
+
+  acca.bets.forEach((bet, index) => {
+    const formattedOdds = formatOdds(bet.odds, oddsFormat);
+    lines.push(`${index + 1}. ${bet.description} @ ${formattedOdds}`);
+  });
+
+  lines.push("---");
+
+  const combinedOdds = acca.bets.reduce((acc, bet) => acc * parseFloat(bet.odds), 1);
+  lines.push(`Combined Odds: ${formatOdds(combinedOdds, oddsFormat)}`);
+
+  if (bestBookmakerName) {
+    lines.push(`Best Odds at: ${bestBookmakerName}`);
+  }
+
+  return lines.join("\n");
+};
