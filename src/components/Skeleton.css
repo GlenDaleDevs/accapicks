@@ -1,0 +1,26 @@
+.skeleton-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-bar {
+  background: linear-gradient(
+    90deg,
+    #1a2c38 0%,
+    #2a3a48 50%,
+    #1a2c38 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

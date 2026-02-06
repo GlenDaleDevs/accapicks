@@ -163,6 +163,11 @@
   color: var(--color-danger);
 }
 
+.badge-settled {
+  background-color: rgba(139, 156, 170, 0.15);
+  color: var(--text-secondary);
+}
+
 .badge-role {
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -387,6 +392,32 @@
   color: var(--text-muted);
   font-size: 13px;
   margin-top: 4px;
+}
+
+.acca-card-countdown {
+  display: block;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--color-warning);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.acca-card-locked-status {
+  display: block;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: rgba(139, 156, 170, 0.1);
+  border: 1px solid rgba(139, 156, 170, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
 }
 
 /* ---- Wizard ---- */
@@ -1418,19 +1449,6 @@
   color: var(--accent-primary);
 }
 
-@media (max-width: 768px) {
-  .cookie-consent-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .cookie-consent-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-}
-
 /* ---- Toast Notifications ---- */
 .toast-container {
   position: fixed;
@@ -1506,20 +1524,5 @@
   to {
     opacity: 1;
     transform: translateX(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .toast-container {
-    top: 10px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    max-width: calc(100% - 32px);
-    width: 100%;
-  }
-
-  .toast {
-    width: 100%;
   }
 }

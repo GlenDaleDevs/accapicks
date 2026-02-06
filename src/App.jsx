@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, Link } from "react-router-dom";
 import * as api from "./api/client";
 import "./App.css";
+import "./responsive.css";
 
 import AuthView from "./components/AuthView";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -20,6 +21,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [groups, setGroups] = useState([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
   const [error, setError] = useState("");
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
   const [oddsFormat, setOddsFormat] = useState(() => {
@@ -89,11 +91,14 @@ function App() {
   }, [oddsFormat]);
 
   const loadGroups = async () => {
+    setLoadingGroups(true);
     try {
       const data = await api.getGroups();
       setGroups(data);
     } catch (err) {
       console.error("Error loading groups:", err);
+    } finally {
+      setLoadingGroups(false);
     }
   };
 
@@ -217,6 +222,7 @@ function App() {
                   <AppContent
                     user={user}
                     groups={groups}
+                    loadingGroups={loadingGroups}
                     onLogout={handleLogout}
                     onCreateGroup={handleCreateGroup}
                     onJoinGroup={handleJoinGroup}
@@ -242,7 +248,7 @@ function App() {
   );
 }
 
-function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks }) {
+function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks }) {
   const navigate = useNavigate();
 
   const handleLogoutWithNav = () => {
@@ -259,6 +265,7 @@ function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, onRefr
           element={
             <GroupsList
               groups={groups}
+              loading={loadingGroups}
               onCreateGroup={onCreateGroup}
               onJoinGroup={onJoinGroup}
               error={error}

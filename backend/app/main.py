@@ -1,8 +1,9 @@
 import os
 import asyncio
+import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,19 +16,28 @@ from .database import engine, Base, SessionLocal
 from . import models
 from .routers import auth, groups, accas, bets, odds, users, affiliate
 from .limiter import limiter
+from .logging_config import setup_logging
 
 load_dotenv()
+
+# Setup logging before anything else
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app):
+    logger.info("Starting background tasks")
     lock_task = asyncio.create_task(auto_lock_accas())
     settle_task = asyncio.create_task(auto_settle_bets())
+    cleanup_task = asyncio.create_task(cleanup_verification_codes())
     yield
+    logger.info("Shutting down background tasks")
     lock_task.cancel()
     settle_task.cancel()
+    cleanup_task.cancel()
 
 # Custom rate limit handler
 def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
@@ -80,12 +90,16 @@ async def auto_lock_accas():
                 models.Acca.status == "open",
                 models.Acca.locks_at.isnot(None),
             ).all()
+            locked_count = 0
             for acca in open_accas:
                 if acca.locks_at and acca.locks_at <= now:
                     acca.status = "locked"
+                    locked_count += 1
             db.commit()
+            if locked_count > 0:
+                logger.info(f"Auto-locked {locked_count} acca(s)")
         except Exception as e:
-            print(f"Auto-lock error: {e}")
+            logger.error(f"Auto-lock error: {e}")
             db.rollback()
         finally:
             db.close()
@@ -99,7 +113,57 @@ async def auto_settle_bets():
             from .settlement import settle_locked_accas
             settle_locked_accas(db)
         except Exception as e:
-            print(f"Error in auto settle: {e}")
+            logger.error(f"Error in auto settle: {e}")
+        finally:
+            db.close()
+
+# Background task: cleanup expired verification codes and stale unverified accounts
+async def cleanup_verification_codes():
+    while True:
+        await asyncio.sleep(3600)  # Every hour
+        db = SessionLocal()
+        try:
+            now = datetime.now(timezone.utc)
+
+            # Expire old verification codes
+            expired_codes = db.query(models.User).filter(
+                models.User.verification_code.isnot(None),
+                models.User.verification_code_expires < now
+            ).update({
+                "verification_code": None,
+                "verification_code_expires": None
+            }, synchronize_session=False)
+
+            if expired_codes > 0:
+                logger.info(f"Expired {expired_codes} verification code(s)")
+
+            # Delete stale unverified accounts (24+ hours old, no activity)
+            cutoff_time = now - timedelta(hours=24)
+            stale_users = db.query(models.User).filter(
+                models.User.email_verified == False,
+                models.User.created_at < cutoff_time
+            ).all()
+
+            deleted_count = 0
+            for user in stale_users:
+                # Safety check: no bets and no group memberships
+                has_bets = db.query(models.Bet).filter(models.Bet.user_id == user.id).count() > 0
+                has_memberships = db.query(models.GroupMember).filter(models.GroupMember.user_id == user.id).count() > 0
+
+                has_accas = db.query(models.Acca).filter(models.Acca.created_by == user.id).count() > 0
+
+                if not has_bets and not has_memberships and not has_accas:
+                    db.delete(user)
+                    deleted_count += 1
+
+            db.commit()
+
+            if deleted_count > 0:
+                logger.info(f"Deleted {deleted_count} stale unverified account(s)")
+
+        except Exception as e:
+            logger.error(f"Error in verification cleanup: {e}")
+            db.rollback()
         finally:
             db.close()
 

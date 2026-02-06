@@ -1,8 +1,10 @@
 import os
+import logging
 import resend
 from typing import Optional
 
 resend.api_key = os.getenv("RESEND_API_KEY")
+logger = logging.getLogger(__name__)
 
 
 def send_verification_email(to_email: str, code: str, username: str) -> Optional[dict]:
@@ -28,7 +30,7 @@ def send_verification_email(to_email: str, code: str, username: str) -> Optional
         })
         return response
     except Exception as e:
-        print(f"Failed to send verification email: {e}")
+        logger.error(f"Failed to send verification email to {to_email}: {e}")
         return None
 
 
@@ -56,5 +58,5 @@ def send_password_reset_email(to_email: str, code: str, username: str) -> Option
         })
         return response
     except Exception as e:
-        print(f"Failed to send password reset email: {e}")
+        logger.error(f"Failed to send password reset email to {to_email}: {e}")
         return None
