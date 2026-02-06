@@ -247,3 +247,10 @@ class BookmakerClickRequest(BaseModel):
 # Schema for account deletion
 class DeleteAccountRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
+
+
+# Schema for username availability check
+class UsernameCheckResponse(BaseModel):
+    username: str
+    available: bool
+    reason: Optional[str] = None

@@ -47,6 +47,13 @@ export const signup = async (email, username, password) => {
   return response.data;
 };
 
+export const checkUsername = async (username) => {
+  const response = await axios.get(`${API_URL}/auth/check-username`, {
+    params: { username }
+  });
+  return response.data;
+};
+
 export const verifyEmail = async (email, code) => {
   const response = await axios.post(`${API_URL}/auth/verify-email`, { email, code });
   return response.data;

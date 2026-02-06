@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import Optional
 from datetime import timedelta, datetime, timezone
 import secrets
+import re
 from .. import models, schemas, auth
 from ..database import get_db
 from ..limiter import limiter
@@ -51,8 +53,8 @@ def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(get
             detail="Email already registered"
         )
 
-    # Check if username already exists
-    existing_username = db.query(models.User).filter(models.User.username == user.username).first()
+    # Check if username already exists (case-insensitive)
+    existing_username = db.query(models.User).filter(func.lower(models.User.username) == user.username.lower()).first()
     if existing_username:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -85,6 +87,36 @@ def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(get
         "message": "Account created. Please check your email for verification code.",
         "email": user.email,
         "requires_verification": True
+    }
+
+
+# Check username availability endpoint
+@router.get("/auth/check-username", response_model=schemas.UsernameCheckResponse)
+@limiter.limit("20/minute")
+def check_username(request: Request, username: str, db: Session = Depends(get_db)):
+    """Check if a username is available"""
+
+    # Validate username format
+    if not re.match(r"^[a-zA-Z0-9_]+$", username):
+        return {
+            "username": username,
+            "available": False,
+            "reason": "Username must be 3-20 characters using letters, numbers, and underscores only"
+        }
+
+    if len(username) < 3 or len(username) > 20:
+        return {
+            "username": username,
+            "available": False,
+            "reason": "Username must be 3-20 characters using letters, numbers, and underscores only"
+        }
+
+    # Case-insensitive database lookup
+    existing = db.query(models.User).filter(func.lower(models.User.username) == username.lower()).first()
+
+    return {
+        "username": username,
+        "available": existing is None
     }
 
 
