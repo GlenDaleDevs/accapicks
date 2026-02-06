@@ -14,9 +14,35 @@
 
 /* ---- Hero Section ---- */
 .landing-hero {
+  position: relative;
+  overflow: hidden;
   text-align: center;
   margin-bottom: 28px;
   animation: heroFadeIn 800ms ease-out;
+}
+
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background-image: url('../assets/goalpost-bg.svg');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+  /* Vignette effect to darken edges */
+  box-shadow: inset 0 0 120px 40px rgba(15, 23, 29, 0.9);
+}
+
+.landing-hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 @keyframes heroFadeIn {
@@ -260,5 +286,9 @@
 
   .auth-form-container {
     padding: 32px 24px;
+  }
+
+  .landing-hero::before {
+    opacity: 0.1;
   }
 }
