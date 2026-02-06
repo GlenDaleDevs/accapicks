@@ -48,6 +48,20 @@ export const resendVerificationCode = async (email) => {
   return response.data;
 };
 
+export const forgotPassword = async (email) => {
+  const response = await axios.post(`${API_URL}/auth/forgot-password`, { email });
+  return response.data;
+};
+
+export const resetPassword = async (email, code, newPassword) => {
+  const response = await axios.post(`${API_URL}/auth/reset-password`, {
+    email,
+    code,
+    new_password: newPassword
+  });
+  return response.data;
+};
+
 export const getMe = async () => {
   const response = await axios.get(`${API_URL}/auth/me`);
   return response.data;

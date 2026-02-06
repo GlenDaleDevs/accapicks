@@ -30,3 +30,31 @@ def send_verification_email(to_email: str, code: str, username: str) -> Optional
     except Exception as e:
         print(f"Failed to send verification email: {e}")
         return None
+
+
+def send_password_reset_email(to_email: str, code: str, username: str) -> Optional[dict]:
+    """Send a password reset email with the 6-digit code."""
+    try:
+        response = resend.Emails.send({
+            "from": "AccaPicks <noreply@accapicks.com>",
+            "to": [to_email],
+            "subject": "Reset your AccaPicks password",
+            "html": f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h1 style="color: #333;">Password Reset Request</h1>
+                    <p>Hi {username},</p>
+                    <p>You requested to reset your password. Your reset code is:</p>
+                    <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
+                                background: #f5f5f5; padding: 20px; text-align: center;
+                                border-radius: 8px; margin: 20px 0;">
+                        {code}
+                    </div>
+                    <p>This code expires in 15 minutes.</p>
+                    <p>If you didn't request a password reset, you can ignore this email.</p>
+                </div>
+            """
+        })
+        return response
+    except Exception as e:
+        print(f"Failed to send password reset email: {e}")
+        return None

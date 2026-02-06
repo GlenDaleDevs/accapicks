@@ -126,6 +126,24 @@ function App() {
     }
   };
 
+  const handleForgotPassword = async (email) => {
+    setError("");
+    try {
+      await api.forgotPassword(email);
+    } catch (err) {
+      throw new Error(err.response?.data?.detail || "Failed to send reset code");
+    }
+  };
+
+  const handleResetPassword = async (email, code, newPassword) => {
+    setError("");
+    try {
+      await api.resetPassword(email, code, newPassword);
+    } catch (err) {
+      throw new Error(err.response?.data?.detail || "Password reset failed");
+    }
+  };
+
   const handleLogout = () => {
     api.setAuthToken(null);
     setUser(null);
@@ -172,6 +190,8 @@ function App() {
                     onSignup={handleSignup}
                     onVerify={handleVerify}
                     onResendCode={handleResendCode}
+                    onForgotPassword={handleForgotPassword}
+                    onResetPassword={handleResetPassword}
                     error={error}
                     pendingVerificationEmail={pendingVerificationEmail}
                   />

@@ -3,6 +3,17 @@ from datetime import datetime
 from typing import Optional
 import re
 
+
+def validate_password_strength(v):
+    if len(v) < 8:
+        raise ValueError("Password must be at least 8 characters")
+    if not re.search(r"[a-zA-Z]", v):
+        raise ValueError("Password must contain at least one letter")
+    if not re.search(r"\d", v):
+        raise ValueError("Password must contain at least one digit")
+    return v
+
+
 # Schema for user registration (what we receive)
 class UserCreate(BaseModel):
     email: EmailStr  # Validates it's a proper email format
@@ -12,13 +23,7 @@ class UserCreate(BaseModel):
     @field_validator("password")
     @classmethod
     def password_strength(cls, v):
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters")
-        if not re.search(r"[a-zA-Z]", v):
-            raise ValueError("Password must contain at least one letter")
-        if not re.search(r"\d", v):
-            raise ValueError("Password must contain at least one digit")
-        return v
+        return validate_password_strength(v)
 
 # Schema for user login (what we receive)
 class UserLogin(BaseModel):
@@ -48,6 +53,23 @@ class VerifyEmailRequest(BaseModel):
 # Schema for resend verification code request
 class ResendCodeRequest(BaseModel):
     email: EmailStr
+
+
+# Schema for forgot password request
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+# Schema for reset password request
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=6, max_length=6)
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def password_strength(cls, v):
+        return validate_password_strength(v)
 
 
 # Schema for signup response (requires verification)
