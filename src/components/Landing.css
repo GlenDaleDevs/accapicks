@@ -14,91 +14,9 @@
 
 /* ---- Hero Section ---- */
 .landing-hero {
-  position: relative;
   text-align: center;
   margin-bottom: 28px;
-  padding: 60px 24px 40px;
   animation: heroFadeIn 800ms ease-out;
-}
-
-/* Goalpost container */
-.goalpost {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Crossbar - positioned above the brand text */
-.goalpost-crossbar {
-  position: absolute;
-  top: 14%;
-  left: 15%;
-  right: 15%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.36);
-}
-
-/* Left post */
-.goalpost-left-post {
-  position: absolute;
-  left: 15%;
-  top: 14%;
-  bottom: 18%;
-  width: 3px;
-  background: rgba(255, 255, 255, 0.36);
-}
-
-/* Right post */
-.goalpost-right-post {
-  position: absolute;
-  right: 15%;
-  top: 14%;
-  bottom: 18%;
-  width: 3px;
-  background: rgba(255, 255, 255, 0.36);
-}
-
-/* Goal line - extends full width below subtitle */
-.goalpost-line {
-  position: absolute;
-  bottom: 18%;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-/* Net - crosshatch pattern filling the goal area */
-.goalpost-net {
-  position: absolute;
-  left: 15%;
-  right: 15%;
-  top: 14%;
-  bottom: 18%;
-  opacity: 0.18;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 14px,
-      rgba(255, 255, 255, 0.5) 14px,
-      rgba(255, 255, 255, 0.5) 15px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 14px,
-      rgba(255, 255, 255, 0.5) 14px,
-      rgba(255, 255, 255, 0.5) 15px
-    );
-}
-
-.landing-hero > h1,
-.landing-hero > h2,
-.landing-hero > p {
-  position: relative;
-  z-index: 1;
 }
 
 @keyframes heroFadeIn {
@@ -342,20 +260,5 @@
 
   .auth-form-container {
     padding: 32px 24px;
-  }
-
-  /* Reduce goalpost opacity on mobile */
-  .goalpost-crossbar,
-  .goalpost-left-post,
-  .goalpost-right-post {
-    background: rgba(255, 255, 255, 0.20);
-  }
-
-  .goalpost-line {
-    background: rgba(255, 255, 255, 0.10);
-  }
-
-  .goalpost-net {
-    opacity: 0.10;
   }
 }
