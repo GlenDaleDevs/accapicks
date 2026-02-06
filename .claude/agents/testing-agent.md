@@ -1,5 +1,5 @@
 ---
-name: testing-agent
+name: tester
 description: Testing specialist for writing and running tests across frontend and backend. Use for creating tests, running test suites, and test coverage.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet

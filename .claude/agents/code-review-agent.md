@@ -1,5 +1,5 @@
 ---
-name: code-review-agent
+name: code-reviewer
 description: Code reviewer for bugs, security vulnerabilities, and consistency issues. Use for reviewing changes before merging. Read-only — does not modify code.
 tools: Read, Glob, Grep
 model: sonnet

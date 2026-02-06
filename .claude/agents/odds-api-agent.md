@@ -1,5 +1,5 @@
 ---
-name: odds-api-agent
+name: odds-api
 description: The-Odds-API integration specialist. Use for odds fetching, caching, sport key mappings, and match data endpoints.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet

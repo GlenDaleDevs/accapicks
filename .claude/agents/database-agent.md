@@ -1,5 +1,5 @@
 ---
-name: database-agent
+name: database
 description: Database and migration specialist for schema design, SQLAlchemy models, and migration scripts. Use for any database schema changes.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
