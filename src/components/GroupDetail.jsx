@@ -276,7 +276,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         const activeAccas = accas.filter(
           (a) => a.status === "open" || a.status === "locked"
         );
-        const settledAccas = accas.filter((a) => a.status === "settled");
+        const settledAccas = accas.filter((a) => a.status === "settled" || a.status === "won" || a.status === "lost");
 
         return (
           <>
@@ -364,7 +364,9 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                       >
                         <div className="card-header">
                           <h3 className="group-card-name">{acca.name}</h3>
-                          <span className="badge badge-settled">SETTLED</span>
+                          <span className={`badge ${acca.status === "won" ? "badge-won" : acca.status === "lost" ? "badge-lost" : "badge-settled"}`}>
+                            {acca.status.toUpperCase()}
+                          </span>
                         </div>
                         <div className="acca-card-meta">
                           {acca.leagues && (
