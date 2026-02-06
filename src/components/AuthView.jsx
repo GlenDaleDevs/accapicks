@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Landing.css";
 import { showToast } from "../utils/toast";
+import { checkUsername } from "../api/client";
 
 export default function AuthView({
   onLogin,
@@ -21,6 +22,7 @@ export default function AuthView({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState(null); // null | "checking" | "available" | "taken" | "invalid"
 
   useEffect(() => {
     if (pendingVerificationEmail) {
@@ -28,6 +30,33 @@ export default function AuthView({
       setEmail(pendingVerificationEmail);
     }
   }, [pendingVerificationEmail]);
+
+  useEffect(() => {
+    if (mode !== "signup" || username.length < 3) {
+      setUsernameStatus(null);
+      return;
+    }
+
+    // Client-side regex check
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      setUsernameStatus("invalid");
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setUsernameStatus("checking");
+      try {
+        const response = await checkUsername(username);
+        if (response.username === username) {
+          setUsernameStatus(response.available ? "available" : "taken");
+        }
+      } catch (err) {
+        setUsernameStatus(null);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [username, mode]);
 
   const displayError = externalError || error;
 
@@ -111,6 +140,7 @@ export default function AuthView({
     setSuccessMessage("");
     setVerificationCode("");
     setAgeConfirmed(false);
+    setUsernameStatus(null);
     if (newMode !== "verify" && newMode !== "reset") {
       setEmail("");
       setUsername("");
@@ -300,6 +330,14 @@ export default function AuthView({
                   required
                   maxLength={20}
                 />
+                {usernameStatus && (
+                  <div className={`username-feedback ${usernameStatus}`}>
+                    {usernameStatus === "checking" && "Checking..."}
+                    {usernameStatus === "available" && "\u2713 Username available"}
+                    {usernameStatus === "taken" && "\u2717 Username taken"}
+                    {usernameStatus === "invalid" && "\u2717 Letters, numbers, and underscores only"}
+                  </div>
+                )}
               </div>
             )}
 
@@ -329,7 +367,7 @@ export default function AuthView({
             )}
 
             <div className="auth-actions">
-              <button type="submit" className="btn btn-primary" disabled={loading}>
+              <button type="submit" className="btn btn-primary" disabled={loading || (mode === "signup" && (usernameStatus === "taken" || usernameStatus === "invalid" || usernameStatus === "checking"))}>
                 {loading ? "Loading..." : mode === "signup" ? "Sign Up" : "Login"}
               </button>
               <button

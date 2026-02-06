@@ -199,6 +199,17 @@
   flex: 1;
 }
 
+.username-feedback {
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 2px;
+  min-height: 18px;
+}
+.username-feedback.checking { color: #8b9caa; }
+.username-feedback.available { color: #22c55e; }
+.username-feedback.taken { color: #ef4444; }
+.username-feedback.invalid { color: #ef4444; }
+
 .auth-actions {
   display: flex;
   flex-direction: column;
