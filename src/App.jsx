@@ -9,6 +9,7 @@ import TopBar from "./components/TopBar";
 import GroupsList from "./components/GroupsList";
 import GroupDetail from "./components/GroupDetail";
 import AccaDetail from "./components/AccaDetail";
+import UserSettings from "./components/UserSettings";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 
@@ -265,6 +266,10 @@ function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error,
         <Route
           path="/groups/:groupId/accas/:accaId"
           element={<AccaDetail user={user} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} />}
+        />
+        <Route
+          path="/settings"
+          element={<UserSettings user={user} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 export default function TopBar({ user, onLogout, oddsFormat, setOddsFormat }) {
+  const navigate = useNavigate();
+
   const toggleOddsFormat = () => {
     setOddsFormat(prev => prev === "decimal" ? "fractional" : "decimal");
   };
@@ -17,6 +21,9 @@ export default function TopBar({ user, onLogout, oddsFormat, setOddsFormat }) {
           title={`Switch to ${oddsFormat === "decimal" ? "fractional" : "decimal"} odds`}
         >
           {oddsFormat === "decimal" ? "Decimal" : "Fractional"}
+        </button>
+        <button className="btn btn-ghost" onClick={() => navigate("/settings")}>
+          Settings
         </button>
         <button className="btn btn-ghost" onClick={onLogout}>
           Logout

@@ -288,6 +288,39 @@ def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Ses
     return {"message": "Password reset successful. You can now log in."}
 
 
+# Change password endpoint
+@router.put("/auth/change-password")
+@limiter.limit("5/minute")
+def change_password(
+    request: Request,
+    data: schemas.ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Change password for authenticated user"""
+
+    # Fetch user from database
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Verify current password
+    if not auth.verify_password(data.current_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+
+    # Hash new password
+    user.hashed_password = auth.hash_password(data.new_password)
+    db.commit()
+
+    return {"message": "Password changed successfully"}
+
+
 # Get current user profile
 @router.get("/auth/me", response_model=schemas.UserResponse)
 def get_me(
