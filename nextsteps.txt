@@ -1,0 +1,32 @@
+ACCAPICKS — NEXT STEPS
+=======================
+Last updated: 2026-02-06
+Target: Midweek fixtures next week
+
+PRIORITY (before midweek launch)
+---------------------------------
+[ ] UI improvements — visual polish pass across the site
+[ ] Social sharing — WhatsApp share button for invite links (biggest growth lever)
+
+HIGH VALUE (weekend candidates)
+--------------------------------
+[ ] PWA manifest + service worker — installable app, offline support
+[ ] Web Push Notifications — "nudge your mates" to add picks (requires PWA)
+[ ] Advanced stats — win rate, ROI, most-picked bets per user
+
+MEDIUM VALUE (post-launch)
+---------------------------
+[ ] Search/filter — search groups, filter accas by status/date
+[ ] Password strength meter — real-time feedback during typing
+[ ] Dark/light mode toggle — currently dark-only
+[ ] Bet history export — CSV/PDF, also GDPR-friendly
+[ ] Affiliate admin panel UI — manage links without DB access
+[ ] Bet description editing — currently must delete + recreate
+
+NOTES
+-----
+- Settlement test running tonight (Forest match) — verify results tracking works
+- 3 new leagues added: Championship, League One, League Two
+- AccaWizard is now 2 steps (dates → leagues+confirm)
+- Security audit complete, all critical/high fixes deployed
+- Mates can start signing up once settlement is verified
