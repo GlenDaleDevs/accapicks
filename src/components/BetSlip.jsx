@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { BOOKMAKER_DISPLAY_NAMES, BOOKMAKER_URLS } from "../utils/constants";
+import { BOOKMAKER_DISPLAY_NAMES } from "../utils/constants";
 import { formatOdds, formatBetSlipText } from "../utils/formatters";
+import * as api from "../api/client";
 
-export default function BetSlip({ acca, oddsFormat, bookmakerComparison }) {
+export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmakerLinks = {} }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
@@ -12,6 +13,7 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison }) {
   // Find best bookmaker from comparison data
   let bestBookmaker = null;
   let bestBookmakerUrl = null;
+  let bestBookmakerKey = null;
 
   if (bookmakerComparison && typeof bookmakerComparison === "object") {
     const entries = Object.entries(bookmakerComparison)
@@ -19,9 +21,9 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison }) {
       .sort((a, b) => b[1].total_odds - a[1].total_odds);
 
     if (entries.length > 0) {
-      const [bookmakerKey] = entries[0];
-      bestBookmaker = BOOKMAKER_DISPLAY_NAMES[bookmakerKey] || bookmakerKey;
-      bestBookmakerUrl = BOOKMAKER_URLS[bookmakerKey];
+      bestBookmakerKey = entries[0][0];
+      bestBookmaker = bookmakerLinks[bestBookmakerKey]?.display_name || BOOKMAKER_DISPLAY_NAMES[bestBookmakerKey] || bestBookmakerKey;
+      bestBookmakerUrl = bookmakerLinks[bestBookmakerKey]?.url;
     }
   }
 
@@ -69,6 +71,7 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bet-slip-bookmaker-link"
+                onClick={() => api.trackBookmakerClick(bestBookmakerKey, acca.id, "betslip")}
               >
                 Visit
               </a>

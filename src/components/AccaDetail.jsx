@@ -8,7 +8,7 @@ import FixtureGrid from "./FixtureGrid";
 import BookmakerComparison from "./BookmakerComparison";
 import BetSlip from "./BetSlip";
 
-export default function AccaDetail({ user, oddsFormat = "decimal" }) {
+export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLinks = {} }) {
   const { groupId, accaId } = useParams();
   const navigate = useNavigate();
   const [acca, setAcca] = useState(null);
@@ -342,7 +342,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal" }) {
         </button>
       </div>
 
-      <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} />
+      <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} accaId={accaId} />
 
       {/* Add Pick - Fixture Grid Flow */}
       {acca.status === "open" && !showFixtureGrid && !showAddBet && (
@@ -568,6 +568,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal" }) {
         acca={acca}
         oddsFormat={oddsFormat}
         bookmakerComparison={bookmakerComparison}
+        bookmakerLinks={bookmakerLinks}
       />
     </>
   );

@@ -161,3 +161,21 @@ export const getFilteredMatches = async (leagues, dateFrom, dateTo) => {
   });
   return response.data;
 };
+
+// Affiliate
+export const getBookmakerLinks = async () => {
+  const response = await axios.get(`${API_URL}/affiliate/links`);
+  return response.data;
+};
+
+export const trackBookmakerClick = async (bookmakerKey, accaId, source) => {
+  try {
+    await axios.post(`${API_URL}/affiliate/clicks`, {
+      bookmaker_key: bookmakerKey,
+      acca_id: accaId,
+      source,
+    });
+  } catch (err) {
+    // Fire-and-forget: catch silently so navigation is never blocked
+  }
+};

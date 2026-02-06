@@ -139,6 +139,15 @@ RESEND_API_KEY=<resend api key for email verification>
 - Code review + test writing (after implementation)
 - Multiple independent implementation agents
 
+## Commit Style
+
+- Start with a verb: Add, Fix, Update, Remove, Refactor
+- First line: short summary (under 72 chars), no period
+- Body (if needed): bullet points explaining what and why
+- Always include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- Don't commit `.env`, credentials, or large binaries
+- Stage specific files, not `git add -A`
+
 ## Output Rules
 
 - No preambles ("Here's what I'll do"), no summaries, no meta commentary

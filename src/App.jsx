@@ -21,6 +21,7 @@ function App() {
   const [oddsFormat, setOddsFormat] = useState(() => {
     return localStorage.getItem("oddsFormat") || "decimal";
   });
+  const [bookmakerLinks, setBookmakerLinks] = useState({});
 
   useEffect(() => {
     const token = api.getStoredToken();
@@ -34,6 +35,18 @@ function App() {
         setIsLoggedIn(false);
       });
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchBookmakerLinks = async () => {
+      try {
+        const links = await api.getBookmakerLinks();
+        setBookmakerLinks(links);
+      } catch (err) {
+        console.error("Failed to fetch bookmaker links:", err);
+      }
+    };
+    fetchBookmakerLinks();
   }, []);
 
   useEffect(() => {
@@ -205,6 +218,7 @@ function App() {
                     error={error}
                     oddsFormat={oddsFormat}
                     setOddsFormat={setOddsFormat}
+                    bookmakerLinks={bookmakerLinks}
                   />
                 )}
                 <footer className="responsible-gambling-footer">
@@ -221,7 +235,7 @@ function App() {
   );
 }
 
-function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error, oddsFormat, setOddsFormat }) {
+function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error, oddsFormat, setOddsFormat, bookmakerLinks }) {
   const navigate = useNavigate();
 
   const handleLogoutWithNav = () => {
@@ -250,7 +264,7 @@ function AppContent({ user, groups, onLogout, onCreateGroup, onJoinGroup, error,
         />
         <Route
           path="/groups/:groupId/accas/:accaId"
-          element={<AccaDetail user={user} oddsFormat={oddsFormat} />}
+          element={<AccaDetail user={user} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

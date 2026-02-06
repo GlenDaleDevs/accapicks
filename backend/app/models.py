@@ -101,3 +101,31 @@ class GroupMember(Base):
 
     def __repr__(self):
         return f"<GroupMember user:{self.user_id} group:{self.group_id}>"
+
+# BookmakerLink model - stores affiliate links for bookmakers
+class BookmakerLink(Base):
+    __tablename__ = "bookmaker_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    bookmaker_key = Column(String, unique=True, index=True, nullable=False)  # e.g., "bet365"
+    display_name = Column(String, nullable=True)  # e.g., "Bet365" or "Betfair Exchange"
+    url = Column(String, nullable=False)  # Affiliate link
+    is_active = Column(Boolean, default=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<BookmakerLink {self.bookmaker_key}>"
+
+# BookmakerClick model - analytics for tracking bookmaker clicks
+class BookmakerClick(Base):
+    __tablename__ = "bookmaker_clicks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    bookmaker_key = Column(String, index=True, nullable=False)
+    acca_id = Column(Integer, nullable=True)  # No FK - analytics data
+    user_id = Column(Integer, nullable=True)  # Track which user clicked
+    source = Column(String, nullable=True)  # "comparison" or "betslip"
+    clicked_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    def __repr__(self):
+        return f"<BookmakerClick {self.bookmaker_key}>"
