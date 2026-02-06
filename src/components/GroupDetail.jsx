@@ -19,6 +19,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [loadingGroup, setLoadingGroup] = useState(true);
   const [copiedInvite, setCopiedInvite] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
   const [error, setError] = useState("");
   const [accaCountdowns, setAccaCountdowns] = useState({});
   const [members, setMembers] = useState([]);
@@ -197,16 +198,20 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       <h2 className="section-title">{group.name}</h2>
 
       {/* Invite Section */}
-      <div className="invite-section">
-        <h3 className="invite-title">Invite Friends</h3>
-        <p className="invite-text">Share this code with your mates:</p>
-        <div className="invite-code-row">
-          <code className="invite-code">{group.invite_code}</code>
-          <button className="btn btn-primary" onClick={copyInviteLink}>
-            {copiedInvite ? "Copied!" : "Copy Link"}
-          </button>
+      {!showInvite ? (
+        <button className="btn btn-secondary mb-20" onClick={() => setShowInvite(true)}>
+          Invite Friends
+        </button>
+      ) : (
+        <div className="invite-section">
+          <div className="invite-code-row">
+            <code className="invite-code">{group.invite_code}</code>
+            <button className="btn btn-primary" onClick={copyInviteLink}>
+              {copiedInvite ? "Copied!" : "Copy Link"}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Members Section */}
       <div style={{ marginBottom: "24px" }}>
