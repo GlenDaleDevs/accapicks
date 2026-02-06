@@ -28,7 +28,9 @@ def _acca_to_dict(acca):
 
 # Create a new acca
 @router.post("/accas", response_model=schemas.AccaResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def create_acca(
+    request: Request,
     acca: schemas.AccaCreate,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -108,7 +110,9 @@ def get_group_accas(
 
 # Get a specific acca with all its bets (including usernames!)
 @router.get("/accas/{acca_id}", response_model=schemas.AccaWithBets)
+@limiter.limit("30/minute")
 def get_acca(
+    request: Request,
     acca_id: int,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -170,7 +174,9 @@ def get_acca(
 
 # Compare bookmakers for an acca
 @router.get("/accas/{acca_id}/compare-bookmakers")
+@limiter.limit("20/minute")
 async def compare_bookmakers(
+    request: Request,
     acca_id: int,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -283,9 +289,9 @@ def delete_acca(
     except HTTPException:
         db.rollback()
         raise
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete acca: {str(e)}"
+            detail="Failed to delete acca"
         )

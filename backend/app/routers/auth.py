@@ -5,10 +5,13 @@ from typing import Optional
 from datetime import timedelta, datetime, timezone
 import secrets
 import re
+import logging
 from .. import models, schemas, auth
 from ..database import get_db
 from ..limiter import limiter
 from ..email import send_verification_email, send_password_reset_email
+
+logger = logging.getLogger(__name__)
 
 
 def generate_verification_code() -> str:
@@ -134,6 +137,8 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
 
     # Check if user exists
     if not user:
+        # Constant-time: always run bcrypt to prevent timing-based user enumeration
+        auth.verify_password("dummy", "$2b$12$LJ3m4ys3Lg2HvSSvfOEqWOsonRUKDSCMIYPSYzPF1vFfGo/MlJl5e")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -168,7 +173,7 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
 
 # Verify email endpoint
 @router.post("/auth/verify-email", response_model=schemas.Token)
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session = Depends(get_db)):
     """Verify email with 6-digit code"""
 
@@ -472,7 +477,8 @@ def delete_account(
         raise
     except Exception as e:
         db.rollback()
+        logger.error(f"Failed to delete account for user {user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete account: {str(e)}"
+            detail="Failed to delete account"
         )

@@ -16,7 +16,9 @@ router = APIRouter()
 
 # Create a new group
 @router.post("/groups", response_model=schemas.GroupResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 def create_group(
+    request: Request,
     group: schemas.GroupCreate,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -150,7 +152,9 @@ def get_group(
 
 # Get members of a group
 @router.get("/groups/{group_id}/members")
+@limiter.limit("30/minute")
 def get_group_members(
+    request: Request,
     group_id: int,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -195,7 +199,9 @@ def get_group_members(
 
 # Get group leaderboard
 @router.get("/groups/{group_id}/leaderboard")
+@limiter.limit("30/minute")
 def get_group_leaderboard(
+    request: Request,
     group_id: int,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
@@ -375,12 +381,15 @@ def remove_member(
             )
 
     try:
-        # Delete target user's bets from ALL accas (Bet.user_id is NOT NULL)
-        group = db.query(models.Group).filter(models.Group.id == group_id).first()
-        acca_ids = [a.id for a in group.accas]
-        if acca_ids:
+        # Only delete bets from OPEN accas (preserve historical data in locked/settled)
+        open_accas = db.query(models.Acca).filter(
+            models.Acca.group_id == group_id,
+            models.Acca.status == "open"
+        ).all()
+        if open_accas:
+            open_acca_ids = [a.id for a in open_accas]
             db.query(models.Bet).filter(
-                models.Bet.acca_id.in_(acca_ids),
+                models.Bet.acca_id.in_(open_acca_ids),
                 models.Bet.user_id == target_user_id
             ).delete(synchronize_session=False)
 
@@ -468,12 +477,15 @@ def leave_group(
                     models.Acca.created_by == user_id
                 ).update({"created_by": new_admin.user_id}, synchronize_session=False)
 
-            # Delete user's bets from ALL accas in this group
-            # Note: This includes locked/settled accas due to FK constraint (Bet.user_id NOT NULL)
-            acca_ids = [a.id for a in group.accas]
-            if acca_ids:
+            # Only delete bets from OPEN accas (preserve historical data in locked/settled)
+            open_accas = db.query(models.Acca).filter(
+                models.Acca.group_id == group_id,
+                models.Acca.status == "open"
+            ).all()
+            if open_accas:
+                open_acca_ids = [a.id for a in open_accas]
                 db.query(models.Bet).filter(
-                    models.Bet.acca_id.in_(acca_ids),
+                    models.Bet.acca_id.in_(open_acca_ids),
                     models.Bet.user_id == user_id
                 ).delete(synchronize_session=False)
 
@@ -488,7 +500,8 @@ def leave_group(
         raise
     except Exception as e:
         db.rollback()
+        logger.error(f"Failed to leave group: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to leave group: {str(e)}"
+            detail="Failed to leave group"
         )
