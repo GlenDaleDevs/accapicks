@@ -1,6 +1,11 @@
 import Skeleton from "./Skeleton";
 
 export default function Leaderboard({ leaderboard, loading, accas }) {
+  const formatBestOdds = (odds) => {
+    if (!odds || odds === 0) return "-";
+    return odds.toFixed(2);
+  };
+
   return (
     <div className="leaderboard-container">
       <h3 className="section-title">Group Leaderboard</h3>
@@ -17,11 +22,11 @@ export default function Leaderboard({ leaderboard, loading, accas }) {
           {leaderboard.map((entry, index) => (
             <div
               key={entry.user_id}
-              className={`leaderboard-row${index === 0 ? " leaderboard-row-first" : ""}`}
+              className={`leaderboard-row${entry.rank === 1 ? " leaderboard-row-first" : ""}`}
             >
               <div>
                 <strong className="leaderboard-rank">
-                  {index + 1}. {entry.username}
+                  {entry.rank ?? index + 1}. {entry.username}
                 </strong>
                 <p className="leaderboard-record">
                   {entry.won}W - {entry.lost}L - {entry.pending}P
@@ -29,10 +34,13 @@ export default function Leaderboard({ leaderboard, loading, accas }) {
               </div>
               <div className="text-right">
                 <div
-                  className={`leaderboard-winrate ${index === 0 ? "leaderboard-winrate-first" : "leaderboard-winrate-other"}`}
+                  className={`leaderboard-winrate ${entry.rank === 1 ? "leaderboard-winrate-first" : "leaderboard-winrate-other"}`}
                 >
                   {entry.win_rate}%
                 </div>
+                <p className="leaderboard-total">
+                  Best: {formatBestOdds(entry.best_odds_won)}
+                </p>
                 <p className="leaderboard-total">
                   {entry.total_bets} total bets
                 </p>

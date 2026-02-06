@@ -212,3 +212,8 @@ export const deleteAcca = async (accaId) => {
   const response = await axios.delete(`${API_URL}/accas/${accaId}`);
   return response.data;
 };
+
+export const removeMember = async (groupId, userId) => {
+  const response = await axios.delete(`${API_URL}/groups/${groupId}/members/${userId}`);
+  return response.data;
+};

@@ -21,6 +21,8 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [error, setError] = useState("");
   const [accaCountdowns, setAccaCountdowns] = useState({});
+  const [members, setMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
   useEffect(() => {
     if (groupId) {
@@ -49,14 +51,16 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const loadGroupData = async () => {
     setLoadingGroup(true);
     try {
-      const [groupData, accasData, leaderboardData] = await Promise.all([
+      const [groupData, accasData, leaderboardData, membersData] = await Promise.all([
         api.getGroup(groupId),
         api.getAccasByGroup(groupId),
-        api.getGroupLeaderboard(groupId)
+        api.getGroupLeaderboard(groupId),
+        api.getGroupMembers(groupId)
       ]);
       setGroup(groupData);
       setAccas(accasData);
       setLeaderboard(leaderboardData);
+      setMembers(membersData);
     } catch (err) {
       console.error("Error loading group data:", err);
       setError(err.response?.data?.detail || "Failed to load group");
@@ -126,6 +130,31 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     }
   };
 
+  const handleRemoveMember = async (memberId, memberUsername) => {
+    if (!window.confirm(`Remove ${memberUsername} from this group?`)) {
+      return;
+    }
+
+    setLoadingMembers(true);
+    try {
+      await api.removeMember(groupId, memberId);
+      showToast(`${memberUsername} has been removed from the group`, "success");
+      const [membersData, leaderboardData] = await Promise.all([
+        api.getGroupMembers(groupId),
+        api.getGroupLeaderboard(groupId)
+      ]);
+      setMembers(membersData);
+      setLeaderboard(leaderboardData);
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Failed to remove member", "error");
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  // Determine if current user is admin
+  const isCurrentUserAdmin = members.find(m => m.user_id === user?.id)?.role === "admin";
+
   if (loadingGroup) {
     return (
       <div>
@@ -177,6 +206,40 @@ export default function GroupDetail({ user, onRefreshGroups }) {
             {copiedInvite ? "Copied!" : "Copy Link"}
           </button>
         </div>
+      </div>
+
+      {/* Members Section */}
+      <div style={{ marginBottom: "24px" }}>
+        <h3 className="section-title">Members</h3>
+        {loadingMembers ? (
+          <Skeleton width="100%" height="60px" count={2} />
+        ) : members.length === 0 ? (
+          <p className="empty-state">No members found</p>
+        ) : (
+          <div>
+            {members.map((member) => (
+              <div key={member.user_id} className="member-card">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span className="member-name">{member.username}</span>
+                  <span className={`badge badge-role ${member.role === "admin" ? "badge-admin" : "badge-member"}`}>
+                    {member.role === "admin" ? "Admin" : "Member"}
+                  </span>
+                </div>
+                {isCurrentUserAdmin && member.role !== "admin" && member.user_id !== user?.id && (
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveMember(member.user_id, member.username);
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Leaderboard Display */}
