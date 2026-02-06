@@ -170,8 +170,19 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       description = `Draw - ${match.home_team} vs ${match.away_team}`;
       odds = String(match.draw_odds);
     }
+
+    // Build structured data for auto-settlement
+    const structuredData = {
+      event_id: match.id,
+      home_team: match.home_team,
+      away_team: match.away_team,
+      pick_type: pickType,
+      sport_key: match.league,
+      commence_time: match.commence_time,
+    };
+
     try {
-      await api.createBet(accaId, description, odds);
+      await api.createBet(accaId, description, odds, structuredData);
       loadAccaDetails();
       setShowFixtureGrid(false);
       setFixtureLeague("");
@@ -284,9 +295,14 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       )}
 
       {acca.status === "locked" && (
-        <div className="lock-countdown lock-countdown-locked">
-          LOCKED - No more picks allowed
-        </div>
+        <>
+          <div className="lock-countdown lock-countdown-locked">
+            LOCKED - No more picks allowed
+          </div>
+          <p className="bet-settlement-info">
+            Results will update automatically after matches finish
+          </p>
+        </>
       )}
 
       {/* Enhanced Acca Status */}
@@ -556,6 +572,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
               bet={bet}
               accaStatus={acca.status}
               isOwnBet={user && bet.user_id === user.id}
+              isAccaCreator={acca.created_by === user?.id}
               onRemove={handleRemovePick}
               onMarkResult={handleMarkBetResult}
               oddsFormat={oddsFormat}

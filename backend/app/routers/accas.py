@@ -150,6 +150,12 @@ def get_acca(
             "description": bet.description,
             "odds": bet.odds,
             "result": bet.result,
+            "event_id": bet.event_id,
+            "home_team": bet.home_team,
+            "away_team": bet.away_team,
+            "pick_type": bet.pick_type,
+            "sport_key": bet.sport_key,
+            "commence_time": bet.commence_time,
             "created_at": bet.created_at
         }
         bet_responses.append(bet_dict)

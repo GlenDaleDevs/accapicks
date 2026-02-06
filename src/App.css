@@ -1090,6 +1090,13 @@
 .bet-result-lost { color: var(--color-danger); }
 .bet-result-void { color: var(--text-secondary); }
 
+.bet-pending-result {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
 .btn-remove-pick {
   margin-top: 6px;
   padding: 4px 10px;
@@ -1111,6 +1118,17 @@
   display: flex;
   gap: 8px;
   margin-top: 10px;
+}
+
+.bet-settlement-info {
+  margin: 8px 0 12px 0;
+  padding: 8px 12px;
+  background-color: rgba(0, 212, 170, 0.08);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
 }
 
 /* ---- Form Panel ---- */
