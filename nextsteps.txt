@@ -23,6 +23,12 @@ MEDIUM VALUE (post-launch)
 [ ] Affiliate admin panel UI — manage links without DB access
 [ ] Bet description editing — currently must delete + recreate
 
+TODO (NEXT SESSION)
+--------------------
+[ ] Create "annoying-user" agent — adversarial tester that tries to break the app,
+    find edge cases, bypass validation, abuse flows. Similar to critic but focused
+    on user-facing exploits and broken UX paths rather than code review.
+
 NOTES
 -----
 - Settlement test running tonight (Forest match) — verify results tracking works
