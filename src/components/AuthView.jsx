@@ -312,6 +312,10 @@ export default function AuthView({
             <div className="form-group">
               <input
                 type={mode === "signup" ? "email" : "text"}
+                inputMode={mode === "signup" ? "email" : "text"}
+                autoCapitalize="none"
+                autoCorrect="off"
+                autoComplete={mode === "signup" ? "email" : "username"}
                 placeholder={mode === "signup" ? "Email" : "Email or Username"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
