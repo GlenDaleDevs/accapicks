@@ -188,79 +188,28 @@ export default function GroupDetail({ user, onRefreshGroups }) {
 
   return (
     <>
-      <button
-        className="btn btn-ghost mb-20"
-        onClick={() => navigate("/")}
-      >
-        &larr; Back to Groups
-      </button>
-
-      <div className="group-stats-bar">
-        <div className="group-stat">
-          <span className="group-stat-value">{members.length}</span>
-          <span className="group-stat-label">Members</span>
-        </div>
-        <div className="group-stat">
-          <span className="group-stat-value">{accas.filter(a => a.status === "open" || a.status === "locked").length}</span>
-          <span className="group-stat-label">Active</span>
-        </div>
-        <div className="group-stat">
-          <span className="group-stat-value">{accas.filter(a => a.status === "won" || a.status === "lost" || a.status === "settled").length}</span>
-          <span className="group-stat-label">Settled</span>
-        </div>
-      </div>
-
-      <h2 className="section-title">{group.name}</h2>
-
-      {/* Invite Section */}
-      {!showInvite ? (
-        <button className="btn btn-secondary mb-20" onClick={() => setShowInvite(true)}>
-          Invite Friends
+      <div className="group-detail-header">
+        <button
+          className="btn btn-ghost"
+          onClick={() => navigate("/")}
+        >
+          &larr; Back to Groups
         </button>
-      ) : (
-        <div className="invite-section">
+        {!showInvite ? (
+          <button className="btn btn-secondary btn-sm" onClick={() => setShowInvite(true)}>
+            Invite Friends
+          </button>
+        ) : (
           <div className="invite-code-row">
             <code className="invite-code">{group.invite_code}</code>
-            <button className="btn btn-primary" onClick={copyInviteLink}>
+            <button className="btn btn-primary btn-sm" onClick={copyInviteLink}>
               {copiedInvite ? "Copied!" : "Copy Link"}
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Members Section */}
-      <div style={{ marginBottom: "24px" }}>
-        <h3 className="section-title">Members</h3>
-        {loadingMembers ? (
-          <Skeleton width="100%" height="60px" count={2} />
-        ) : members.length === 0 ? (
-          <p className="empty-state">No members found</p>
-        ) : (
-          <div>
-            {members.map((member) => (
-              <div key={member.user_id} className="member-card">
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span className="member-name">{member.username}</span>
-                  <span className={`badge badge-role ${member.role === "admin" ? "badge-admin" : "badge-member"}`}>
-                    {member.role === "admin" ? "Admin" : "Member"}
-                  </span>
-                </div>
-                {isCurrentUserAdmin && member.role !== "admin" && member.user_id !== user?.id && (
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveMember(member.user_id, member.username);
-                    }}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
         )}
       </div>
+
+      <h2 className="section-title">{group.name}</h2>
 
       {/* Leaderboard Display */}
       <Leaderboard
@@ -271,12 +220,14 @@ export default function GroupDetail({ user, onRefreshGroups }) {
 
       {/* Create Acca Wizard */}
       {!showAccaWizard ? (
-        <button
-          className="btn btn-primary mb-20"
-          onClick={() => setShowAccaWizard(true)}
-        >
-          + Create New Acca
-        </button>
+        <div className="groups-actions">
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowAccaWizard(true)}
+          >
+            + Create New Acca
+          </button>
+        </div>
       ) : (
         <AccaWizard
           onCreated={handleWizardCreate}

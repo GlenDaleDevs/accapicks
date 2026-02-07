@@ -1718,6 +1718,14 @@
   line-height: 1.5;
 }
 
+/* ---- Group Detail Header ---- */
+.group-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 /* ---- Group Stats Bar ---- */
 .group-stats-bar {
   display: flex;
