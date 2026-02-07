@@ -86,7 +86,8 @@
 
 .btn-sm {
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: 13px;
+  min-height: auto;
 }
 
 .btn-icon {
@@ -210,6 +211,12 @@
 .top-bar-username {
   color: var(--accent-primary);
   font-weight: 600;
+}
+
+.top-bar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 /* ---- Section Headers ---- */
@@ -1144,6 +1151,51 @@
 .group-card-date {
   color: var(--text-muted);
   font-size: 13px;
+}
+
+/* ---- Groups Grid (2-column layout in dashboard hero) ---- */
+.groups-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.groups-grid-single {
+  grid-template-columns: 1fr;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.group-card {
+  margin-bottom: 0;
+}
+
+/* ---- Groups Actions (centered buttons) ---- */
+.groups-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.groups-actions .btn {
+  min-width: 220px;
+}
+
+.groups-actions .form-panel {
+  width: 100%;
+}
+
+/* ---- Groups Logout (bottom section) ---- */
+.groups-logout {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
 }
 
 /* ---- Checkbox for custom bet ---- */
