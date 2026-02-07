@@ -40,7 +40,10 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
 
   return (
     <>
-      <h2 className="section-title">Your Groups</h2>
+      <div className="dashboard-hero">
+        <h2 className="dashboard-title">Your Groups</h2>
+        <p className="dashboard-subtitle">Create accumulators with your mates and climb the leaderboard</p>
+      </div>
 
       <div className="mb-20">
         {!showCreateGroup ? (
@@ -150,9 +153,32 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
           <Skeleton width="100%" height="80px" count={3} />
         </div>
       ) : groups.length === 0 ? (
-        <p className="empty-state">
-          No groups yet. Create one or join with an invite code!
-        </p>
+        <div className="welcome-guide">
+          <h3 className="welcome-guide-title">How AccaPicks Works</h3>
+          <div className="welcome-steps">
+            <div className="welcome-step">
+              <span className="welcome-step-num">1</span>
+              <div>
+                <h4 className="welcome-step-title">Create or Join a Group</h4>
+                <p className="welcome-step-desc">Start a group for your mates or join one with an invite code.</p>
+              </div>
+            </div>
+            <div className="welcome-step">
+              <span className="welcome-step-num">2</span>
+              <div>
+                <h4 className="welcome-step-title">Build Accumulators Together</h4>
+                <p className="welcome-step-desc">Each person picks one match per acca. Your picks combine into a group accumulator.</p>
+              </div>
+            </div>
+            <div className="welcome-step">
+              <span className="welcome-step-num">3</span>
+              <div>
+                <h4 className="welcome-step-title">Track Results & Compete</h4>
+                <p className="welcome-step-desc">Results update automatically. See who has the best win rate on the group leaderboard.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <div>
           {groups.map((group) => (

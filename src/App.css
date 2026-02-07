@@ -298,82 +298,105 @@
   margin-bottom: 24px;
 }
 
-.leaderboard-stat-box {
-  background-color: var(--bg-primary);
+/* ---- League Table ---- */
+.league-table {
+  background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-  text-align: center;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
-.leaderboard-stat-label {
-  margin: 0 0 4px 0;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.leaderboard-stat-value {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--accent-primary);
-}
-
-.leaderboard-stat-detail {
-  margin: 4px 0 0 0;
+.league-table-header {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px 48px 72px;
+  padding: 12px 16px;
+  background-color: var(--bg-elevated);
+  border-bottom: 2px solid var(--border-color);
   font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: var(--text-muted);
 }
 
-.leaderboard-row {
-  display: flex;
-  justify-content: space-between;
+.league-table-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px 48px 72px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
   align-items: center;
-  padding: 14px;
-  margin-bottom: 8px;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
 }
 
-.leaderboard-row-first {
-  border-color: var(--accent-primary);
-  border-width: 2px;
-  background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), var(--bg-primary));
-  box-shadow: 0 0 12px rgba(0, 212, 170, 0.15);
+.league-table-row:last-child {
+  border-bottom: none;
 }
 
-.leaderboard-rank {
-  font-size: 18px;
-  font-weight: 700;
+.league-table-row:hover {
+  background-color: var(--bg-elevated);
+}
+
+.league-table-row-first {
+  background: linear-gradient(90deg, rgba(0, 212, 170, 0.1), transparent);
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 13px;
+}
+
+.league-col {
+  font-size: 14px;
   color: var(--text-primary);
 }
 
-.leaderboard-record {
-  margin: 4px 0 0 0;
-  color: var(--text-secondary);
-  font-size: 13px;
+.league-col-pos {
+  text-align: center;
 }
 
-.leaderboard-winrate {
-  font-size: 26px;
-  font-weight: 700;
+.league-col-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+
+.league-col-stat {
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.league-col-winrate {
   text-align: right;
 }
 
-.leaderboard-winrate-first {
+.league-pos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--bg-elevated);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.league-pos-first {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  box-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
+}
+
+.league-winrate {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.league-winrate-first {
   color: var(--accent-primary);
-}
-
-.leaderboard-winrate-other {
-  color: var(--accent-secondary);
-}
-
-.leaderboard-total {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-muted);
 }
 
 /* ---- Acca List Cards ---- */
@@ -1487,6 +1510,136 @@
 .cookie-consent-link:hover {
   color: var(--accent-primary);
 }
+
+/* ---- Dashboard Hero ---- */
+.dashboard-hero {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(59, 130, 246, 0.05));
+  border: 1px solid rgba(0, 212, 170, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+}
+
+.dashboard-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---- Welcome Guide ---- */
+.welcome-guide {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  margin-bottom: 24px;
+}
+
+.welcome-guide-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 20px 0;
+}
+
+.welcome-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.welcome-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.welcome-step-num {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.welcome-step-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.welcome-step-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---- Group Stats Bar ---- */
+.group-stats-bar {
+  display: flex;
+  gap: 0;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.group-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 12px;
+  border-right: 1px solid var(--border-color);
+}
+
+.group-stat:last-child {
+  border-right: none;
+}
+
+.group-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  line-height: 1;
+}
+
+.group-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Acca Status Border ---- */
+.page-acca-detail {
+  border-top: 4px solid var(--border-color);
+  padding-top: 8px;
+}
+
+.acca-status-open { border-top-color: var(--accent-primary); }
+.acca-status-locked { border-top-color: var(--color-warning); }
+.acca-status-won { border-top-color: var(--color-success); }
+.acca-status-lost { border-top-color: var(--color-danger); }
+.acca-status-settled { border-top-color: var(--text-muted); }
 
 /* ---- Toast Notifications ---- */
 .toast-container {

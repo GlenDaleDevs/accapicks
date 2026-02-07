@@ -1,11 +1,6 @@
 import Skeleton from "./Skeleton";
 
 export default function Leaderboard({ leaderboard, loading, accas }) {
-  const formatBestOdds = (odds) => {
-    if (!odds || odds === 0) return "-";
-    return odds.toFixed(2);
-  };
-
   return (
     <div className="leaderboard-container">
       <h3 className="section-title">Group Leaderboard</h3>
@@ -18,32 +13,31 @@ export default function Leaderboard({ leaderboard, loading, accas }) {
           No stats yet. Start placing bets and marking results!
         </p>
       ) : (
-        <div>
+        <div className="league-table">
+          <div className="league-table-header">
+            <div className="league-col league-col-pos">#</div>
+            <div className="league-col league-col-name">Name</div>
+            <div className="league-col league-col-stat">W</div>
+            <div className="league-col league-col-stat">L</div>
+            <div className="league-col league-col-winrate">Win %</div>
+          </div>
           {leaderboard.map((entry, index) => (
             <div
               key={entry.user_id}
-              className={`leaderboard-row${entry.rank === 1 ? " leaderboard-row-first" : ""}`}
+              className={`league-table-row${entry.rank === 1 ? " league-table-row-first" : ""}`}
             >
-              <div>
-                <strong className="leaderboard-rank">
-                  {entry.rank ?? index + 1}. {entry.username}
-                </strong>
-                <p className="leaderboard-record">
-                  {entry.won}W - {entry.lost}L - {entry.pending}P
-                </p>
+              <div className="league-col league-col-pos">
+                <span className={`league-pos${entry.rank === 1 ? " league-pos-first" : ""}`}>
+                  {entry.rank ?? index + 1}
+                </span>
               </div>
-              <div className="text-right">
-                <div
-                  className={`leaderboard-winrate ${entry.rank === 1 ? "leaderboard-winrate-first" : "leaderboard-winrate-other"}`}
-                >
+              <div className="league-col league-col-name">{entry.username}</div>
+              <div className="league-col league-col-stat">{entry.won}</div>
+              <div className="league-col league-col-stat">{entry.lost}</div>
+              <div className="league-col league-col-winrate">
+                <span className={`league-winrate${entry.rank === 1 ? " league-winrate-first" : ""}`}>
                   {entry.win_rate}%
-                </div>
-                <p className="leaderboard-total">
-                  Best: {formatBestOdds(entry.best_odds_won)}
-                </p>
-                <p className="leaderboard-total">
-                  {entry.total_bets} total bets
-                </p>
+                </span>
               </div>
             </div>
           ))}
