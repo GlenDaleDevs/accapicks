@@ -272,7 +272,9 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
 
     # Anti-enumeration: return success even if user not found or not verified
     if not user or not user.email_verified:
-        return {"message": "If an account exists with that email, a reset code has been sent."}
+        # TODO: remove debug info after fixing email issue
+        debug = "user_not_found" if not user else f"email_not_verified (user_id={user.id})"
+        return {"message": "If an account exists with that email, a reset code has been sent.", "debug": debug}
 
     # Generate reset code
     reset_code = generate_verification_code()
