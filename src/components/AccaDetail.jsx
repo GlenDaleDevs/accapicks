@@ -4,7 +4,6 @@ import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatCountdown, formatDisplayDate, formatOdds } from "../utils/formatters";
 import { showToast } from "../utils/toast";
 import * as api from "../api/client";
-import BetCard from "./BetCard";
 import FixtureGrid from "./FixtureGrid";
 import BookmakerComparison from "./BookmakerComparison";
 import BetSlip from "./BetSlip";
@@ -269,24 +268,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     }
   };
 
-  const getAccaStatusDisplay = () => {
-    if (!acca || !acca.bets) return "";
-    const allBets = acca.bets;
-    const settledBets = allBets.filter((b) => b.result !== null);
-    if (acca.status === "locked") return "LOCKED";
-    if (settledBets.length === 0) return "PENDING - No results yet";
-    if (settledBets.length < allBets.length)
-      return `PENDING - ${settledBets.length}/${allBets.length} settled`;
-    if (acca.status === "won") return "WON! All bets successful";
-    return "LOST - Acca failed";
-  };
-
-  const calculateCombinedOdds = () => {
-    if (!acca || !acca.bets || acca.bets.length === 0) return 0;
-    const combined = acca.bets.reduce((acc, bet) => acc * parseFloat(bet.odds), 1);
-    return combined.toFixed(2);
-  };
-
   const userAlreadyPicked = user && acca.bets.some((b) => b.user_id === user.id);
   const canDeleteAcca = user && acca.created_by === user.id && acca.status === "open";
 
@@ -334,48 +315,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
           </p>
         </>
       )}
-
-      {/* Enhanced Acca Status */}
-      <div
-        className={`acca-status-banner ${
-          acca.status === "won"
-            ? "acca-status-won"
-            : acca.status === "lost"
-              ? "acca-status-lost"
-              : acca.status === "locked"
-                ? "acca-status-locked"
-                : "acca-status-open"
-        }`}
-      >
-        <h3
-          className={`acca-status-title ${
-            acca.status === "won"
-              ? "acca-status-title-won"
-              : acca.status === "lost"
-                ? "acca-status-title-lost"
-                : acca.status === "locked"
-                  ? "acca-status-title-locked"
-                  : "acca-status-title-open"
-          }`}
-        >
-          Status: {getAccaStatusDisplay()}
-        </h3>
-        <p className="acca-status-odds">Combined Odds: {formatOdds(calculateCombinedOdds(), oddsFormat)}</p>
-        <p className="acca-status-count">
-          {acca.bets.length} pick{acca.bets.length !== 1 ? "s" : ""} in this acca
-        </p>
-        {acca.leagues && (
-          <p className="acca-status-meta">
-            {acca.leagues.map((k) => LEAGUE_NAME_MAP[k] || k).join(", ")}
-            {acca.match_dates && (
-              <span>
-                {" | "}
-                {[...acca.match_dates].sort().map((d) => formatDisplayDate(d)).join(", ")}
-              </span>
-            )}
-          </p>
-        )}
-      </div>
 
       {/* Bookmaker Comparison */}
       <div className="mb-20">
@@ -589,25 +528,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
               </div>
             </form>
           )}
-        </div>
-      )}
-
-      <h3 className="section-title">Picks:</h3>
-
-      {acca.bets.length === 0 ? (
-        <p className="empty-state">No picks yet. Be the first to add one!</p>
-      ) : (
-        <div>
-          {acca.bets.map((bet) => (
-            <BetCard
-              key={bet.id}
-              bet={bet}
-              accaStatus={acca.status}
-              isOwnBet={user && bet.user_id === user.id}
-              onRemove={handleRemovePick}
-              oddsFormat={oddsFormat}
-            />
-          ))}
         </div>
       )}
 

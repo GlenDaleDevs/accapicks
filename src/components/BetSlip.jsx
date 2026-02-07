@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { BOOKMAKER_DISPLAY_NAMES } from "../utils/constants";
-import { formatOdds, formatBetSlipText } from "../utils/formatters";
+import { BOOKMAKER_DISPLAY_NAMES, LEAGUE_NAME_MAP } from "../utils/constants";
+import { formatOdds, formatBetSlipText, formatDisplayDate } from "../utils/formatters";
 import * as api from "../api/client";
 
 export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmakerLinks = {} }) {
@@ -50,9 +50,12 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
       <div className="bet-slip-picks">
         {acca.bets.map((bet, index) => (
           <div key={bet.id} className="bet-slip-pick-item">
-            <span className="bet-slip-pick-number">{index + 1}.</span>
-            <span className="bet-slip-pick-description">{bet.description}</span>
-            <span className="bet-slip-pick-odds">@ {formatOdds(bet.odds, oddsFormat)}</span>
+            <div className="bet-slip-pick-main">
+              <span className="bet-slip-pick-number">{index + 1}.</span>
+              <span className="bet-slip-pick-description">{bet.description}</span>
+              <span className="bet-slip-pick-odds">@ {formatOdds(bet.odds, oddsFormat)}</span>
+            </div>
+            <span className="bet-slip-pick-user">Picked by {bet.username}</span>
           </div>
         ))}
       </div>
@@ -89,6 +92,14 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
       </button>
 
       {error && <div className="bet-slip-error">{error}</div>}
+
+      {(acca.leagues || acca.match_dates) && (
+        <div className="bet-slip-meta">
+          {acca.leagues && acca.leagues.map(k => LEAGUE_NAME_MAP[k] || k).join(", ")}
+          {acca.leagues && acca.match_dates && " | "}
+          {acca.match_dates && [...acca.match_dates].sort().map(d => formatDisplayDate(d)).join(", ")}
+        </div>
+      )}
     </div>
   );
 }
