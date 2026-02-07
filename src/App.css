@@ -1437,6 +1437,17 @@
   box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
 }
 
+.cookie-consent-decline {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.cookie-consent-decline:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
 .cookie-consent-link {
   color: var(--text-secondary);
   text-decoration: underline;
