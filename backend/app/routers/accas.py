@@ -29,7 +29,7 @@ def _acca_to_dict(acca):
 # Create a new acca
 @router.post("/accas", response_model=schemas.AccaResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
-async def create_acca(
+def create_acca(
     request: Request,
     acca: schemas.AccaCreate,
     db: Session = Depends(get_db),
@@ -66,22 +66,7 @@ async def create_acca(
                     detail=f"An active acca already covers these date(s): {', '.join(sorted_overlap)}. Delete or settle the existing acca first."
                 )
 
-    # Calculate locks_at from earliest fixture kickoff
-    locks_at = None
-    earliest_kickoff = None
-    for league in acca.leagues:
-        matches = await asyncio.to_thread(odds_api.get_football_matches, league)
-        for match in matches:
-            commence = match.get("commence_time", "")
-            # commence_time is ISO 8601 e.g. "2026-02-08T15:00:00Z"
-            match_date = commence[:10]  # "2026-02-08"
-            if match_date in acca.match_dates:
-                if earliest_kickoff is None or commence < earliest_kickoff:
-                    earliest_kickoff = commence
-
-    if earliest_kickoff:
-        locks_at = datetime.fromisoformat(earliest_kickoff.replace("Z", "+00:00"))
-
+    # locks_at is calculated dynamically from picked matches, not upfront
     new_acca = models.Acca(
         group_id=acca.group_id,
         name=acca.name,
@@ -89,7 +74,6 @@ async def create_acca(
         match_dates=acca.match_dates,
         leagues=acca.leagues,
         bet_type=acca.bet_type,
-        locks_at=locks_at,
         created_by=user_id,
     )
 

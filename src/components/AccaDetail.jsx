@@ -301,7 +301,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
             Locks: {lockCountdown}
           </div>
           <p className="bet-settlement-info">
-            The acca locks when the first match starts. Make sure all picks are in!
+            The acca locks when the earliest picked match kicks off.
           </p>
         </div>
       )}
