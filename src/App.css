@@ -26,10 +26,9 @@
 .btn-primary {
   background: linear-gradient(135deg, #00d4aa, #00e8bb);
   color: white;
-  text-transform: uppercase;
   font-weight: 700;
-  letter-spacing: 1px;
-  height: 52px;
+  letter-spacing: 0.5px;
+  height: 48px;
   border-radius: 10px;
 }
 .btn-primary:hover:not(:disabled) {
@@ -44,9 +43,9 @@
 }
 
 .btn-secondary {
-  background-color: var(--bg-elevated);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color-light);
 }
 .btn-secondary:hover:not(:disabled) {
   background-color: var(--border-color);
@@ -110,9 +109,13 @@
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 20px;
   margin-bottom: 12px;
   transition: all var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: 0 0 0 1px var(--accent-primary);
 }
 
 .card-clickable {
@@ -212,8 +215,9 @@
 /* ---- Section Headers ---- */
 .section-title {
   color: var(--text-primary);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
+  letter-spacing: -0.01em;
   margin: 0 0 16px 0;
 }
 
@@ -335,7 +339,9 @@
 
 .leaderboard-row-first {
   border-color: var(--accent-primary);
+  border-width: 2px;
   background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), var(--bg-primary));
+  box-shadow: 0 0 12px rgba(0, 212, 170, 0.15);
 }
 
 .leaderboard-rank {
@@ -351,7 +357,7 @@
 }
 
 .leaderboard-winrate {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   text-align: right;
 }
@@ -786,11 +792,16 @@
 .bookmaker-name-other { color: var(--text-primary); }
 
 .bookmaker-odds-best {
-  color: var(--accent-primary);
+  font-size: 18px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-primary);
 }
 
 .bookmaker-odds-other {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
 }
 
@@ -879,8 +890,9 @@
 }
 
 .fixture-odds-value {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--accent-primary);
 }
 
@@ -897,8 +909,9 @@
 }
 
 .fixture-odds-value-taken {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
   text-decoration: line-through;
 }
@@ -951,8 +964,9 @@
 }
 
 .bet-odds {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--accent-primary);
 }
 
@@ -1041,9 +1055,10 @@
 
 .bet-preview-odds {
   margin: 4px 0 0 0;
-  color: var(--accent-primary);
   font-size: 18px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-primary);
 }
 
 .bet-preview-source {
@@ -1121,6 +1136,19 @@
 .custom-bet-toggle input[type="checkbox"] {
   width: auto;
   accent-color: var(--accent-primary);
+}
+
+/* ---- Button active feedback ---- */
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ---- Misc helpers ---- */
