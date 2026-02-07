@@ -1259,8 +1259,8 @@
   width: 100%;
 }
 
-/* ---- Groups Logout (bottom section) ---- */
-.groups-logout {
+/* ---- Page Logout Footer ---- */
+.page-logout-footer {
   display: flex;
   justify-content: center;
   margin-top: 32px;

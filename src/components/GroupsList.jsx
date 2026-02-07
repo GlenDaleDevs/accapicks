@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Skeleton from "./Skeleton";
 import MiniLeaderboard from "./MiniLeaderboard";
 
-export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogout, error: externalError, loading, miniLeaderboards }) {
+export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError, loading, miniLeaderboards }) {
   const navigate = useNavigate();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
@@ -206,12 +206,6 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogou
           </div>
         )}
 
-      </div>
-
-      <div className="groups-logout">
-        <button className="btn btn-ghost" onClick={onLogout}>
-          Logout
-        </button>
       </div>
     </>
   );
