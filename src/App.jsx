@@ -289,7 +289,6 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
               loading={loadingGroups}
               onCreateGroup={onCreateGroup}
               onJoinGroup={onJoinGroup}
-              onLogout={handleLogoutWithNav}
               error={error}
               miniLeaderboards={miniLeaderboards}
             />
@@ -309,6 +308,9 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <div className="page-logout-footer">
+        <button className="btn btn-ghost" onClick={handleLogoutWithNav}>Logout</button>
+      </div>
     </div>
   );
 }
