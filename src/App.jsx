@@ -258,7 +258,7 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
 
   return (
     <div>
-      <TopBar user={user} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} />
+      <TopBar user={user} />
       <Routes>
         <Route
           path="/"

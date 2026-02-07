@@ -213,11 +213,7 @@
   font-weight: 600;
 }
 
-.top-bar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
+
 
 /* ---- Section Headers ---- */
 .section-title {
