@@ -268,13 +268,16 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
 def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
     """Request password reset code (anti-enumeration protection)"""
 
-    user = db.query(models.User).filter(func.lower(models.User.email) == data.email.lower()).first()
+    search_email = data.email.strip().lower()
+    user = db.query(models.User).filter(func.lower(models.User.email) == search_email).first()
+
+    # TODO: remove debug info after fixing email issue
+    all_emails = [u.email for u in db.query(models.User).all()]
 
     # Anti-enumeration: return success even if user not found or not verified
     if not user or not user.email_verified:
-        # TODO: remove debug info after fixing email issue
         debug = "user_not_found" if not user else f"email_not_verified (user_id={user.id})"
-        return {"message": "If an account exists with that email, a reset code has been sent.", "debug": debug}
+        return {"message": "If an account exists with that email, a reset code has been sent.", "debug": debug, "searched_for": search_email, "db_emails": all_emails}
 
     # Generate reset code
     reset_code = generate_verification_code()
