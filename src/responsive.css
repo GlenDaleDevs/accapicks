@@ -96,6 +96,35 @@
     padding: 0;
     margin-top: 4px;
   }
+
+  /* League table responsive adjustments */
+  .league-table-header,
+  .league-table-row {
+    grid-template-columns: 40px 1fr 40px 40px 64px;
+    padding: 10px 12px;
+  }
+
+  .league-table-row-first {
+    padding-left: 9px;
+  }
+
+  .league-table-header {
+    font-size: 10px;
+  }
+
+  .league-col {
+    font-size: 13px;
+  }
+
+  .league-pos {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .league-winrate {
+    font-size: 14px;
+  }
 }
 
 /* ================================================

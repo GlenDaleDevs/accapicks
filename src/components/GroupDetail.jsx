@@ -195,6 +195,21 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         &larr; Back to Groups
       </button>
 
+      <div className="group-stats-bar">
+        <div className="group-stat">
+          <span className="group-stat-value">{members.length}</span>
+          <span className="group-stat-label">Members</span>
+        </div>
+        <div className="group-stat">
+          <span className="group-stat-value">{accas.filter(a => a.status === "open" || a.status === "locked").length}</span>
+          <span className="group-stat-label">Active</span>
+        </div>
+        <div className="group-stat">
+          <span className="group-stat-value">{accas.filter(a => a.status === "won" || a.status === "lost" || a.status === "settled").length}</span>
+          <span className="group-stat-label">Settled</span>
+        </div>
+      </div>
+
       <h2 className="section-title">{group.name}</h2>
 
       {/* Invite Section */}
