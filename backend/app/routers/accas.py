@@ -49,6 +49,23 @@ async def create_acca(
             detail="You are not a member of this group"
         )
 
+    # Check for date overlap with active accas in this group
+    existing_accas = db.query(models.Acca).filter(
+        models.Acca.group_id == acca.group_id,
+        models.Acca.status.in_(["open", "locked"])
+    ).all()
+
+    new_dates = set(acca.match_dates)
+    for existing in existing_accas:
+        if existing.match_dates:
+            overlap = new_dates & set(existing.match_dates)
+            if overlap:
+                sorted_overlap = sorted(overlap)
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"An active acca already covers these date(s): {', '.join(sorted_overlap)}. Delete or settle the existing acca first."
+                )
+
     # Calculate locks_at from earliest fixture kickoff
     locks_at = None
     earliest_kickoff = None
