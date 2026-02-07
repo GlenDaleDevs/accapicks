@@ -49,6 +49,19 @@ export const formatDisplayDate = (dateStr) => {
   });
 };
 
+export const formatKickoffTime = (datetimeStr) => {
+  if (!datetimeStr) return "";
+  const dt = new Date(datetimeStr);
+  return dt.toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }) + " " + dt.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 // Common UK bookmaker fractional odds (sorted by decimal value)
 const COMMON_FRACTIONS = [
   { decimal: 1.10, fraction: "1/10" },
