@@ -272,7 +272,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
   const canDeleteAcca = user && acca.created_by === user.id && acca.status === "open";
 
   return (
-    <div className={`page-acca-detail acca-status-${acca?.status || "open"}`}>
+    <>
       <button
         className="btn btn-ghost mb-20"
         onClick={() => navigate(`/groups/${groupId}`)}
@@ -280,6 +280,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         &larr; Back to Accas
       </button>
 
+    <div className={`page-acca-detail acca-status-${acca?.status || "open"}`}>
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <h2 className="section-title" style={{ marginBottom: 0 }}>{acca.name}</h2>
         {canDeleteAcca && (
@@ -542,5 +543,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         bookmakerLinks={bookmakerLinks}
       />
     </div>
+    </>
   );
 }
