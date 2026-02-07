@@ -220,45 +220,51 @@ def get_group_leaderboard(
             detail="You are not a member of this group"
         )
 
+    # Start from all group members so everyone appears
+    members = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id
+    ).all()
+    member_user_ids = [m.user_id for m in members]
+
+    # Batch-query users
+    users = db.query(models.User).filter(models.User.id.in_(member_user_ids)).all()
+    user_map = {u.id: u for u in users}
+
+    # Initialize stats for every member
+    user_stats = {}
+    for uid in member_user_ids:
+        user_stats[uid] = {
+            "total": 0,
+            "won": 0,
+            "lost": 0,
+            "void": 0,
+            "pending": 0,
+            "won_bets": []
+        }
+
     # Get all accas in this group
     accas = db.query(models.Acca).filter(models.Acca.group_id == group_id).all()
     acca_ids = [a.id for a in accas]
 
-    if not acca_ids:
-        return []
+    # Accumulate bet stats
+    if acca_ids:
+        bets = db.query(models.Bet).filter(models.Bet.acca_id.in_(acca_ids)).all()
 
-    # Get all bets for these accas
-    bets = db.query(models.Bet).filter(models.Bet.acca_id.in_(acca_ids)).all()
+        for bet in bets:
+            if bet.user_id not in user_stats:
+                continue
 
-    # Calculate stats per user
-    user_stats = {}
-    for bet in bets:
-        if bet.user_id not in user_stats:
-            user_stats[bet.user_id] = {
-                "total": 0,
-                "won": 0,
-                "lost": 0,
-                "void": 0,
-                "pending": 0,
-                "won_bets": []  # Track won bets for best_odds_won calculation
-            }
+            user_stats[bet.user_id]["total"] += 1
 
-        user_stats[bet.user_id]["total"] += 1
-
-        if bet.result == "won":
-            user_stats[bet.user_id]["won"] += 1
-            user_stats[bet.user_id]["won_bets"].append(bet)
-        elif bet.result == "lost":
-            user_stats[bet.user_id]["lost"] += 1
-        elif bet.result == "void":
-            user_stats[bet.user_id]["void"] += 1
-        else:
-            user_stats[bet.user_id]["pending"] += 1
-
-    # Batch-query users to avoid N+1
-    user_ids = list(user_stats.keys())
-    users = db.query(models.User).filter(models.User.id.in_(user_ids)).all()
-    user_map = {u.id: u for u in users}
+            if bet.result == "won":
+                user_stats[bet.user_id]["won"] += 1
+                user_stats[bet.user_id]["won_bets"].append(bet)
+            elif bet.result == "lost":
+                user_stats[bet.user_id]["lost"] += 1
+            elif bet.result == "void":
+                user_stats[bet.user_id]["void"] += 1
+            else:
+                user_stats[bet.user_id]["pending"] += 1
 
     # Build leaderboard
     leaderboard = []
