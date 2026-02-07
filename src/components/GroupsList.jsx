@@ -42,7 +42,53 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogou
   return (
     <>
       <div className="dashboard-hero">
-        <h2 className="dashboard-title">Your Groups</h2>
+        <div className="dashboard-header">
+          <h2 className="dashboard-title">Your Groups</h2>
+          {!showJoinGroup && (
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setShowJoinGroup(true)}
+            >
+              Join Group
+            </button>
+          )}
+        </div>
+        {showJoinGroup && (
+          <div className="form-panel mb-16">
+            <h3 className="form-panel-title">Join Group</h3>
+
+            {displayError && <div className="alert-error">{displayError}</div>}
+
+            <form onSubmit={handleJoin}>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Enter Invite Code (e.g., ABC123)"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  required
+                />
+              </div>
+
+              <div className="btn-group">
+                <button type="submit" className="btn btn-primary">
+                  Join Group
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setShowJoinGroup(false);
+                    setInviteCode("");
+                    setError("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {loading ? (
           <Skeleton width="100%" height="80px" count={2} />
@@ -160,49 +206,6 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogou
           </div>
         )}
 
-        {!showJoinGroup ? (
-          <button
-            className="btn btn-secondary"
-            onClick={() => setShowJoinGroup(true)}
-          >
-            Join Group with Code
-          </button>
-        ) : (
-          <div className="form-panel mt-16">
-            <h3 className="form-panel-title">Join Group</h3>
-
-            {displayError && <div className="alert-error">{displayError}</div>}
-
-            <form onSubmit={handleJoin}>
-              <div className="form-group">
-                <input
-                  type="text"
-                  placeholder="Enter Invite Code (e.g., ABC123)"
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                  required
-                />
-              </div>
-
-              <div className="btn-group">
-                <button type="submit" className="btn btn-primary">
-                  Join Group
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={() => {
-                    setShowJoinGroup(false);
-                    setInviteCode("");
-                    setError("");
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
       </div>
 
       <div className="groups-logout">
