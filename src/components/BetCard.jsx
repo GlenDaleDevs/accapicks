@@ -1,6 +1,6 @@
 import { formatOdds } from "../utils/formatters";
 
-export default function BetCard({ bet, accaStatus, isOwnBet, isAccaCreator, onRemove, onMarkResult, oddsFormat = "decimal" }) {
+export default function BetCard({ bet, accaStatus, isOwnBet, onRemove, oddsFormat = "decimal" }) {
   const cardClass = bet.result === "won"
     ? "bet-card-won"
     : bet.result === "lost"
@@ -14,9 +14,6 @@ export default function BetCard({ bet, accaStatus, isOwnBet, isAccaCreator, onRe
     : bet.result === "lost"
       ? "bet-result-lost"
       : "bet-result-void";
-
-  // Determine if we should show manual result buttons
-  const showManualButtons = !bet.result && !bet.event_id && isAccaCreator && accaStatus !== "settled" && accaStatus !== "won" && accaStatus !== "lost";
 
   // Determine if we should show pending auto-settlement indicator
   const showPendingIndicator = bet.event_id && !bet.result && accaStatus === "locked";
@@ -52,28 +49,6 @@ export default function BetCard({ bet, accaStatus, isOwnBet, isAccaCreator, onRe
         </div>
       </div>
 
-      {showManualButtons && (
-        <div className="bet-result-buttons">
-          <button
-            className="btn btn-success btn-sm"
-            onClick={() => onMarkResult(bet.id, "won")}
-          >
-            Won
-          </button>
-          <button
-            className="btn btn-danger btn-sm"
-            onClick={() => onMarkResult(bet.id, "lost")}
-          >
-            Lost
-          </button>
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => onMarkResult(bet.id, "void")}
-          >
-            Void
-          </button>
-        </div>
-      )}
     </div>
   );
 }
