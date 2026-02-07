@@ -210,16 +210,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     }
   };
 
-  const handleMarkBetResult = async (betId, result) => {
-    try {
-      await api.updateBetResult(betId, result);
-      loadAccaDetails();
-    } catch (err) {
-      console.error("Error marking bet result:", err);
-      setError("Failed to mark bet result");
-    }
-  };
-
   const handleDeleteAcca = async () => {
     if (!window.confirm("Are you sure? This will delete the acca and all picks.")) {
       return;
@@ -298,8 +288,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
   };
 
   const userAlreadyPicked = user && acca.bets.some((b) => b.user_id === user.id);
-  const isAccaCreator = user && acca.created_by === user.id;
-  const canDeleteAcca = isAccaCreator && acca.status === "open";
+  const canDeleteAcca = user && acca.created_by === user.id && acca.status === "open";
 
   return (
     <div className={`page-acca-detail acca-status-${acca?.status || "open"}`}>
@@ -615,9 +604,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
               bet={bet}
               accaStatus={acca.status}
               isOwnBet={user && bet.user_id === user.id}
-              isAccaCreator={acca.created_by === user?.id}
               onRemove={handleRemovePick}
-              onMarkResult={handleMarkBetResult}
               oddsFormat={oddsFormat}
             />
           ))}
