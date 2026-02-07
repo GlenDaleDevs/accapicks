@@ -39,9 +39,9 @@ def send_verification_email(to_email: str, code: str, username: str) -> Optional
 
 def send_password_reset_email(to_email: str, code: str, username: str) -> Optional[dict]:
     """Send a password reset email with the 6-digit code."""
-    logger.info(f"Attempting to send password reset email to {to_email}")
+    print(f"[EMAIL] Attempting password reset email to {to_email}, API key set: {bool(resend.api_key)}")
     if not resend.api_key:
-        logger.error("Cannot send email - RESEND_API_KEY is not set")
+        print("[EMAIL] ERROR: RESEND_API_KEY is not set")
         return None
     try:
         response = resend.Emails.send({
@@ -63,8 +63,8 @@ def send_password_reset_email(to_email: str, code: str, username: str) -> Option
                 </div>
             """
         })
-        logger.info(f"Password reset email sent to {to_email}: {response}")
+        print(f"[EMAIL] Password reset email sent to {to_email}: {response}")
         return response
     except Exception as e:
-        logger.error(f"Failed to send password reset email to {to_email}: {e}", exc_info=True)
+        print(f"[EMAIL] FAILED to send password reset email to {to_email}: {e}")
         return None
