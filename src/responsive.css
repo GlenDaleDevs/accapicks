@@ -42,10 +42,7 @@
     min-height: 40px;
   }
 
-  /* Allow top bar to wrap if needed, reduce padding */
   .top-bar {
-    flex-wrap: wrap;
-    gap: 12px;
     padding-bottom: 12px;
   }
 
