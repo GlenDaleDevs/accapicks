@@ -131,6 +131,22 @@
   .groups-grid-single {
     max-width: none;
   }
+
+  /* Mini leaderboard adjustments for mobile */
+  .group-card-lb {
+    width: 110px;
+    padding-left: 10px;
+  }
+
+  .mini-lb-name {
+    font-size: 12px;
+  }
+
+  .mini-lb-pos {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
 }
 
 /* ================================================
