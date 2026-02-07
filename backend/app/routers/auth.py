@@ -283,9 +283,13 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
     db.commit()
 
     # Send reset email
-    send_password_reset_email(user.email, reset_code, user.username)
+    result = send_password_reset_email(user.email, reset_code, user.username)
 
-    return {"message": "If an account exists with that email, a reset code has been sent."}
+    # TODO: remove debug info after fixing email issue
+    if not result:
+        return {"message": "If an account exists with that email, a reset code has been sent.", "debug": "email_send_failed"}
+
+    return {"message": "If an account exists with that email, a reset code has been sent.", "debug": "email_sent", "resend_response": str(result)}
 
 
 # Reset password endpoint
