@@ -1149,6 +1149,79 @@
   font-size: 13px;
 }
 
+/* ---- Group Card Split Layout ---- */
+.group-card {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.group-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.group-card-lb {
+  flex-shrink: 0;
+  width: 140px;
+  border-left: 1px solid var(--border-color);
+  padding-left: 14px;
+  display: flex;
+  align-items: center;
+}
+
+/* ---- Mini Leaderboard ---- */
+.mini-lb {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.mini-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mini-lb-pos {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.mini-lb-pos-first {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.mini-lb-name {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-lb-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
 /* ---- Groups Grid (2-column layout in dashboard hero) ---- */
 .groups-grid {
   display: grid;
@@ -1159,7 +1232,7 @@
 
 .groups-grid-single {
   grid-template-columns: 1fr;
-  max-width: 320px;
+  max-width: 400px;
   margin-left: auto;
   margin-right: auto;
 }

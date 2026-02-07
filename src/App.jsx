@@ -28,6 +28,7 @@ function App() {
     return localStorage.getItem("oddsFormat") || "decimal";
   });
   const [bookmakerLinks, setBookmakerLinks] = useState({});
+  const [miniLeaderboards, setMiniLeaderboards] = useState({});
 
   useEffect(() => {
     const token = api.getStoredToken();
@@ -89,6 +90,25 @@ function App() {
   useEffect(() => {
     localStorage.setItem("oddsFormat", oddsFormat);
   }, [oddsFormat]);
+
+  useEffect(() => {
+    if (groups.length === 0) return;
+    const fetchMiniLeaderboards = async () => {
+      try {
+        const results = await Promise.all(
+          groups.map(g => api.getGroupLeaderboard(g.id).then(lb => [g.id, lb]).catch(() => [g.id, []]))
+        );
+        const map = {};
+        for (const [groupId, leaderboard] of results) {
+          map[groupId] = leaderboard;
+        }
+        setMiniLeaderboards(map);
+      } catch (err) {
+        console.error("Failed to fetch mini leaderboards:", err);
+      }
+    };
+    fetchMiniLeaderboards();
+  }, [groups]);
 
   const loadGroups = async () => {
     setLoadingGroups(true);
@@ -231,6 +251,7 @@ function App() {
                     oddsFormat={oddsFormat}
                     setOddsFormat={setOddsFormat}
                     bookmakerLinks={bookmakerLinks}
+                    miniLeaderboards={miniLeaderboards}
                   />
                 )}
                 <footer className="responsible-gambling-footer">
@@ -248,7 +269,7 @@ function App() {
   );
 }
 
-function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks }) {
+function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks, miniLeaderboards }) {
   const navigate = useNavigate();
 
   const handleLogoutWithNav = () => {
@@ -270,6 +291,7 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
               onJoinGroup={onJoinGroup}
               onLogout={handleLogoutWithNav}
               error={error}
+              miniLeaderboards={miniLeaderboards}
             />
           }
         />

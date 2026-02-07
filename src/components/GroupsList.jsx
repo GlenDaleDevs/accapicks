@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "./Skeleton";
+import MiniLeaderboard from "./MiniLeaderboard";
 
-export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogout, error: externalError, loading }) {
+export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogout, error: externalError, loading, miniLeaderboards }) {
   const navigate = useNavigate();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
@@ -53,13 +54,18 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogou
                 onClick={() => navigate(`/groups/${group.id}`)}
                 className="card card-clickable group-card"
               >
-                <h3 className="group-card-name">{group.name}</h3>
-                {group.description && (
-                  <p className="group-card-desc">{group.description}</p>
-                )}
-                <small className="group-card-date">
-                  Created {new Date(group.created_at).toLocaleDateString()}
-                </small>
+                <div className="group-card-info">
+                  <h3 className="group-card-name">{group.name}</h3>
+                  {group.description && (
+                    <p className="group-card-desc">{group.description}</p>
+                  )}
+                  <small className="group-card-date">
+                    Created {new Date(group.created_at).toLocaleDateString()}
+                  </small>
+                </div>
+                <div className="group-card-lb">
+                  <MiniLeaderboard entries={miniLeaderboards?.[group.id]} />
+                </div>
               </div>
             ))}
           </div>
