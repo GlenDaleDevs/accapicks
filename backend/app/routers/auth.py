@@ -271,13 +271,9 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
     search_email = data.email.strip().lower()
     user = db.query(models.User).filter(func.lower(models.User.email) == search_email).first()
 
-    # TODO: remove debug info after fixing email issue
-    all_emails = [u.email for u in db.query(models.User).all()]
-
     # Anti-enumeration: return success even if user not found or not verified
     if not user or not user.email_verified:
-        debug = "user_not_found" if not user else f"email_not_verified (user_id={user.id})"
-        return {"message": "If an account exists with that email, a reset code has been sent.", "debug": debug, "searched_for": search_email, "db_emails": all_emails}
+        return {"message": "If an account exists with that email, a reset code has been sent."}
 
     # Generate reset code
     reset_code = generate_verification_code()
@@ -288,13 +284,9 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
     db.commit()
 
     # Send reset email
-    result = send_password_reset_email(user.email, reset_code, user.username)
+    send_password_reset_email(user.email, reset_code, user.username)
 
-    # TODO: remove debug info after fixing email issue
-    if not result:
-        return {"message": "If an account exists with that email, a reset code has been sent.", "debug": "email_send_failed"}
-
-    return {"message": "If an account exists with that email, a reset code has been sent.", "debug": "email_sent", "resend_response": str(result)}
+    return {"message": "If an account exists with that email, a reset code has been sent."}
 
 
 # Reset password endpoint
