@@ -280,13 +280,13 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         &larr; Back to Accas
       </button>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <h2 className="section-title" style={{ marginBottom: 0 }}>{acca.name}</h2>
         {canDeleteAcca && (
           <button
             className="btn btn-danger"
             onClick={handleDeleteAcca}
-            style={{ fontSize: "14px", padding: "8px 16px" }}
+            style={{ fontSize: "14px", padding: "8px 16px", marginTop: "8px" }}
           >
             Delete
           </button>
@@ -295,39 +295,43 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
 
       {/* Lock countdown / status */}
       {acca.locks_at && acca.status === "open" && (
-        <>
+        <div style={{ textAlign: "center" }}>
           <div className="lock-countdown lock-countdown-open">
             Locks: {lockCountdown}
           </div>
           <p className="bet-settlement-info">
             The acca locks when the first match starts. Make sure all picks are in!
           </p>
-        </>
+        </div>
       )}
 
       {acca.status === "locked" && (
-        <>
+        <div style={{ textAlign: "center" }}>
           <div className="lock-countdown lock-countdown-locked">
             LOCKED - No more picks allowed
           </div>
           <p className="bet-settlement-info">
             This acca locked when the first match kicked off. Results are being tracked automatically.
           </p>
-        </>
+        </div>
       )}
 
-      {/* Bookmaker Comparison */}
-      <div className="mb-20">
-        <button
-          className="btn btn-secondary"
-          onClick={handleCompareBookmakers}
-          disabled={comparingBookmakers || acca.bets.length === 0}
-        >
-          {comparingBookmakers ? "Comparing..." : "Compare Bookmakers"}
-        </button>
-      </div>
+      {/* Bookmaker Comparison - only when open */}
+      {acca.status === "open" && (
+        <>
+          <div className="mb-20">
+            <button
+              className="btn btn-secondary"
+              onClick={handleCompareBookmakers}
+              disabled={comparingBookmakers || acca.bets.length === 0}
+            >
+              {comparingBookmakers ? "Comparing..." : "Compare Bookmakers"}
+            </button>
+          </div>
 
-      <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} accaId={accaId} />
+          <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} accaId={accaId} />
+        </>
+      )}
 
       {/* Add Pick - Fixture Grid Flow */}
       {acca.status === "open" && !showFixtureGrid && !showAddBet && (
