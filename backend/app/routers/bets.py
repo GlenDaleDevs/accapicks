@@ -9,6 +9,20 @@ from ..limiter import limiter
 router = APIRouter()
 
 
+def _recalculate_locks_at(db: Session, acca: models.Acca):
+    """Recalculate locks_at based on earliest commence_time of actual picks."""
+    bets = db.query(models.Bet).filter(
+        models.Bet.acca_id == acca.id,
+        models.Bet.commence_time.isnot(None),
+    ).all()
+
+    if bets:
+        earliest = min(b.commence_time for b in bets)
+        acca.locks_at = earliest
+    else:
+        acca.locks_at = None
+
+
 # Add a bet to an acca
 @router.post("/bets", response_model=schemas.BetResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("20/minute")
@@ -85,6 +99,8 @@ def create_bet(
     )
 
     db.add(new_bet)
+    db.flush()  # Get new_bet into session so recalculate sees it
+    _recalculate_locks_at(db, acca)
     try:
         db.commit()
         db.refresh(new_bet)
@@ -142,6 +158,8 @@ def delete_bet(
         )
 
     db.delete(bet)
+    db.flush()
+    _recalculate_locks_at(db, acca)
     db.commit()
 
     return {"message": "Pick removed"}
