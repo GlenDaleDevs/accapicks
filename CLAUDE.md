@@ -120,6 +120,7 @@ RESEND_API_KEY=<resend api key for email verification>
 | `devops` | Sonnet | Build, deploy, config files |
 | `web-design-planner` | Sonnet | Visual design direction and UI/UX recommendations |
 | `legal-gambling-compliance` | Sonnet | UK gambling law, GDPR, legal documents |
+| `annoying-user` | Opus | Adversarial tester — acts as a user trying to break the app. Read-only. |
 
 ### Pipeline (for non-trivial changes)
 1. **planner** -- scopes the work, identifies affected files, defines agent tasks
@@ -127,6 +128,17 @@ RESEND_API_KEY=<resend api key for email verification>
 3. **Implementation agents** (frontend-dev, backend-dev, database, etc.) -- run in parallel where independent
 4. **code-reviewer** -- reviews all changes for bugs, security, consistency
 5. **tester** -- writes/runs tests for new code
+
+### The `annoying-user` agent
+Use the `critic` subagent type with an adversarial user testing prompt. The agent should think like an impatient, creative, slightly malicious user who:
+- Tries to bypass validation (empty fields, huge inputs, special characters, SQL injection attempts)
+- Races conditions (double-clicking buttons, submitting forms twice, opening multiple tabs)
+- Abuses business logic (joining own group twice, betting after lock, manipulating odds)
+- Tests edge cases (empty groups, zero bets, deleted data, expired tokens)
+- Breaks navigation (back button, direct URL access, deep links while logged out)
+- Tries mobile-specific exploits (copy-paste into validated fields, autofill bypasses)
+
+Invoke with: `Task(subagent_type="critic", prompt="Act as an annoying user trying to break AccaPicks. Read [specific files] and find ways a user could...")`
 
 ### Skip to step 3 for:
 - Single-file bug fixes
