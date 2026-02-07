@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "./Skeleton";
 
-export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError, loading }) {
+export default function GroupsList({ groups, onCreateGroup, onJoinGroup, onLogout, error: externalError, loading }) {
   const navigate = useNavigate();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
@@ -42,15 +42,66 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
     <>
       <div className="dashboard-hero">
         <h2 className="dashboard-title">Your Groups</h2>
+
+        {loading ? (
+          <Skeleton width="100%" height="80px" count={2} />
+        ) : groups.length > 0 ? (
+          <div className={`groups-grid${groups.length === 1 ? " groups-grid-single" : ""}`}>
+            {groups.map((group) => (
+              <div
+                key={group.id}
+                onClick={() => navigate(`/groups/${group.id}`)}
+                className="card card-clickable group-card"
+              >
+                <h3 className="group-card-name">{group.name}</h3>
+                {group.description && (
+                  <p className="group-card-desc">{group.description}</p>
+                )}
+                <small className="group-card-date">
+                  Created {new Date(group.created_at).toLocaleDateString()}
+                </small>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
         <p className="dashboard-subtitle">Create accumulators with your mates and climb the leaderboard</p>
       </div>
 
-      <div className="mb-20">
+      {!loading && groups.length === 0 && (
+        <div className="welcome-guide">
+          <h3 className="welcome-guide-title">How AccaPicks Works</h3>
+          <div className="welcome-steps">
+            <div className="welcome-step">
+              <span className="welcome-step-num">1</span>
+              <div>
+                <h4 className="welcome-step-title">Create or Join a Group</h4>
+                <p className="welcome-step-desc">Start a group for your mates or join one with an invite code.</p>
+              </div>
+            </div>
+            <div className="welcome-step">
+              <span className="welcome-step-num">2</span>
+              <div>
+                <h4 className="welcome-step-title">Build Accumulators Together</h4>
+                <p className="welcome-step-desc">Each person picks one match per acca. Your picks combine into a group accumulator.</p>
+              </div>
+            </div>
+            <div className="welcome-step">
+              <span className="welcome-step-num">3</span>
+              <div>
+                <h4 className="welcome-step-title">Track Results & Compete</h4>
+                <p className="welcome-step-desc">Results update automatically. See who has the best win rate on the group leaderboard.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="groups-actions">
         {!showCreateGroup ? (
           <button
-            className="btn btn-primary mb-8"
+            className="btn btn-primary"
             onClick={() => setShowCreateGroup(true)}
-            style={{ marginRight: "10px" }}
           >
             + Create New Group
           </button>
@@ -148,56 +199,11 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
         )}
       </div>
 
-      {loading ? (
-        <div>
-          <Skeleton width="100%" height="80px" count={3} />
-        </div>
-      ) : groups.length === 0 ? (
-        <div className="welcome-guide">
-          <h3 className="welcome-guide-title">How AccaPicks Works</h3>
-          <div className="welcome-steps">
-            <div className="welcome-step">
-              <span className="welcome-step-num">1</span>
-              <div>
-                <h4 className="welcome-step-title">Create or Join a Group</h4>
-                <p className="welcome-step-desc">Start a group for your mates or join one with an invite code.</p>
-              </div>
-            </div>
-            <div className="welcome-step">
-              <span className="welcome-step-num">2</span>
-              <div>
-                <h4 className="welcome-step-title">Build Accumulators Together</h4>
-                <p className="welcome-step-desc">Each person picks one match per acca. Your picks combine into a group accumulator.</p>
-              </div>
-            </div>
-            <div className="welcome-step">
-              <span className="welcome-step-num">3</span>
-              <div>
-                <h4 className="welcome-step-title">Track Results & Compete</h4>
-                <p className="welcome-step-desc">Results update automatically. See who has the best win rate on the group leaderboard.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div>
-          {groups.map((group) => (
-            <div
-              key={group.id}
-              onClick={() => navigate(`/groups/${group.id}`)}
-              className="card card-clickable"
-            >
-              <h3 className="group-card-name">{group.name}</h3>
-              {group.description && (
-                <p className="group-card-desc">{group.description}</p>
-              )}
-              <small className="group-card-date">
-                Created {new Date(group.created_at).toLocaleDateString()}
-              </small>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="groups-logout">
+        <button className="btn btn-ghost" onClick={onLogout}>
+          Logout
+        </button>
+      </div>
     </>
   );
 }

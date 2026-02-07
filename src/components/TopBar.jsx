@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function TopBar({ user, onLogout, oddsFormat, setOddsFormat }) {
+export default function TopBar({ user, oddsFormat, setOddsFormat }) {
   const navigate = useNavigate();
 
   const toggleOddsFormat = () => {
@@ -9,24 +9,19 @@ export default function TopBar({ user, onLogout, oddsFormat, setOddsFormat }) {
 
   return (
     <div className="top-bar">
-      <div>
-        <p className="top-bar-welcome">
-          Welcome back, <span className="top-bar-username">{user?.username}</span>!
-        </p>
-      </div>
-      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+      <p className="top-bar-welcome">
+        Welcome back, <span className="top-bar-username">{user?.username}</span>!
+      </p>
+      <div className="top-bar-actions">
         <button
-          className="btn btn-ghost"
+          className="btn btn-ghost btn-sm"
           onClick={toggleOddsFormat}
           title={`Switch to ${oddsFormat === "decimal" ? "fractional" : "decimal"} odds`}
         >
           {oddsFormat === "decimal" ? "Decimal" : "Fractional"}
         </button>
-        <button className="btn btn-ghost" onClick={() => navigate("/settings")}>
+        <button className="btn btn-ghost btn-sm" onClick={() => navigate("/settings")}>
           Settings
-        </button>
-        <button className="btn btn-ghost" onClick={onLogout}>
-          Logout
         </button>
       </div>
     </div>

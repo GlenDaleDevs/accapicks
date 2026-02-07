@@ -125,6 +125,15 @@
   .league-winrate {
     font-size: 14px;
   }
+
+  /* Groups grid becomes single column on mobile */
+  .groups-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .groups-grid-single {
+    max-width: none;
+  }
 }
 
 /* ================================================
