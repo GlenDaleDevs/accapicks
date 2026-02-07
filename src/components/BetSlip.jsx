@@ -1,14 +1,28 @@
 import { useState } from "react";
 import { BOOKMAKER_DISPLAY_NAMES, LEAGUE_NAME_MAP } from "../utils/constants";
-import { formatOdds, formatBetSlipText, formatDisplayDate } from "../utils/formatters";
+import { formatOdds, formatBetSlipText, formatDisplayDate, formatKickoffTime } from "../utils/formatters";
 import * as api from "../api/client";
 
 export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmakerLinks = {} }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
-  if (!acca || acca.bets.length === 0) return null;
+  if (!acca) return null;
   if (acca.status === "settled") return null;
+
+  if (acca.bets.length === 0) {
+    if (acca.status === "locked") {
+      return (
+        <div className="bet-slip">
+          <h3 className="section-title">Bet Slip</h3>
+          <p className="text-secondary" style={{ textAlign: "center", padding: "20px 0" }}>
+            No picks were submitted before this acca locked.
+          </p>
+        </div>
+      );
+    }
+    return null;
+  }
 
   // Find best bookmaker from comparison data
   let bestBookmaker = null;
@@ -56,6 +70,9 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
               <span className="bet-slip-pick-odds">@ {formatOdds(bet.odds, oddsFormat)}</span>
             </div>
             <span className="bet-slip-pick-user">Picked by {bet.username}</span>
+            {bet.commence_time && (
+              <span className="bet-slip-pick-kickoff">Kick-off: {formatKickoffTime(bet.commence_time)}</span>
+            )}
           </div>
         ))}
       </div>
@@ -82,7 +99,7 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
           </div>
         )}
 
-        {!bookmakerComparison && (
+        {!bookmakerComparison && acca.status === "open" && (
           <p className="bet-slip-hint">Compare bookmakers above for best odds</p>
         )}
       </div>

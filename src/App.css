@@ -1360,6 +1360,12 @@
   padding-left: 28px;
 }
 
+.bet-slip-pick-kickoff {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-left: 28px;
+}
+
 .bet-slip-pick-number {
   font-weight: 700;
   color: var(--text-secondary);
