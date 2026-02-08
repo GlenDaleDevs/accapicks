@@ -42,6 +42,19 @@ function App() {
         setIsLoggedIn(false);
       });
     }
+
+    // Sync logout across tabs
+    const handleStorageChange = (e) => {
+      if (e.key === "token" && !e.newValue) {
+        api.setAuthToken(null);
+        setUser(null);
+        setIsLoggedIn(false);
+        setGroups([]);
+        setMiniLeaderboards({});
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   useEffect(() => {
@@ -61,7 +74,10 @@ function App() {
     const rawInvite = urlParams.get('invite');
     const inviteCode = rawInvite ? rawInvite.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) : null;
     if (inviteCode) {
-      localStorage.setItem('pendingInvite', inviteCode);
+      localStorage.setItem('pendingInvite', JSON.stringify({
+        code: inviteCode,
+        savedAt: Date.now()
+      }));
     }
   }, []);
 
@@ -73,17 +89,32 @@ function App() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      const pendingInvite = localStorage.getItem('pendingInvite');
-      if (pendingInvite) {
-        handleJoinGroup(pendingInvite)
-          .catch(err => {
-            console.error('Auto-join failed:', err);
-            showToast(err.message || 'Failed to join group from invite link', 'error');
-          })
-          .finally(() => {
-            localStorage.removeItem('pendingInvite');
-            window.history.replaceState({}, '', window.location.pathname);
-          });
+      const pendingInviteRaw = localStorage.getItem('pendingInvite');
+      if (pendingInviteRaw) {
+        let inviteCode;
+        try {
+          const parsed = JSON.parse(pendingInviteRaw);
+          // Expire after 24 hours
+          if (Date.now() - parsed.savedAt < 24 * 60 * 60 * 1000) {
+            inviteCode = parsed.code;
+          }
+        } catch {
+          // Legacy format (plain string) — use as-is
+          inviteCode = pendingInviteRaw;
+        }
+        if (inviteCode) {
+          handleJoinGroup(inviteCode)
+            .catch(err => {
+              console.error('Auto-join failed:', err);
+              showToast(err.message || 'Failed to join group from invite link', 'error');
+            })
+            .finally(() => {
+              localStorage.removeItem('pendingInvite');
+              window.history.replaceState({}, '', window.location.pathname);
+            });
+        } else {
+          localStorage.removeItem('pendingInvite');
+        }
       }
     }
   }, [isLoggedIn]);
@@ -192,6 +223,8 @@ function App() {
     setUser(null);
     setIsLoggedIn(false);
     setGroups([]);
+    setMiniLeaderboards({});
+    window.history.replaceState({}, "", "/");
   };
 
   const handleCreateGroup = async (name, description) => {

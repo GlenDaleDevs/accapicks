@@ -1137,6 +1137,9 @@
   margin: 0 0 4px 0;
   color: var(--text-primary);
   font-size: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .group-card-desc {
@@ -1374,6 +1377,9 @@
 
 .bet-slip-pick-description {
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bet-slip-pick-odds {

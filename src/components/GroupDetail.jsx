@@ -199,7 +199,14 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   }
 
   if (error && !group) {
-    return <div className="alert-error">{error}</div>;
+    return (
+      <div>
+        <button className="btn btn-ghost mb-20" onClick={() => navigate("/")}>
+          &larr; Back to Groups
+        </button>
+        <div className="alert-error">{error}</div>
+      </div>
+    );
   }
 
   if (!group) {
