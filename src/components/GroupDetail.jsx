@@ -125,6 +125,10 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     window.open(`https://wa.me/?text=${encodeURIComponent(getInviteMessage())}`, "_blank");
   };
 
+  const shareMessenger = () => {
+    window.open(`fb-messenger://share/?link=${encodeURIComponent(getInviteLink())}`, "_blank");
+  };
+
   const shareNative = async () => {
     try {
       await navigator.share({
@@ -260,6 +264,9 @@ export default function GroupDetail({ user, onRefreshGroups }) {
             <div className="invite-share-buttons">
               <button className="btn btn-share btn-whatsapp" onClick={shareWhatsApp}>
                 WhatsApp
+              </button>
+              <button className="btn btn-share btn-messenger" onClick={shareMessenger}>
+                Messenger
               </button>
               {typeof navigator !== "undefined" && navigator.share && (
                 <button className="btn btn-share btn-native-share" onClick={shareNative}>
