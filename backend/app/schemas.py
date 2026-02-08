@@ -164,8 +164,8 @@ class BetCreate(BaseModel):
             val = float(v)
         except (ValueError, TypeError):
             raise ValueError("Odds must be a valid number")
-        if not math.isfinite(val) or val <= 0 or val > 10000:
-            raise ValueError("Odds must be a positive number up to 10,000")
+        if not math.isfinite(val) or val < 1.0 or val > 10000:
+            raise ValueError("Odds must be between 1.0 and 10,000")
         return v
 
     @field_validator("pick_type")

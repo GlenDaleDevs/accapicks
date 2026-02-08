@@ -95,7 +95,14 @@ def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(get
     db.refresh(new_user)
 
     # Send verification email
-    send_verification_email(user.email, verification_code, user.username)
+    try:
+        send_verification_email(user.email, verification_code, user.username)
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {user.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email. Please try again."
+        )
 
     return {
         "message": "Account created. Please check your email for verification code.",
@@ -303,6 +310,13 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
             detail="Invalid request"
         )
 
+    # Check account lockout
+    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account temporarily locked. Try again later."
+        )
+
     # Generate new code
     verification_code = generate_verification_code()
     code_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -313,7 +327,14 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
     db.commit()
 
     # Send verification email
-    send_verification_email(user.email, verification_code, user.username)
+    try:
+        send_verification_email(user.email, verification_code, user.username)
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {user.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email. Please try again."
+        )
 
     return {
         "message": "Verification code sent. Please check your email.",
@@ -345,7 +366,14 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
     db.commit()
 
     # Send reset email
-    send_password_reset_email(user.email, reset_code, user.username)
+    try:
+        send_password_reset_email(user.email, reset_code, user.username)
+    except Exception as e:
+        logger.error(f"Failed to send password reset email to {user.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send reset email. Please try again."
+        )
 
     return {"message": "If an account exists with that email, a reset code has been sent."}
 
@@ -428,12 +456,28 @@ def change_password(
             detail="User not found"
         )
 
+    # Check account lockout
+    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account temporarily locked. Try again later."
+        )
+
     # Verify current password
     if not auth.verify_password(data.current_password, user.hashed_password):
+        user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+        if user.failed_login_attempts >= 10:
+            user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Current password is incorrect"
         )
+
+    # Reset failed attempts on success
+    if user.failed_login_attempts:
+        user.failed_login_attempts = 0
+        user.locked_until = None
 
     # Hash new password
     user.hashed_password = auth.hash_password(data.new_password)

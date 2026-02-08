@@ -91,6 +91,21 @@ export default function AuthView({
         setSuccessMessage("If an account exists with that email, we've sent a reset code.");
         switchMode("reset");
       } else if (mode === "reset") {
+        if (password.length < 8) {
+          setError("Password must be at least 8 characters");
+          setLoading(false);
+          return;
+        }
+        if (!/[a-zA-Z]/.test(password)) {
+          setError("Password must contain at least one letter");
+          setLoading(false);
+          return;
+        }
+        if (!/\d/.test(password)) {
+          setError("Password must contain at least one digit");
+          setLoading(false);
+          return;
+        }
         await onResetPassword(email, verificationCode, password);
         setSuccessMessage("Password reset successful!");
         setTimeout(() => switchMode("login"), 2000);
