@@ -384,7 +384,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       {acca.status === "open" && !showFixtureGrid && !showAddBet && (
         <div className="mb-20" style={{ textAlign: "center" }}>
           {!userAlreadyPicked && (
-            <p className="pick-hint">Everyone gets one pick — make it count!</p>
+            <p className="pick-hint">Everyone gets one pick — make yours count!</p>
           )}
           <button
             className={`btn ${userAlreadyPicked ? "btn-secondary" : "btn-primary"}`}
