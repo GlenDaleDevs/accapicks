@@ -151,6 +151,7 @@ Invoke with: `Task(subagent_type="critic", prompt="Act as an annoying user tryin
 
 ## Commit Style
 
+- **Auto commit and push:** After every set of edits, automatically commit and push without waiting for the user to ask. Do not ask for confirmation — just do it.
 - Start with a verb: Add, Fix, Update, Remove, Refactor
 - First line: short summary (under 72 chars), no period
 - Body (if needed): bullet points explaining what and why
