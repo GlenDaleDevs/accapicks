@@ -92,10 +92,10 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
               <span className="bet-slip-pick-odds">@ {formatOdds(bet.odds, oddsFormat)}</span>
               {resultIcon(bet.result)}
             </div>
-            <span className="bet-slip-pick-user">Picked by {bet.username}</span>
             {bet.commence_time && (
-              <span className="bet-slip-pick-kickoff">Kick-off: {formatKickoffTime(bet.commence_time)}</span>
+              <span className="bet-slip-pick-kickoff">{formatKickoffTime(bet.commence_time)}</span>
             )}
+            <span className="bet-slip-pick-user">Picked by {bet.username}</span>
           </div>
         ))}
       </div>
