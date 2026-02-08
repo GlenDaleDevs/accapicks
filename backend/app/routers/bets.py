@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
@@ -40,7 +41,7 @@ def create_bet(
         raise HTTPException(status_code=404, detail="Acca not found")
 
     # Check if acca is locked
-    if acca.status == "locked":
+    if acca.status != "open":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This acca is locked and no longer accepting picks"
@@ -98,12 +99,25 @@ def create_bet(
         commence_time=datetime.fromisoformat(bet.commence_time.replace("Z", "+00:00")) if bet.commence_time else None,
     )
 
+    # Validate commence_time is not in the past
+    if new_bet.commence_time and new_bet.commence_time < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot pick a match that has already started"
+        )
+
     db.add(new_bet)
     db.flush()  # Get new_bet into session so recalculate sees it
     _recalculate_locks_at(db, acca)
     try:
         db.commit()
         db.refresh(new_bet)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate bet detected — you may have already picked or this selection is taken"
+        )
     except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create bet")

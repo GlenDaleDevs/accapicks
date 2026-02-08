@@ -25,6 +25,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
   const [comparingBookmakers, setComparingBookmakers] = useState(false);
   const [lockCountdown, setLockCountdown] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (accaId) {
@@ -166,6 +167,8 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
   }
 
   const handlePickFromGrid = async (match, pickType) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setError("");
     let description, odds;
     if (pickType === "home") {
@@ -197,15 +200,21 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       setFilteredMatches([]);
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to add pick");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleRemovePick = async (betId) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await api.deleteBet(betId);
       loadAccaDetails();
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to remove pick");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -387,6 +396,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
           }}
           error={error}
           oddsFormat={oddsFormat}
+          isSubmitting={isSubmitting}
         />
       )}
 
