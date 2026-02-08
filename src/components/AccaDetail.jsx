@@ -361,7 +361,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       {/* Bookmaker Comparison - only when there are picks */}
       {acca.status === "open" && acca.bets.length > 0 && (
         <>
-          <div className="mb-20">
+          <div className="mb-20" style={{ textAlign: "center" }}>
             <button
               className="btn btn-secondary"
               onClick={handleCompareBookmakers}

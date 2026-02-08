@@ -893,6 +893,27 @@
   color: var(--accent-primary);
 }
 
+.bookmaker-show-more {
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 8px;
+  background-color: transparent;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.bookmaker-show-more:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background-color: rgba(0, 212, 170, 0.05);
+}
+
 /* ---- Fixture Grid ---- */
 .fixture-date-header {
   color: var(--text-primary);
@@ -913,16 +934,18 @@
 
 .fixture-teams-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
   background-color: var(--bg-surface);
+  gap: 8px;
 }
 
 .fixture-team {
   color: var(--text-primary);
   font-weight: 600;
+  font-size: 14px;
   flex: 1;
+  min-width: 0;
 }
 
 .fixture-team-away {
@@ -931,8 +954,10 @@
 
 .fixture-kickoff {
   color: var(--text-muted);
-  font-size: 12px;
-  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  padding: 0 4px;
 }
 
 .fixture-odds-row {
