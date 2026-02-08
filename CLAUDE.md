@@ -109,7 +109,6 @@ RESEND_API_KEY=<resend api key for email verification>
 ### Agents
 | Agent | Model | Role |
 |---|---|---|
-| `planner` | Opus | Scopes work, identifies files, proposes approach. Read-only. |
 | `critic` | Opus | Devil's advocate — challenges the plan before implementation. Read-only. |
 | `frontend-dev` | Sonnet | Implements frontend code under `src/` |
 | `backend-dev` | Sonnet | Implements backend code under `backend/app/` |
@@ -123,11 +122,10 @@ RESEND_API_KEY=<resend api key for email verification>
 | `annoying-user` | Opus | Adversarial tester — acts as a user trying to break the app. Read-only. |
 
 ### Pipeline (for non-trivial changes)
-1. **planner** -- scopes the work, identifies affected files, defines agent tasks
+1. **Claude (orchestrator)** -- reads files, scopes the work, identifies affected files, writes the plan. Planning is done directly by the orchestrator because it already has full conversation context — delegating to a planning agent duplicates work and loses context.
 2. **critic** -- challenges the plan, finds gaps, suggests improvements
 3. **Implementation agents** (frontend-dev, backend-dev, database, etc.) -- run in parallel where independent
-4. **code-reviewer** -- reviews all changes for bugs, security, consistency
-5. **tester** -- writes/runs tests for new code
+4. **code-reviewer + tester** -- run in parallel after implementation
 
 ### The `annoying-user` agent
 Use the `critic` subagent type with an adversarial user testing prompt. The agent should think like an impatient, creative, slightly malicious user who:
@@ -183,11 +181,17 @@ Invoke with: `Task(subagent_type="critic", prompt="Act as an annoying user tryin
 
 ## Rules (learned from mistakes)
 
+**IMPORTANT: Every time a bug or mistake is encountered during development, add a new rule here immediately so it is never repeated.**
+
 - Always save assessments, feature plans, and multi-item lists to a .txt file in the project root — context compaction will lose them otherwise
-- Always follow the planner → critic → implement pipeline for non-trivial changes. If you think a task is simple enough to skip planning, ask the user first — don't skip silently
+- Always follow the plan → critic → implement pipeline for non-trivial changes. Planning is done by the orchestrator directly (not a planning agent). If you think a task is simple enough to skip planning, ask the user first — don't skip silently
+- Always delegate implementation to agents (frontend-dev, backend-dev, etc.) — don't implement directly in the main conversation. Run independent agents in parallel
 - After implementing code review fixes, always build (`npm run build`) before committing to catch syntax/import errors
 - When adding new acca/bet statuses or enum values in the backend, check that the frontend filters and badge displays handle ALL possible values (e.g. "won", "lost", "settled" — not just "settled")
 - Case sensitivity matters everywhere: login, signup, email lookups, username checks — always use func.lower() or .lower() for user-facing string comparisons
 - Mobile keyboard behaviour is controlled by HTML input attributes: use `type="email"` for email-only fields, `type="text"` + `inputMode="email"` for fields that accept email OR other text (like username). Never use `type="email"` on a field that accepts non-email input
 - When deleting user data (account deletion, leave group, remove member), consider the cascade effect on related data like acca status — deleting bets can leave accas in an inconsistent state
 - The-Odds-API sport keys for English lower leagues: `soccer_efl_champ` (Championship), `soccer_england_league1` (League One), `soccer_england_league2` (League Two)
+- Leaderboards/stats that are built from bets must still include members with 0 bets — always start from the members list and default to zeros, not from bets alone
+- `locks_at` for accas must be calculated from the earliest kickoff of **actually picked** matches, not all matches in the league. Recalculate on every bet add/remove
+- Railway deploy logs only show build/startup output — runtime application logs (logger/print) are NOT in deploy logs. For debugging production, return debug info in the API response temporarily and check via browser DevTools Network tab

@@ -13,10 +13,17 @@
     padding: 12px 16px;
   }
 
+  /* Allow header to wrap so invite row drops below back button */
+  .group-detail-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
   /* Allow invite code row to wrap on small screens */
   .invite-code-row {
     flex-wrap: wrap;
     gap: 8px;
+    width: 100%;
   }
 
   /* Minimum touch target size for small buttons */

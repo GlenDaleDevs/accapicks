@@ -10,6 +10,7 @@
   justify-content: center;
   min-height: 80vh;
   padding: 20px 24px;
+  background: radial-gradient(ellipse 600px 400px at 50% 30%, rgba(0, 212, 170, 0.06), transparent);
 }
 
 /* ---- Hero Section ---- */
@@ -33,9 +34,13 @@
 .landing-brand {
   font-size: 3rem;
   font-weight: 700;
-  color: #00d4aa;
   margin: 0 0 12px 0;
   letter-spacing: -1px;
+  background: linear-gradient(135deg, #00d4aa, #00f0c8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(0, 212, 170, 0.3));
 }
 
 .landing-headline {
@@ -55,20 +60,10 @@
 /* ---- Feature Strip ---- */
 .landing-features {
   display: flex;
-  gap: 24px;
+  gap: 16px;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   margin-bottom: 32px;
-  animation: featuresFadeIn 800ms ease-out 200ms both;
-}
-
-@keyframes featuresFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .landing-feature {
@@ -76,6 +71,27 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  padding: 14px 18px;
+  background: rgba(26, 44, 56, 0.5);
+  border: 1px solid rgba(0, 212, 170, 0.12);
+  border-radius: 12px;
+  transition: all 0.25s ease;
+  animation: featureCardIn 600ms ease-out both;
+}
+
+.landing-feature:nth-child(1) { animation-delay: 200ms; }
+.landing-feature:nth-child(2) { animation-delay: 350ms; }
+.landing-feature:nth-child(3) { animation-delay: 500ms; }
+
+@keyframes featureCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .landing-feature-icon {
@@ -102,14 +118,25 @@
   font-weight: 500;
 }
 
+/* Hover effects only for pointer devices */
+@media (hover: hover) {
+  .landing-feature:hover {
+    border-color: rgba(0, 212, 170, 0.3);
+    background: rgba(26, 44, 56, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 212, 170, 0.1);
+  }
+}
+
 /* ---- Auth Container ---- */
 .auth-form-container {
   background: rgba(26, 44, 56, 0.8);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 212, 170, 0.3);
+  border-top: 3px solid #00d4aa;
   border-radius: 16px;
   padding: 40px 32px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(0, 212, 170, 0.05);
   width: 100%;
   max-width: 400px;
   animation: formFadeIn 800ms ease-out 400ms both;
@@ -251,7 +278,11 @@
   }
 
   .landing-features {
-    gap: 16px;
+    gap: 10px;
+  }
+
+  .landing-feature {
+    padding: 10px 12px;
   }
 
   .landing-feature-text {

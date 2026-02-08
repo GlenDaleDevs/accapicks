@@ -8,10 +8,11 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
   const [error, setError] = useState("");
 
   if (!acca) return null;
-  if (acca.status === "settled") return null;
+
+  const isSettled = ["settled", "won", "lost"].includes(acca.status);
 
   if (acca.bets.length === 0) {
-    if (acca.status === "locked") {
+    if (acca.status === "locked" || isSettled) {
       return (
         <div className="bet-slip">
           <h3 className="section-title">Bet Slip</h3>
@@ -57,17 +58,39 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
     }
   };
 
+  const resultIcon = (result) => {
+    if (result === "won") return <span className="bet-slip-result-icon bet-slip-result-won" title="Won">&#10003;</span>;
+    if (result === "lost") return <span className="bet-slip-result-icon bet-slip-result-lost" title="Lost">&#10007;</span>;
+    if (result === "void") return <span className="bet-slip-result-icon bet-slip-result-void" title="Void">&mdash;</span>;
+    return null;
+  };
+
+  const resultBorderClass = (result) => {
+    if (result === "won") return "bet-slip-pick-won";
+    if (result === "lost") return "bet-slip-pick-lost";
+    if (result === "void") return "bet-slip-pick-void";
+    return "";
+  };
+
   return (
     <div className="bet-slip">
-      <h3 className="section-title">Bet Slip</h3>
+      <div className="bet-slip-title-row">
+        <h3 className="section-title" style={{ margin: 0 }}>Bet Slip</h3>
+        {isSettled && (
+          <span className={`badge badge-${acca.status}`}>
+            {acca.status}
+          </span>
+        )}
+      </div>
 
       <div className="bet-slip-picks">
         {acca.bets.map((bet, index) => (
-          <div key={bet.id} className="bet-slip-pick-item">
+          <div key={bet.id} className={`bet-slip-pick-item ${resultBorderClass(bet.result)}`}>
             <div className="bet-slip-pick-main">
               <span className="bet-slip-pick-number">{index + 1}.</span>
               <span className="bet-slip-pick-description">{bet.description}</span>
               <span className="bet-slip-pick-odds">@ {formatOdds(bet.odds, oddsFormat)}</span>
+              {resultIcon(bet.result)}
             </div>
             <span className="bet-slip-pick-user">Picked by {bet.username}</span>
             {bet.commence_time && (
@@ -85,7 +108,7 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
         {bestBookmaker && (
           <div className="bet-slip-best-bookmaker">
             Best Odds at: <strong>{bestBookmaker}</strong>
-            {bestBookmakerUrl && (
+            {!isSettled && bestBookmakerUrl && (
               <a
                 href={bestBookmakerUrl}
                 target="_blank"
@@ -104,9 +127,11 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
         )}
       </div>
 
-      <button className="btn-copy" onClick={handleCopy}>
-        {copied ? "Copied!" : "Copy to Clipboard"}
-      </button>
+      {!isSettled && (
+        <button className="btn-copy" onClick={handleCopy}>
+          {copied ? "Copied!" : "Copy to Clipboard"}
+        </button>
+      )}
 
       {error && <div className="bet-slip-error">{error}</div>}
 
