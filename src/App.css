@@ -1158,6 +1158,8 @@
   display: flex;
   gap: 16px;
   align-items: stretch;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .group-card-info {
@@ -1706,7 +1708,6 @@
   border-radius: var(--radius-lg);
   padding: 24px 20px;
   margin-bottom: 24px;
-  overflow: hidden;
 }
 
 .dashboard-header {
