@@ -2,6 +2,7 @@ import os
 import logging
 import resend
 from typing import Optional
+from html import escape
 
 resend.api_key = os.getenv("RESEND_API_KEY")
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ def send_verification_email(to_email: str, code: str, username: str) -> Optional
             "subject": "Verify your AccaPicks account",
             "html": f"""
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h1 style="color: #333;">Welcome to AccaPicks, {username}!</h1>
+                    <h1 style="color: #333;">Welcome to AccaPicks, {escape(username)}!</h1>
                     <p>Your verification code is:</p>
                     <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
                                 background: #f5f5f5; padding: 20px; text-align: center;
@@ -50,7 +51,7 @@ def send_password_reset_email(to_email: str, code: str, username: str) -> Option
             "html": f"""
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h1 style="color: #333;">Password Reset Request</h1>
-                    <p>Hi {username},</p>
+                    <p>Hi {escape(username)},</p>
                     <p>You requested to reset your password. Your reset code is:</p>
                     <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
                                 background: #f5f5f5; padding: 20px; text-align: center;

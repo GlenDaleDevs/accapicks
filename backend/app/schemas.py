@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import datetime
 from typing import Optional
 import re
+import math
 
 
 def validate_password_strength(v):
@@ -147,15 +148,24 @@ class BetCreate(BaseModel):
     sport_key: Optional[str] = None
     commence_time: Optional[str] = None
 
+    @field_validator("description")
+    @classmethod
+    def sanitize_description(cls, v):
+        # Strip HTML tags to prevent stored XSS
+        cleaned = re.sub(r"<[^>]+>", "", v).strip()
+        if not cleaned:
+            raise ValueError("Description cannot be blank")
+        return cleaned
+
     @field_validator("odds")
     @classmethod
     def odds_must_be_positive(cls, v):
         try:
             val = float(v)
-            if val <= 0:
-                raise ValueError
-        except ValueError:
-            raise ValueError("Odds must be a positive number")
+        except (ValueError, TypeError):
+            raise ValueError("Odds must be a valid number")
+        if not math.isfinite(val) or val <= 0 or val > 10000:
+            raise ValueError("Odds must be a positive number up to 10,000")
         return v
 
     @field_validator("pick_type")

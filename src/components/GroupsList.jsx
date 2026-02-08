@@ -11,11 +11,14 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
   const [groupDescription, setGroupDescription] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const displayError = externalError || error;
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setError("");
     try {
       await onCreateGroup(groupName, groupDescription);
@@ -24,11 +27,15 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
       setGroupDescription("");
     } catch (err) {
       setError(err.message || "Failed to create group");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleJoin = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setError("");
     try {
       await onJoinGroup(inviteCode);
@@ -36,6 +43,8 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
       setInviteCode("");
     } catch (err) {
       setError(err.message || "Failed to join group");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -71,7 +80,7 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
               </div>
 
               <div className="btn-group">
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                   Join Group
                 </button>
                 <button
@@ -186,7 +195,7 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
               </div>
 
               <div className="btn-group">
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                   Create Group
                 </button>
                 <button
