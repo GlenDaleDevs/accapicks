@@ -51,18 +51,28 @@ def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(get
     # Check if email already exists
     existing_email = db.query(models.User).filter(func.lower(models.User.email) == user.email.lower()).first()
     if existing_email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
+        if existing_email.email_verified:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        else:
+            # Overwrite unverified account — prevents squatting
+            db.delete(existing_email)
+            db.flush()
 
     # Check if username already exists (case-insensitive)
     existing_username = db.query(models.User).filter(func.lower(models.User.username) == user.username.lower()).first()
     if existing_username:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already taken"
-        )
+        if existing_username.email_verified:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
+        else:
+            # Overwrite unverified account — prevents squatting
+            db.delete(existing_username)
+            db.flush()
 
     # Generate verification code
     verification_code = generate_verification_code()
@@ -145,8 +155,25 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
             detail="Invalid credentials"
         )
 
+    # Check account lockout (reset counter if lockout has expired)
+    if user.locked_until:
+        if datetime.now(timezone.utc) < user.locked_until:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account temporarily locked. Try again later."
+            )
+        else:
+            # Lockout expired — reset counter
+            user.failed_login_attempts = 0
+            user.locked_until = None
+            db.commit()
+
     # Verify password
     if not auth.verify_password(credentials.password, user.hashed_password):
+        user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+        if user.failed_login_attempts >= 10:
+            user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -158,6 +185,12 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Email not verified. Please verify your email first."
         )
+
+    # Reset failed login attempts on success
+    if user.failed_login_attempts:
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        db.commit()
 
     # Create access token
     access_token = auth.create_access_token(
@@ -191,8 +224,29 @@ def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session
             detail="Email already verified"
         )
 
+    # Check account lockout
+    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account temporarily locked. Try again later."
+        )
+
+    # Brute-force protection: max 5 attempts
+    if user.verification_attempts >= 5:
+        # Invalidate the code entirely
+        user.verification_code = None
+        user.verification_code_expires = None
+        user.verification_attempts = 0
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Too many failed attempts. Please request a new verification code."
+        )
+
     # Check code
     if user.verification_code != data.code:
+        user.verification_attempts = (user.verification_attempts or 0) + 1
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid verification code"
@@ -209,6 +263,7 @@ def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session
     user.email_verified = True
     user.verification_code = None
     user.verification_code_expires = None
+    user.verification_attempts = 0
     db.commit()
     db.refresh(user)
 
@@ -250,6 +305,7 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
 
     user.verification_code = verification_code
     user.verification_code_expires = code_expires
+    user.verification_attempts = 0
     db.commit()
 
     # Send verification email
@@ -281,6 +337,7 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
 
     user.verification_code = reset_code
     user.verification_code_expires = code_expires
+    user.verification_attempts = 0
     db.commit()
 
     # Send reset email
@@ -302,8 +359,28 @@ def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Ses
             detail="Invalid or expired reset code"
         )
 
+    # Check account lockout
+    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account temporarily locked. Try again later."
+        )
+
+    # Brute-force protection: max 5 attempts
+    if user.verification_attempts >= 5:
+        user.verification_code = None
+        user.verification_code_expires = None
+        user.verification_attempts = 0
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Too many failed attempts. Please request a new reset code."
+        )
+
     # Check code
     if user.verification_code != data.code:
+        user.verification_attempts = (user.verification_attempts or 0) + 1
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired reset code"
@@ -322,6 +399,7 @@ def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Ses
     # Clear verification code
     user.verification_code = None
     user.verification_code_expires = None
+    user.verification_attempts = 0
     db.commit()
 
     return {"message": "Password reset successful. You can now log in."}

@@ -115,7 +115,11 @@ def join_group(
     )
 
     db.add(new_member)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Already a member of this group")
 
     return {"message": "Successfully joined group", "group": group.name}
 

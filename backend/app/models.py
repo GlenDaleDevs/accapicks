@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -16,6 +16,9 @@ class User(Base):
     email_verified = Column(Boolean, default=False)  # Email verification status
     verification_code = Column(String, nullable=True)  # 6-digit verification code
     verification_code_expires = Column(DateTime(timezone=True), nullable=True)  # Code expiry
+    verification_attempts = Column(Integer, default=0)  # Failed verification code attempts
+    failed_login_attempts = Column(Integer, default=0)  # Failed login attempts
+    locked_until = Column(DateTime(timezone=True), nullable=True)  # Account lockout timestamp
     created_at = Column(DateTime(timezone=True), server_default=func.now())  # Auto timestamp
 
     # Relationships
@@ -70,6 +73,11 @@ class Acca(Base):
 class Bet(Base):
     __tablename__ = "bets"
 
+    __table_args__ = (
+        UniqueConstraint('acca_id', 'user_id', name='uq_bet_acca_user'),
+        UniqueConstraint('acca_id', 'description', name='uq_bet_acca_description'),
+    )
+
     id = Column(Integer, primary_key=True, index=True)
     acca_id = Column(Integer, ForeignKey("accas.id"), nullable=False, index=True)  # Which acca this bet belongs to
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)  # Who created this bet
@@ -96,7 +104,11 @@ class Bet(Base):
 # GroupMember model - links users to groups
 class GroupMember(Base):
     __tablename__ = "group_members"
-    
+
+    __table_args__ = (
+        UniqueConstraint('group_id', 'user_id', name='uq_groupmember_group_user'),
+    )
+
     id = Column(Integer, primary_key=True, index=True)
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)

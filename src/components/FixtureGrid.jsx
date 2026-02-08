@@ -11,6 +11,7 @@ export default function FixtureGrid({
   onCancel,
   error,
   oddsFormat = "decimal",
+  isSubmitting = false,
 }) {
   // Build set of already-taken pick descriptions in this acca
   const takenPicks = new Set((acca?.bets || []).map((b) => b.description));
@@ -95,7 +96,7 @@ export default function FixtureGrid({
                         <button
                           className={`fixture-odds-btn${homeTaken ? " fixture-odds-taken" : ""}`}
                           onClick={() => !homeTaken && onPickMatch(match, "home")}
-                          disabled={homeTaken}
+                          disabled={homeTaken || isSubmitting}
                         >
                           <div className="fixture-odds-label">
                             {homeTaken ? "Taken" : "Home"}
@@ -107,7 +108,7 @@ export default function FixtureGrid({
                         <button
                           className={`fixture-odds-btn${drawTaken ? " fixture-odds-taken" : ""}`}
                           onClick={() => !drawTaken && onPickMatch(match, "draw")}
-                          disabled={drawTaken}
+                          disabled={drawTaken || isSubmitting}
                         >
                           <div className="fixture-odds-label">
                             {drawTaken ? "Taken" : "Draw"}
@@ -119,7 +120,7 @@ export default function FixtureGrid({
                         <button
                           className={`fixture-odds-btn${awayTaken ? " fixture-odds-taken" : ""}`}
                           onClick={() => !awayTaken && onPickMatch(match, "away")}
-                          disabled={awayTaken}
+                          disabled={awayTaken || isSubmitting}
                         >
                           <div className="fixture-odds-label">
                             {awayTaken ? "Taken" : "Away"}
