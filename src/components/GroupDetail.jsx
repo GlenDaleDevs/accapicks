@@ -419,7 +419,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       })()}
 
       {/* Leave Group */}
-      <div style={{ marginTop: "40px", paddingTop: "20px", borderTop: "1px solid #e5e7eb" }}>
+      <div style={{ marginTop: "40px", paddingTop: "20px", borderTop: "1px solid #e5e7eb", textAlign: "center" }}>
         <button
           className="btn btn-danger"
           onClick={handleLeaveGroup}
