@@ -19,6 +19,14 @@ class UserCreate(BaseModel):
     email: EmailStr  # Validates it's a proper email format
     username: str = Field(min_length=3, max_length=20, pattern=r"^[a-zA-Z0-9_]+$")
     password: str = Field(min_length=8, max_length=128)
+    age_confirmed: bool = False
+
+    @field_validator("age_confirmed")
+    @classmethod
+    def must_confirm_age(cls, v):
+        if not v:
+            raise ValueError("You must confirm you are 18 or over")
+        return v
 
     @field_validator("password")
     @classmethod
@@ -100,6 +108,21 @@ class GroupCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     description: Optional[str] = Field(default=None, max_length=500)
 
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError("Name cannot be blank")
+        return v
+
+    @field_validator("description")
+    @classmethod
+    def strip_description(cls, v):
+        if v is not None:
+            v = v.strip() or None
+        return v
+
 # Schema for group response (what we send back)
 class GroupResponse(BaseModel):
     id: int
@@ -162,6 +185,13 @@ class BetResponse(BaseModel):
     class Config:
         from_attributes = True
 
+VALID_SPORT_KEYS = {
+    "soccer_epl", "soccer_efl_champ", "soccer_england_league1",
+    "soccer_england_league2", "soccer_spain_la_liga",
+    "soccer_germany_bundesliga", "soccer_italy_serie_a",
+    "soccer_france_ligue_one",
+}
+
 # Schema for creating an acca (what we receive)
 class AccaCreate(BaseModel):
     group_id: int
@@ -170,11 +200,31 @@ class AccaCreate(BaseModel):
     leagues: list[str]  # ["soccer_epl", "soccer_spain_la_liga"]
     bet_type: str = Field(default="h2h")
 
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError("Name cannot be blank")
+        return v
+
+    @field_validator("bet_type")
+    @classmethod
+    def validate_bet_type(cls, v):
+        allowed = ("h2h", "spreads", "totals")
+        if v not in allowed:
+            raise ValueError(f"bet_type must be one of: {', '.join(allowed)}")
+        return v
+
     @field_validator("match_dates")
     @classmethod
     def validate_match_dates(cls, v):
         if len(v) > 7:
             raise ValueError("Maximum 7 match dates allowed")
+        date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+        for d in v:
+            if not date_pattern.match(d):
+                raise ValueError(f"Invalid date format: '{d}'. Use YYYY-MM-DD")
         return v
 
     @field_validator("leagues")
@@ -184,6 +234,9 @@ class AccaCreate(BaseModel):
             raise ValueError("At least 1 league required")
         if len(v) > 5:
             raise ValueError("Maximum 5 leagues allowed")
+        for league in v:
+            if league not in VALID_SPORT_KEYS:
+                raise ValueError(f"Unknown league: '{league}'")
         return v
 
 # Schema for acca response (what we send back)

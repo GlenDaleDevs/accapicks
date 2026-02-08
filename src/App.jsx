@@ -58,7 +58,8 @@ function App() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const inviteCode = urlParams.get('invite');
+    const rawInvite = urlParams.get('invite');
+    const inviteCode = rawInvite ? rawInvite.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) : null;
     if (inviteCode) {
       localStorage.setItem('pendingInvite', inviteCode);
     }
@@ -134,10 +135,10 @@ function App() {
     }
   };
 
-  const handleSignup = async (email, username, password) => {
+  const handleSignup = async (email, username, password, ageConfirmed) => {
     setError("");
     try {
-      const data = await api.signup(email, username, password);
+      const data = await api.signup(email, username, password, ageConfirmed);
       if (data.requires_verification) {
         setPendingVerificationEmail(email);
       }

@@ -20,9 +20,12 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      delete axios.defaults.headers.common["Authorization"];
-      window.location.href = "/";
+      // Only redirect if we had a token (avoid loop from unauthenticated requests)
+      if (localStorage.getItem("token")) {
+        localStorage.removeItem("token");
+        delete axios.defaults.headers.common["Authorization"];
+        window.location.href = "/";
+      }
     } else if (error.response?.status === 429) {
       const retryAfter = error.response?.data?.retry_after || error.response?.headers?.["retry-after"];
       const parsed = retryAfter ? parseInt(retryAfter, 10) : null;
@@ -42,8 +45,13 @@ export const login = async (identifier, password) => {
   return response.data;
 };
 
-export const signup = async (email, username, password) => {
-  const response = await axios.post(`${API_URL}/auth/signup`, { email, username, password });
+export const signup = async (email, username, password, ageConfirmed) => {
+  const response = await axios.post(`${API_URL}/auth/signup`, {
+    email,
+    username,
+    password,
+    age_confirmed: ageConfirmed
+  });
   return response.data;
 };
 

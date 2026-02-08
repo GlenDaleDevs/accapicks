@@ -202,6 +202,18 @@ def update_bet_result(
     if not acca:
         raise HTTPException(status_code=404, detail="Acca not found")
 
+    # Only allow result updates on locked accas
+    if acca.status == "open":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot update results on an open acca"
+        )
+    if acca.status in ("won", "lost", "settled"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This acca is already settled"
+        )
+
     # Verify user is a member of the group
     membership = db.query(models.GroupMember).filter(
         models.GroupMember.group_id == acca.group_id,
