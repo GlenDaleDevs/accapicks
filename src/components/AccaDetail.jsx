@@ -317,14 +317,14 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         </div>
       )}
 
-      {/* Bookmaker Comparison - only when open */}
-      {acca.status === "open" && (
+      {/* Bookmaker Comparison - only when there are picks */}
+      {acca.status === "open" && acca.bets.length > 0 && (
         <>
           <div className="mb-20">
             <button
               className="btn btn-secondary"
               onClick={handleCompareBookmakers}
-              disabled={comparingBookmakers || acca.bets.length === 0}
+              disabled={comparingBookmakers}
             >
               {comparingBookmakers ? "Comparing..." : "Compare Bookmakers"}
             </button>
@@ -334,9 +334,14 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         </>
       )}
 
+      {/* No picks empty state */}
+      {acca.bets.length === 0 && acca.status === "open" && (
+        <p className="empty-state">No picks yet</p>
+      )}
+
       {/* Add Pick - Fixture Grid Flow */}
       {acca.status === "open" && !showFixtureGrid && !showAddBet && (
-        <div className="mb-20 btn-group">
+        <div className="mb-20" style={{ textAlign: "center" }}>
           <button
             className={`btn ${userAlreadyPicked ? "btn-secondary" : "btn-primary"}`}
             disabled={userAlreadyPicked}
@@ -362,7 +367,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         </div>
       )}
 
-      {/* Fixture Grid */}
+      {/* Fixture Grid - only show after clicking Add Your Pick */}
       {showFixtureGrid && (
         <FixtureGrid
           acca={acca}
