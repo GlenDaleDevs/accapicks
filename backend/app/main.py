@@ -96,9 +96,9 @@ async def auto_lock_accas():
                     acca.status = "locked"
                     locked_count += 1
 
-            # Cleanup: delete locked accas that have 0 bets (orphaned by member removal)
+            # Cleanup: delete locked/settled accas that have 0 bets (orphaned by member removal)
             locked_accas = db.query(models.Acca).filter(
-                models.Acca.status == "locked"
+                models.Acca.status.in_(["locked", "settled"])
             ).all()
             deleted_count = 0
             for acca in locked_accas:
