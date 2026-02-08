@@ -301,6 +301,14 @@
   background-color: #1ebe57;
 }
 
+.btn-messenger {
+  background-color: #0084FF;
+}
+
+.btn-messenger:hover {
+  background-color: #0073e6;
+}
+
 .btn-native-share {
   background-color: var(--text-secondary);
 }
