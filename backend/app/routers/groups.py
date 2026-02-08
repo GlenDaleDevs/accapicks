@@ -4,6 +4,7 @@ import string
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
@@ -46,23 +47,27 @@ def create_group(
         )
         db.add(new_group)
         try:
-            db.commit()
-            db.refresh(new_group)
+            db.flush()
             break
         except IntegrityError:
             db.rollback()
             if attempt == 2:
                 raise HTTPException(status_code=500, detail="Failed to generate unique invite code")
 
-    # Automatically add creator as admin member
+    # Automatically add creator as admin member (same transaction)
     creator_member = models.GroupMember(
         group_id=new_group.id,
         user_id=user_id,
         role="admin"
     )
-
     db.add(creator_member)
-    db.commit()
+
+    try:
+        db.commit()
+        db.refresh(new_group)
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to create group")
 
     return new_group
 
@@ -113,7 +118,7 @@ def join_group(
         )
 
     # Find group by invite code
-    group = db.query(models.Group).filter(models.Group.invite_code == invite_code).first()
+    group = db.query(models.Group).filter(func.upper(models.Group.invite_code) == invite_code.upper()).first()
 
     if not group:
         raise HTTPException(status_code=404, detail="Invalid invite code")
@@ -423,6 +428,17 @@ def remove_member(
                 models.Bet.user_id == target_user_id
             ).delete(synchronize_session=False)
 
+            # Recalculate locks_at for affected open accas
+            for open_acca in open_accas:
+                remaining_bets = db.query(models.Bet).filter(
+                    models.Bet.acca_id == open_acca.id,
+                    models.Bet.commence_time.isnot(None),
+                ).all()
+                if remaining_bets:
+                    open_acca.locks_at = min(b.commence_time for b in remaining_bets)
+                else:
+                    open_acca.locks_at = None
+
         # Delete the membership
         db.delete(target_membership)
         db.commit()
@@ -518,6 +534,17 @@ def leave_group(
                     models.Bet.acca_id.in_(open_acca_ids),
                     models.Bet.user_id == user_id
                 ).delete(synchronize_session=False)
+
+                # Recalculate locks_at for affected open accas
+                for open_acca in open_accas:
+                    remaining_bets = db.query(models.Bet).filter(
+                        models.Bet.acca_id == open_acca.id,
+                        models.Bet.commence_time.isnot(None),
+                    ).all()
+                    if remaining_bets:
+                        open_acca.locks_at = min(b.commence_time for b in remaining_bets)
+                    else:
+                        open_acca.locks_at = None
 
             # Delete the membership
             db.delete(membership)

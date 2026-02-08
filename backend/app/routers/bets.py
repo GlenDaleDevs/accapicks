@@ -66,6 +66,14 @@ def create_bet(
             detail="You are not a member of this group"
         )
 
+    # Enforce league restrictions if acca has configured leagues
+    if bet.sport_key and acca.leagues:
+        if bet.sport_key not in acca.leagues:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This pick is from a league not included in this acca"
+            )
+
     # Check if user has already added a bet to this acca
     existing_bet = db.query(models.Bet).filter(
         models.Bet.acca_id == bet.acca_id,

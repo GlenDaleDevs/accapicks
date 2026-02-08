@@ -70,6 +70,15 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     return () => clearInterval(interval);
   }, [acca]);
 
+  // Poll for status updates when acca is open (catches auto-lock)
+  useEffect(() => {
+    if (!acca || acca.status !== "open") return;
+    const interval = setInterval(() => {
+      loadAccaDetails();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [acca?.status]);
+
   // Load matches when legacy add bet form opens
   useEffect(() => {
     if (showAddBet && matches.length === 0) {
@@ -199,7 +208,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
 
     try {
       await api.createBet(accaId, description, odds, structuredData);
-      loadAccaDetails();
+      await loadAccaDetails();
       setShowFixtureGrid(false);
       setFixtureLeague("");
       setFilteredMatches([]);
@@ -212,10 +221,11 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
 
   const handleRemovePick = async (betId) => {
     if (isSubmitting) return;
+    if (!window.confirm("Remove this pick?")) return;
     setIsSubmitting(true);
     try {
       await api.deleteBet(betId);
-      loadAccaDetails();
+      await loadAccaDetails();
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to remove pick");
     } finally {
@@ -224,16 +234,19 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
   };
 
   const handleDeleteAcca = async () => {
+    if (isSubmitting) return;
     if (!window.confirm("Are you sure? This will delete the acca and all picks.")) {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await api.deleteAcca(accaId);
       showToast("Acca deleted successfully", "success");
       navigate(`/groups/${groupId}`);
     } catch (err) {
       showToast(err.response?.data?.detail || "Failed to delete acca", "error");
+      setIsSubmitting(false);
     }
   };
 
@@ -282,7 +295,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       }
 
       await api.createBet(accaId, description, odds);
-      loadAccaDetails();
+      await loadAccaDetails();
       setShowAddBet(false);
       setSelectedMatch("");
       setBetType("home");
