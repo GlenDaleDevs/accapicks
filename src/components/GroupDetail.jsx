@@ -93,13 +93,15 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     }
   };
 
+  const getInviteLink = () => `${window.location.origin}?invite=${group.invite_code}`;
+  const getInviteMessage = () => `Join my AccaPicks group "${group.name}"! ${getInviteLink()}`;
+
   const copyInviteLink = async () => {
-    const inviteLink = `${window.location.origin}?invite=${group.invite_code}`;
+    const inviteLink = getInviteLink();
     try {
       await navigator.clipboard.writeText(inviteLink);
       setCopiedInvite(true);
     } catch {
-      // Clipboard API not available (HTTP, permissions denied) — fallback
       try {
         const textArea = document.createElement("textarea");
         textArea.value = inviteLink;
@@ -117,6 +119,23 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       }
     }
     setTimeout(() => setCopiedInvite(false), 2000);
+  };
+
+  const shareWhatsApp = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(getInviteMessage())}`, "_blank");
+  };
+
+  const shareNative = async () => {
+    try {
+      await navigator.share({
+        title: `Join ${group.name} on AccaPicks`,
+        text: getInviteMessage(),
+        url: getInviteLink(),
+      });
+    } catch {
+      // User cancelled or share API failed — fall back to copy
+      copyInviteLink();
+    }
   };
 
   const handleWizardCreate = async (wizardData) => {
@@ -231,11 +250,23 @@ export default function GroupDetail({ user, onRefreshGroups }) {
             Invite Friends
           </button>
         ) : (
-          <div className="invite-code-row">
-            <code className="invite-code">{group.invite_code}</code>
-            <button className="btn btn-primary btn-sm" onClick={copyInviteLink}>
-              {copiedInvite ? "Copied!" : "Copy Link"}
-            </button>
+          <div className="invite-panel">
+            <div className="invite-code-row">
+              <code className="invite-code">{group.invite_code}</code>
+              <button className="btn btn-primary btn-sm" onClick={copyInviteLink}>
+                {copiedInvite ? "Copied!" : "Copy Link"}
+              </button>
+            </div>
+            <div className="invite-share-buttons">
+              <button className="btn btn-share btn-whatsapp" onClick={shareWhatsApp}>
+                WhatsApp
+              </button>
+              {typeof navigator !== "undefined" && navigator.share && (
+                <button className="btn btn-share btn-native-share" onClick={shareNative}>
+                  Share...
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
