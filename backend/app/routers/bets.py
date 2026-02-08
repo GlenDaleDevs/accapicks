@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -47,6 +47,13 @@ def create_bet(
             detail="This acca is locked and no longer accepting picks"
         )
 
+    # Also check locks_at time directly (background task runs every 60s)
+    if acca.locks_at and datetime.now(timezone.utc) >= acca.locks_at:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This acca is locked and no longer accepting picks"
+        )
+
     # Verify user is a member of the group
     membership = db.query(models.GroupMember).filter(
         models.GroupMember.group_id == acca.group_id,
@@ -86,6 +93,31 @@ def create_bet(
     # Convert odds to string if it's not already
     odds_str = str(bet.odds)
 
+    # Parse commence_time safely
+    parsed_commence_time = None
+    if bet.commence_time:
+        try:
+            parsed_commence_time = datetime.fromisoformat(bet.commence_time.replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid commence_time format"
+            )
+
+    # Validate commence_time is not in the past
+    if parsed_commence_time and parsed_commence_time < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot pick a match that has already started"
+        )
+
+    # Validate commence_time is not too far in the future
+    if parsed_commence_time and parsed_commence_time > datetime.now(timezone.utc) + timedelta(days=14):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot pick a match more than 14 days in the future"
+        )
+
     new_bet = models.Bet(
         acca_id=bet.acca_id,
         user_id=user_id,
@@ -96,15 +128,8 @@ def create_bet(
         away_team=bet.away_team,
         pick_type=bet.pick_type,
         sport_key=bet.sport_key,
-        commence_time=datetime.fromisoformat(bet.commence_time.replace("Z", "+00:00")) if bet.commence_time else None,
+        commence_time=parsed_commence_time,
     )
-
-    # Validate commence_time is not in the past
-    if new_bet.commence_time and new_bet.commence_time < datetime.now(timezone.utc):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot pick a match that has already started"
-        )
 
     db.add(new_bet)
     db.flush()  # Get new_bet into session so recalculate sees it
@@ -169,6 +194,13 @@ def delete_bet(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot remove picks from a locked or settled acca"
+        )
+
+    # Block deletion if the bet's match has already started
+    if bet.commence_time and bet.commence_time <= datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot remove a pick after its match has started"
         )
 
     db.delete(bet)

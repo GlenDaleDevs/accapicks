@@ -37,6 +37,11 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     setLoadingAcca(true);
     try {
       const data = await api.getAccaById(accaId);
+      if (data.group_id !== parseInt(groupId)) {
+        setError("Acca not found in this group");
+        setAcca(null);
+        return;
+      }
       setAcca(data);
     } catch (err) {
       console.error("Error loading acca details:", err);
@@ -260,10 +265,22 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
 
   const handleAddBet = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setError("");
     try {
       const description = customBet ? betDescription : getSelectedDescription();
       const odds = customBet ? betOdds : String(getSelectedOdds());
+
+      // Validate odds for custom bets
+      if (customBet) {
+        const parsedOdds = parseFloat(odds);
+        if (isNaN(parsedOdds) || parsedOdds <= 1.0 || parsedOdds > 10000) {
+          setError("Odds must be a number between 1.01 and 10,000");
+          return;
+        }
+      }
+
       await api.createBet(accaId, description, odds);
       loadAccaDetails();
       setShowAddBet(false);
@@ -274,6 +291,8 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       setBetOdds("");
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to add bet");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -485,7 +504,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={!selectedMatch || loadingMatches}
+                  disabled={!selectedMatch || loadingMatches || isSubmitting}
                 >
                   Add Bet
                 </button>
@@ -529,7 +548,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
               </div>
 
               <div className="btn-group">
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                   Add Bet
                 </button>
                 <button

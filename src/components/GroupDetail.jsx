@@ -25,6 +25,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [accaCountdowns, setAccaCountdowns] = useState({});
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     if (groupId) {
@@ -137,10 +138,12 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   };
 
   const handleLeaveGroup = async () => {
+    if (leaving) return;
     if (!window.confirm("Are you sure you want to leave this group? Your picks will be removed.")) {
       return;
     }
 
+    setLeaving(true);
     try {
       await api.leaveGroup(groupId);
       showToast("Successfully left the group", "success");
@@ -148,6 +151,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       navigate("/");
     } catch (err) {
       showToast(err.response?.data?.detail || "Failed to leave group", "error");
+      setLeaving(false);
     }
   };
 
@@ -449,6 +453,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         <button
           className="btn btn-danger"
           onClick={handleLeaveGroup}
+          disabled={leaving}
         >
           Leave Group
         </button>

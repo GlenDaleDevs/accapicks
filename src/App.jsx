@@ -25,7 +25,8 @@ function App() {
   const [error, setError] = useState("");
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
   const [oddsFormat, setOddsFormat] = useState(() => {
-    return localStorage.getItem("oddsFormat") || "decimal";
+    const stored = localStorage.getItem("oddsFormat");
+    return ["decimal", "fractional"].includes(stored) ? stored : "decimal";
   });
   const [bookmakerLinks, setBookmakerLinks] = useState({});
   const [miniLeaderboards, setMiniLeaderboards] = useState({});

@@ -1,9 +1,16 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from .. import odds_api
 from .auth import get_current_user
 from ..limiter import limiter
 
 router = APIRouter()
+
+VALID_SPORT_KEYS = {
+    "soccer_epl", "soccer_efl_champ", "soccer_england_league1",
+    "soccer_england_league2", "soccer_spain_la_liga",
+    "soccer_germany_bundesliga", "soccer_italy_serie_a",
+    "soccer_france_ligue_one",
+}
 
 
 # Get available football matches with odds
@@ -14,6 +21,8 @@ def get_matches(request: Request, sport: str = "soccer_epl", user_id: int = Depe
     Get upcoming matches with odds
     Available sports: soccer_epl, soccer_spain_la_liga, soccer_germany_bundesliga, soccer_italy_serie_a
     """
+    if sport not in VALID_SPORT_KEYS:
+        raise HTTPException(status_code=400, detail=f"Invalid sport key: '{sport}'")
     matches = odds_api.get_football_matches(sport)
 
     # Format matches for easier display
@@ -42,6 +51,9 @@ def get_filtered_matches(
     date_from/date_to: date strings e.g. "2026-02-08"
     """
     league_list = [l.strip() for l in leagues.split(",") if l.strip()]
+    for league in league_list:
+        if league not in VALID_SPORT_KEYS:
+            raise HTTPException(status_code=400, detail=f"Invalid league: '{league}'")
     formatted_matches = []
 
     for league in league_list:

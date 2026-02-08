@@ -49,6 +49,17 @@ def create_acca(
             detail="You are not a member of this group"
         )
 
+    # Limit open accas per group
+    open_count = db.query(models.Acca).filter(
+        models.Acca.group_id == acca.group_id,
+        models.Acca.status == "open"
+    ).count()
+    if open_count >= 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Maximum 10 open accas per group. Settle or delete existing accas first."
+        )
+
     # Check for date overlap with active accas in this group
     existing_accas = db.query(models.Acca).filter(
         models.Acca.group_id == acca.group_id,
