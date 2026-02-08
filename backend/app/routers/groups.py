@@ -127,6 +127,16 @@ def join_group(
     if existing_member:
         raise HTTPException(status_code=400, detail="Already a member of this group")
 
+    # Limit members per group
+    member_count = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group.id
+    ).count()
+    if member_count >= 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This group is full (maximum 50 members)"
+        )
+
     # Add user as member
     new_member = models.GroupMember(
         group_id=group.id,
@@ -393,22 +403,12 @@ def remove_member(
             detail="Target user is not a member of this group"
         )
 
-    # If target is an admin, check if they're the last admin
+    # Cannot remove another admin
     if target_membership.role == "admin":
-        admin_count = db.query(models.GroupMember).filter(
-            models.GroupMember.group_id == group_id,
-            models.GroupMember.role == "admin"
-        ).count()
-
-        member_count = db.query(models.GroupMember).filter(
-            models.GroupMember.group_id == group_id
-        ).count()
-
-        if admin_count == 1 and member_count > 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot remove the last admin while other members exist"
-            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot remove another admin. They must leave voluntarily."
+        )
 
     try:
         # Only delete bets from OPEN accas (preserve historical data in locked/settled)

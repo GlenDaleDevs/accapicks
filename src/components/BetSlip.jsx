@@ -51,11 +51,24 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-      setError("Failed to copy to clipboard");
+    } catch {
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        setCopied(true);
+      } catch {
+        setCopied(false);
+        setError("Failed to copy to clipboard");
+        return;
+      }
     }
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const resultIcon = (result) => {

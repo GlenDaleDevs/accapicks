@@ -6,6 +6,7 @@ from datetime import timedelta, datetime, timezone
 import secrets
 import re
 import logging
+import hmac
 from .. import models, schemas, auth
 from ..database import get_db
 from ..limiter import limiter
@@ -124,8 +125,11 @@ def check_username(request: Request, username: str, db: Session = Depends(get_db
             "reason": "Username must be 3-20 characters using letters, numbers, and underscores only"
         }
 
-    # Case-insensitive database lookup
-    existing = db.query(models.User).filter(func.lower(models.User.username) == username.lower()).first()
+    # Case-insensitive database lookup (only verified users)
+    existing = db.query(models.User).filter(
+        func.lower(models.User.username) == username.lower(),
+        models.User.email_verified == True
+    ).first()
 
     return {
         "username": username,
@@ -214,14 +218,14 @@ def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session
     user = db.query(models.User).filter(func.lower(models.User.email) == data.email.lower()).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification request"
         )
 
     if user.email_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already verified"
+            detail="Invalid verification request"
         )
 
     # Check account lockout
@@ -243,20 +247,20 @@ def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session
             detail="Too many failed attempts. Please request a new verification code."
         )
 
-    # Check code
-    if user.verification_code != data.code:
+    # Check expiry BEFORE code comparison
+    if user.verification_code_expires and datetime.now(timezone.utc) > user.verification_code_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code expired. Please request a new one."
+        )
+
+    # Check code (constant-time comparison)
+    if not hmac.compare_digest(user.verification_code or "", data.code):
         user.verification_attempts = (user.verification_attempts or 0) + 1
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid verification code"
-        )
-
-    # Check expiry
-    if user.verification_code_expires and datetime.now(timezone.utc) > user.verification_code_expires:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Verification code expired. Please request a new one."
         )
 
     # Mark as verified
@@ -289,14 +293,14 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
     user = db.query(models.User).filter(func.lower(models.User.email) == data.email.lower()).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid request"
         )
 
     if user.email_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already verified"
+            detail="Invalid request"
         )
 
     # Generate new code
@@ -305,7 +309,7 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
 
     user.verification_code = verification_code
     user.verification_code_expires = code_expires
-    user.verification_attempts = 0
+    # Don't reset verification_attempts — persist across resends
     db.commit()
 
     # Send verification email
@@ -337,7 +341,7 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
 
     user.verification_code = reset_code
     user.verification_code_expires = code_expires
-    user.verification_attempts = 0
+    # Don't reset verification_attempts — persist across new requests
     db.commit()
 
     # Send reset email
@@ -377,20 +381,20 @@ def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Ses
             detail="Too many failed attempts. Please request a new reset code."
         )
 
-    # Check code
-    if user.verification_code != data.code:
+    # Check expiry BEFORE code comparison
+    if not user.verification_code_expires or datetime.now(timezone.utc) > user.verification_code_expires:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset code expired. Please request a new one."
+        )
+
+    # Check code (constant-time comparison)
+    if not hmac.compare_digest(user.verification_code or "", data.code):
         user.verification_attempts = (user.verification_attempts or 0) + 1
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired reset code"
-        )
-
-    # Check expiry
-    if not user.verification_code_expires or datetime.now(timezone.utc) > user.verification_code_expires:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Reset code expired. Please request a new one."
         )
 
     # Hash new password
@@ -473,6 +477,10 @@ def delete_account(
 
         # Verify password
         if not auth.verify_password(data.password, user.hashed_password):
+            user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+            if user.failed_login_attempts >= 10:
+                user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+            db.commit()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Incorrect password"

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 import re
 import math
@@ -112,7 +112,7 @@ class GroupCreate(BaseModel):
     @field_validator("name")
     @classmethod
     def strip_name(cls, v):
-        v = v.strip()
+        v = re.sub(r"<[^>]+>", "", v).strip()
         if not v:
             raise ValueError("Name cannot be blank")
         return v
@@ -121,7 +121,7 @@ class GroupCreate(BaseModel):
     @classmethod
     def strip_description(cls, v):
         if v is not None:
-            v = v.strip() or None
+            v = re.sub(r"<[^>]+>", "", v).strip() or None
         return v
 
 # Schema for group response (what we send back)
@@ -141,12 +141,12 @@ class BetCreate(BaseModel):
     acca_id: int
     description: str = Field(min_length=1, max_length=200)
     odds: str = Field(min_length=1, max_length=20)
-    event_id: Optional[str] = None
-    home_team: Optional[str] = None
-    away_team: Optional[str] = None
+    event_id: Optional[str] = Field(default=None, max_length=64)
+    home_team: Optional[str] = Field(default=None, max_length=100)
+    away_team: Optional[str] = Field(default=None, max_length=100)
     pick_type: Optional[str] = None
-    sport_key: Optional[str] = None
-    commence_time: Optional[str] = None
+    sport_key: Optional[str] = Field(default=None, max_length=50)
+    commence_time: Optional[str] = Field(default=None, max_length=50)
 
     @field_validator("description")
     @classmethod
@@ -173,6 +173,13 @@ class BetCreate(BaseModel):
     def validate_pick_type(cls, v):
         if v is not None and v not in ("home", "away", "draw"):
             raise ValueError("pick_type must be 'home', 'away', or 'draw'")
+        return v
+
+    @field_validator("sport_key")
+    @classmethod
+    def validate_sport_key(cls, v):
+        if v is not None and v not in VALID_SPORT_KEYS:
+            raise ValueError(f"Unknown sport key: '{v}'")
         return v
 
 # Schema for bet response (what we send back)
@@ -213,7 +220,7 @@ class AccaCreate(BaseModel):
     @field_validator("name")
     @classmethod
     def strip_name(cls, v):
-        v = v.strip()
+        v = re.sub(r"<[^>]+>", "", v).strip()
         if not v:
             raise ValueError("Name cannot be blank")
         return v
@@ -229,13 +236,30 @@ class AccaCreate(BaseModel):
     @field_validator("match_dates")
     @classmethod
     def validate_match_dates(cls, v):
+        if len(v) < 1:
+            raise ValueError("At least 1 match date required")
         if len(v) > 7:
             raise ValueError("Maximum 7 match dates allowed")
         date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        seen = set()
+        cleaned = []
         for d in v:
             if not date_pattern.match(d):
                 raise ValueError(f"Invalid date format: '{d}'. Use YYYY-MM-DD")
-        return v
+            # Validate it's a real calendar date
+            try:
+                datetime.strptime(d, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError(f"Invalid date: '{d}'")
+            # Check not in the past
+            if d < today:
+                raise ValueError(f"Date '{d}' is in the past")
+            # Deduplicate
+            if d not in seen:
+                seen.add(d)
+                cleaned.append(d)
+        return cleaned
 
     @field_validator("leagues")
     @classmethod
@@ -247,7 +271,14 @@ class AccaCreate(BaseModel):
         for league in v:
             if league not in VALID_SPORT_KEYS:
                 raise ValueError(f"Unknown league: '{league}'")
-        return v
+        # Deduplicate while preserving order
+        seen = set()
+        cleaned = []
+        for league in v:
+            if league not in seen:
+                seen.add(league)
+                cleaned.append(league)
+        return cleaned
 
 # Schema for acca response (what we send back)
 class AccaResponse(BaseModel):
