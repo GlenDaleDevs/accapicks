@@ -15,6 +15,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [accas, setAccas] = useState([]);
   const [showAccaWizard, setShowAccaWizard] = useState(false);
   const [showSettled, setShowSettled] = useState(false);
+  const [showActive, setShowActive] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [loadingGroup, setLoadingGroup] = useState(true);
@@ -239,25 +240,23 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         />
       )}
 
-      {/* Active Accas Section */}
-      <h3 className="section-title">Active Accas</h3>
+      {/* Open Accas Section */}
+      <h3 className="section-title">Open Accas</h3>
 
-      {/* Active Acca List */}
       {(() => {
-        const activeAccas = accas.filter(
-          (a) => a.status === "open" || a.status === "locked"
-        );
+        const openAccas = accas.filter((a) => a.status === "open");
+        const activeAccas = accas.filter((a) => a.status === "locked");
         const settledAccas = accas.filter((a) => a.status === "settled" || a.status === "won" || a.status === "lost");
 
         return (
           <>
-            {activeAccas.length === 0 ? (
+            {openAccas.length === 0 ? (
               <p className="empty-state">
-                No active accumulators. Create one to get started!
+                No open accumulators. Create one to get started!
               </p>
             ) : (
               <div>
-                {activeAccas.map((acca) => (
+                {openAccas.map((acca) => (
                   <div
                     key={acca.id}
                     onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
@@ -265,12 +264,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                   >
                     <div className="card-header">
                       <h3 className="group-card-name">{acca.name}</h3>
-                      {acca.status === "locked" && (
-                        <span className="badge badge-locked">LOCKED</span>
-                      )}
-                      {acca.status === "open" && (
-                        <span className="badge badge-open">OPEN</span>
-                      )}
+                      <span className="badge badge-open">OPEN</span>
                     </div>
                     <div className="acca-card-meta">
                       {acca.leagues && (
@@ -294,17 +288,11 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                       )}
                     </div>
                     <small className="acca-card-status">
-                      Status: {acca.status} | Created{" "}
-                      {new Date(acca.created_at).toLocaleDateString()}
+                      Created {new Date(acca.created_at).toLocaleDateString()}
                     </small>
-                    {acca.status === "open" && acca.locks_at && (
+                    {acca.locks_at && (
                       <small className="acca-card-countdown">
                         Locks in {accaCountdowns[acca.id] || "..."}
-                      </small>
-                    )}
-                    {acca.status === "locked" && (
-                      <small className="acca-card-locked-status">
-                        Matches in progress
                       </small>
                     )}
                   </div>
@@ -312,22 +300,79 @@ export default function GroupDetail({ user, onRefreshGroups }) {
               </div>
             )}
 
-            {/* Settled Accas Toggle */}
-            <button
-              className="btn btn-secondary mb-20"
-              onClick={() => setShowSettled(!showSettled)}
-            >
-              {showSettled
-                ? "Hide Settled Accas"
-                : `Show Settled Accas (${settledAccas.length})`}
-            </button>
+            {/* Active (Locked) Accas Toggle */}
+            {activeAccas.length > 0 && (
+              <>
+                <button
+                  className="btn btn-secondary mb-20"
+                  onClick={() => setShowActive(!showActive)}
+                >
+                  {showActive
+                    ? "Hide Active Accas"
+                    : `Active Accas (${activeAccas.length})`}
+                </button>
 
-            {showSettled && (
-              settledAccas.length === 0 ? (
-                <p className="empty-state">No settled accumulators yet.</p>
-              ) : (
-                <div>
-                  {settledAccas.map((acca) => (
+                {showActive && (
+                  <div>
+                    {activeAccas.map((acca) => (
+                      <div
+                        key={acca.id}
+                        onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
+                        className="card card-clickable"
+                      >
+                        <div className="card-header">
+                          <h3 className="group-card-name">{acca.name}</h3>
+                          <span className="badge badge-locked">LOCKED</span>
+                        </div>
+                        <div className="acca-card-meta">
+                          {acca.leagues && (
+                            <small className="acca-card-leagues">
+                              {acca.leagues.map((k) => LEAGUE_NAME_MAP[k] || k).join(", ")}
+                            </small>
+                          )}
+                          {acca.match_dates && (
+                            <small className="acca-card-dates">
+                              {[...acca.match_dates]
+                                .sort()
+                                .map((d) => {
+                                  const dt = new Date(d + "T00:00:00");
+                                  return dt.toLocaleDateString("en-GB", {
+                                    month: "short",
+                                    day: "numeric",
+                                  });
+                                })
+                                .join(", ")}
+                            </small>
+                          )}
+                        </div>
+                        <small className="acca-card-status">
+                          Created {new Date(acca.created_at).toLocaleDateString()}
+                        </small>
+                        <small className="acca-card-locked-status">
+                          Matches in progress
+                        </small>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Settled Accas Toggle */}
+            {settledAccas.length > 0 && (
+              <>
+                <button
+                  className="btn btn-secondary mb-20"
+                  onClick={() => setShowSettled(!showSettled)}
+                >
+                  {showSettled
+                    ? "Hide Settled Accas"
+                    : `Settled Accas (${settledAccas.length})`}
+                </button>
+
+                {showSettled && (
+                  <div>
+                    {settledAccas.map((acca) => (
                       <div
                         key={acca.id}
                         onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
@@ -361,13 +406,13 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                           )}
                         </div>
                         <small className="acca-card-status">
-                          Status: {acca.status} | Created{" "}
-                          {new Date(acca.created_at).toLocaleDateString()}
+                          Created {new Date(acca.created_at).toLocaleDateString()}
                         </small>
                       </div>
                     ))}
-                </div>
-              )
+                  </div>
+                )}
+              </>
             )}
           </>
         );
