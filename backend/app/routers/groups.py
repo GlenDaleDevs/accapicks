@@ -25,6 +25,16 @@ def create_group(
 ):
     """Create a new betting group"""
 
+    # Limit groups per user
+    membership_count = db.query(models.GroupMember).filter(
+        models.GroupMember.user_id == user_id
+    ).count()
+    if membership_count >= 20:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You can be in a maximum of 20 groups"
+        )
+
     # Generate unique invite code with retry on collision
     for attempt in range(3):
         invite_code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
@@ -91,6 +101,16 @@ def join_group(
     user_id: int = Depends(get_current_user)
 ):
     """Join a group using an invite code"""
+
+    # Limit groups per user
+    membership_count = db.query(models.GroupMember).filter(
+        models.GroupMember.user_id == user_id
+    ).count()
+    if membership_count >= 20:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You can be in a maximum of 20 groups"
+        )
 
     # Find group by invite code
     group = db.query(models.Group).filter(models.Group.invite_code == invite_code).first()

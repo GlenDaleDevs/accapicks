@@ -92,10 +92,29 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     }
   };
 
-  const copyInviteLink = () => {
+  const copyInviteLink = async () => {
     const inviteLink = `${window.location.origin}?invite=${group.invite_code}`;
-    navigator.clipboard.writeText(inviteLink);
-    setCopiedInvite(true);
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopiedInvite(true);
+    } catch {
+      // Clipboard API not available (HTTP, permissions denied) — fallback
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = inviteLink;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        setCopiedInvite(true);
+      } catch {
+        setCopiedInvite(false);
+        alert("Failed to copy. Your invite link: " + inviteLink);
+        return;
+      }
+    }
     setTimeout(() => setCopiedInvite(false), 2000);
   };
 

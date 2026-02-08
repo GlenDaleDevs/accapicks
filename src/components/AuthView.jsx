@@ -83,7 +83,7 @@ export default function AuthView({
           setLoading(false);
           return;
         }
-        await onSignup(email, username, password);
+        await onSignup(email, username, password, ageConfirmed);
       } else if (mode === "verify") {
         await onVerify(email, verificationCode);
       } else if (mode === "forgot") {
