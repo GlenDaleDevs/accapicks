@@ -96,22 +96,22 @@ async def auto_lock_accas():
                     acca.status = "locked"
                     locked_count += 1
 
-            # Cleanup: settle locked accas that have 0 bets (orphaned by member removal)
+            # Cleanup: delete locked accas that have 0 bets (orphaned by member removal)
             locked_accas = db.query(models.Acca).filter(
                 models.Acca.status == "locked"
             ).all()
-            settled_count = 0
+            deleted_count = 0
             for acca in locked_accas:
                 bet_count = db.query(models.Bet).filter(models.Bet.acca_id == acca.id).count()
                 if bet_count == 0:
-                    acca.status = "settled"
-                    settled_count += 1
+                    db.delete(acca)
+                    deleted_count += 1
 
             db.commit()
             if locked_count > 0:
                 logger.info(f"Auto-locked {locked_count} acca(s)")
-            if settled_count > 0:
-                logger.info(f"Auto-settled {settled_count} empty locked acca(s)")
+            if deleted_count > 0:
+                logger.info(f"Deleted {deleted_count} empty locked acca(s)")
         except Exception as e:
             logger.error(f"Auto-lock error: {e}")
             db.rollback()
