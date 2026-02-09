@@ -130,6 +130,16 @@ export const getGroupLeaderboard = async (groupId) => {
   return response.data;
 };
 
+export const getMemberPicks = async (groupId, userId) => {
+  const response = await axios.get(`${API_URL}/groups/${groupId}/members/${userId}/picks`);
+  return response.data;
+};
+
+export const getGroupAccaStats = async (groupId) => {
+  const response = await axios.get(`${API_URL}/groups/${groupId}/acca-stats`);
+  return response.data;
+};
+
 // Accas
 export const getAccasByGroup = async (groupId) => {
   const response = await axios.get(`${API_URL}/groups/${groupId}/accas`);

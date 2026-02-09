@@ -1,9 +1,26 @@
+import { useNavigate } from "react-router-dom";
 import Skeleton from "./Skeleton";
 
-export default function Leaderboard({ leaderboard, loading, accas }) {
+export default function Leaderboard({ leaderboard, loading, accas, groupId, accaStats }) {
+  const navigate = useNavigate();
+
   return (
     <div className="leaderboard-container">
       <h3 className="section-title">Group Leaderboard</h3>
+      {accaStats && (accaStats.won_accas > 0 || accaStats.lost_accas > 0) && (
+        <div className="group-stats-bar">
+          <span className="group-stats-record">
+            Group Record: <strong>{accaStats.won_accas}W</strong> - <strong>{accaStats.lost_accas}L</strong>
+            {" "}({accaStats.success_rate}%)
+          </span>
+          {accaStats.open_accas > 0 && (
+            <span className="group-stats-open">{accaStats.open_accas} open</span>
+          )}
+          {accaStats.locked_accas > 0 && (
+            <span className="group-stats-locked">{accaStats.locked_accas} active</span>
+          )}
+        </div>
+      )}
       {loading ? (
         <div>
           <Skeleton width="100%" height="60px" count={3} />
@@ -25,6 +42,7 @@ export default function Leaderboard({ leaderboard, loading, accas }) {
             <div
               key={entry.user_id}
               className={`league-table-row${entry.rank === 1 ? " league-table-row-first" : ""}`}
+              onClick={() => navigate(`/groups/${groupId}/members/${entry.user_id}`)}
             >
               <div className="league-col league-col-pos">
                 <span className={`league-pos${entry.rank === 1 ? " league-pos-first" : ""}`}>

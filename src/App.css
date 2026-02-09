@@ -2002,3 +2002,160 @@
     transform: translateX(0);
   }
 }
+
+/* ---- Group Stats Bar ---- */
+.group-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.group-stats-record {
+  color: var(--text-primary);
+}
+
+.group-stats-open,
+.group-stats-locked {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background-color: rgba(139, 156, 170, 0.1);
+}
+
+/* ---- Clickable Leaderboard Rows ---- */
+.league-table-row {
+  cursor: pointer;
+}
+
+/* ---- Member Pick History ---- */
+.member-history-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 8px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.summary-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-stat-won { color: var(--color-success); }
+.summary-stat-lost { color: var(--color-danger); }
+
+.summary-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.member-acca-group {
+  margin-bottom: 16px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.member-acca-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.member-acca-header:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.member-acca-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.member-pick-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.member-pick-item:last-child {
+  border-bottom: none;
+}
+
+.member-pick-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.member-pick-desc {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.member-pick-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pick-result-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.pick-result-won {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--color-success);
+}
+
+.pick-result-lost {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+}
+
+.pick-result-void {
+  background-color: rgba(139, 156, 170, 0.15);
+  color: var(--text-secondary);
+}
+
+.pick-result-pending {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning);
+}

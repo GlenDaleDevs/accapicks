@@ -18,6 +18,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [showActive, setShowActive] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [accaStats, setAccaStats] = useState(null);
   const [loadingGroup, setLoadingGroup] = useState(true);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
@@ -54,16 +55,18 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const loadGroupData = async () => {
     setLoadingGroup(true);
     try {
-      const [groupData, accasData, leaderboardData, membersData] = await Promise.all([
+      const [groupData, accasData, leaderboardData, membersData, accaStatsData] = await Promise.all([
         api.getGroup(groupId),
         api.getAccasByGroup(groupId),
         api.getGroupLeaderboard(groupId),
-        api.getGroupMembers(groupId)
+        api.getGroupMembers(groupId),
+        api.getGroupAccaStats(groupId)
       ]);
       setGroup(groupData);
       setAccas(accasData);
       setLeaderboard(leaderboardData);
       setMembers(membersData);
+      setAccaStats(accaStatsData);
     } catch (err) {
       console.error("Error loading group data:", err);
       setError(err.response?.data?.detail || "Failed to load group");
@@ -285,6 +288,8 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         leaderboard={leaderboard}
         loading={loadingLeaderboard}
         accas={accas}
+        groupId={groupId}
+        accaStats={accaStats}
       />
 
       {/* Create Acca Wizard */}
