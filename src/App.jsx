@@ -219,7 +219,8 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await api.logout();
     api.setAuthToken(null);
     setUser(null);
     setIsLoggedIn(false);

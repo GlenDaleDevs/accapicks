@@ -78,9 +78,9 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
-        "style-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "img-src 'self' data:; "
-        "font-src 'self'; "
+        "font-src 'self' https://fonts.gstatic.com; "
         "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; "
         "frame-ancestors 'none'"
     )
@@ -91,8 +91,11 @@ async def add_security_headers(request: Request, call_next):
 async def limit_request_size(request: Request, call_next):
     if request.method in ("POST", "PUT", "PATCH"):
         content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > 1_048_576:  # 1MB
-            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+        try:
+            if content_length and int(content_length) > 1_048_576:  # 1MB
+                return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+        except ValueError:
+            return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length header"})
     return await call_next(request)
 
 # CORS - allowed origins for frontend
