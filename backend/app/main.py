@@ -33,11 +33,13 @@ async def lifespan(app):
     lock_task = asyncio.create_task(auto_lock_accas())
     settle_task = asyncio.create_task(auto_settle_bets())
     cleanup_task = asyncio.create_task(cleanup_verification_codes())
+    blacklist_task = asyncio.create_task(cleanup_blacklisted_tokens())
     yield
     logger.info("Shutting down background tasks")
     lock_task.cancel()
     settle_task.cancel()
     cleanup_task.cancel()
+    blacklist_task.cancel()
 
 # Custom rate limit handler
 def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
@@ -52,9 +54,46 @@ def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 # Create the FastAPI app
-app = FastAPI(title="AccaPicks API", lifespan=lifespan)
+is_production = os.getenv("ENVIRONMENT", "").lower() == "production"
+app = FastAPI(
+    title="AccaPicks API",
+    lifespan=lifespan,
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    if request.headers.get("x-forwarded-proto") == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "font-src 'self'; "
+        "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; "
+        "frame-ancestors 'none'"
+    )
+    return response
+
+# Request size limit middleware
+@app.middleware("http")
+async def limit_request_size(request: Request, call_next):
+    if request.method in ("POST", "PUT", "PATCH"):
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > 1_048_576:  # 1MB
+            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+    return await call_next(request)
 
 # CORS - allowed origins for frontend
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
@@ -178,6 +217,25 @@ async def cleanup_verification_codes():
 
         except Exception as e:
             logger.error(f"Error in verification cleanup: {e}")
+            db.rollback()
+        finally:
+            db.close()
+
+# Background task: cleanup expired blacklisted tokens
+async def cleanup_blacklisted_tokens():
+    while True:
+        await asyncio.sleep(3600)  # Every hour
+        db = SessionLocal()
+        try:
+            now = datetime.now(timezone.utc)
+            deleted = db.query(models.BlacklistedToken).filter(
+                models.BlacklistedToken.expires_at < now
+            ).delete(synchronize_session=False)
+            db.commit()
+            if deleted > 0:
+                logger.info(f"Cleaned up {deleted} expired blacklisted token(s)")
+        except Exception as e:
+            logger.error(f"Error cleaning up blacklisted tokens: {e}")
             db.rollback()
         finally:
             db.close()
