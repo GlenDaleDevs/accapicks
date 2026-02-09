@@ -14,7 +14,7 @@ router = APIRouter()
 
 def get_admin_user_ids() -> list[int]:
     """Parse ADMIN_USER_IDS from environment variable."""
-    admin_ids = os.getenv("ADMIN_USER_IDS", "1")
+    admin_ids = os.getenv("ADMIN_USER_IDS", "")
     return [int(uid.strip()) for uid in admin_ids.split(",") if uid.strip()]
 
 
@@ -69,7 +69,9 @@ def track_bookmaker_click(
 
 
 @router.put("/affiliate/links/{bookmaker_key}")
+@limiter.limit("10/minute")
 def update_bookmaker_link(
+    request: Request,
     bookmaker_key: str,
     url: Optional[str] = None,
     display_name: Optional[str] = None,

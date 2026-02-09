@@ -520,8 +520,10 @@ def change_password(
     # Verify current password
     if not auth.verify_password(data.current_password, user.hashed_password):
         user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+        logger.warning(f"Failed password change attempt for user {user_id}")
         if user.failed_login_attempts >= 10:
             user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+            logger.warning(f"Account locked after failed password changes: user {user_id}")
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
