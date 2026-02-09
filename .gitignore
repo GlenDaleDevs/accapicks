@@ -31,6 +31,10 @@ __pycache__/
 .claude/settings.local.json
 .claude.json
 
+# Notes and plans
+*.txt
+nul
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
