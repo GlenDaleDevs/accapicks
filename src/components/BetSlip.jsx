@@ -3,7 +3,7 @@ import { BOOKMAKER_DISPLAY_NAMES, LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatOdds, formatBetSlipText, formatDisplayDate, formatKickoffTime } from "../utils/formatters";
 import * as api from "../api/client";
 
-export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmakerLinks = {} }) {
+export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmakerLinks = {}, onRemovePick, user }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
@@ -109,6 +109,15 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
               <span className="bet-slip-pick-kickoff">{formatKickoffTime(bet.commence_time)}</span>
             )}
             <span className="bet-slip-pick-user">Picked by {bet.username}</span>
+            {acca.status === "open" && user && bet.user_id === user.id && onRemovePick && (
+              <button
+                className="btn btn-danger btn-sm"
+                style={{ marginTop: "6px", fontSize: "12px", padding: "4px 10px" }}
+                onClick={() => onRemovePick(bet.id)}
+              >
+                Remove Pick
+              </button>
+            )}
           </div>
         ))}
       </div>
