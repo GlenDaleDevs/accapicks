@@ -149,3 +149,15 @@ class BookmakerClick(Base):
 
     def __repr__(self):
         return f"<BookmakerClick {self.bookmaker_key}>"
+
+# BlacklistedToken model - stores revoked JWT tokens
+class BlacklistedToken(Base):
+    __tablename__ = "blacklisted_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    jti = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    blacklisted_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    def __repr__(self):
+        return f"<BlacklistedToken {self.jti}>"
