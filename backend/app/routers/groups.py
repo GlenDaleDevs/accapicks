@@ -358,6 +358,205 @@ def get_group_leaderboard(
     return leaderboard
 
 
+# Get member picks
+@router.get("/groups/{group_id}/members/{member_id}/picks")
+@limiter.limit("30/minute")
+def get_member_picks(
+    request: Request,
+    group_id: int,
+    member_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Get all picks for a specific member in a group"""
+
+    # Verify requesting user is a member
+    membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this group"
+        )
+
+    # Verify target member exists as current member OR has bets in group accas
+    target_membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == member_id
+    ).first()
+
+    # Get all accas in this group
+    accas = db.query(models.Acca).filter(models.Acca.group_id == group_id).all()
+    acca_ids = [a.id for a in accas] if accas else []
+
+    # Check if target user has bets in this group
+    has_bets = False
+    if acca_ids:
+        has_bets = db.query(models.Bet).filter(
+            models.Bet.acca_id.in_(acca_ids),
+            models.Bet.user_id == member_id
+        ).first() is not None
+
+    if not target_membership and not has_bets:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Member not found"
+        )
+
+    # Get target user details
+    target_user = db.query(models.User).filter(models.User.id == member_id).first()
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Get all bets for this member in this group
+    bets = []
+    if acca_ids:
+        bets = db.query(models.Bet).filter(
+            models.Bet.acca_id.in_(acca_ids),
+            models.Bet.user_id == member_id
+        ).order_by(models.Bet.created_at.desc()).all()
+
+    # Build acca map for efficient lookup
+    acca_map = {a.id: a for a in accas}
+
+    # Initialize summary stats
+    summary = {
+        "total_bets": len(bets),
+        "won": 0,
+        "lost": 0,
+        "void": 0,
+        "pending": 0,
+        "win_rate": 0.0,
+        "best_odds_won": 0.0
+    }
+
+    won_bets = []
+    picks = []
+
+    for bet in bets:
+        # Count by result
+        if bet.result == "won":
+            summary["won"] += 1
+            won_bets.append(bet)
+        elif bet.result == "lost":
+            summary["lost"] += 1
+        elif bet.result == "void":
+            summary["void"] += 1
+        else:
+            summary["pending"] += 1
+
+        # Build pick entry
+        acca = acca_map.get(bet.acca_id)
+        picks.append({
+            "bet_id": bet.id,
+            "acca_id": bet.acca_id,
+            "acca_name": acca.name if acca else None,
+            "acca_status": acca.status if acca else None,
+            "description": bet.description,
+            "odds": bet.odds,
+            "result": bet.result,
+            "home_team": bet.home_team,
+            "away_team": bet.away_team,
+            "pick_type": bet.pick_type,
+            "sport_key": bet.sport_key,
+            "commence_time": bet.commence_time.isoformat() if bet.commence_time else None,
+            "created_at": bet.created_at.isoformat() if bet.created_at else None
+        })
+
+    # Calculate win_rate
+    settled = summary["won"] + summary["lost"]
+    if settled > 0:
+        summary["win_rate"] = round(summary["won"] / settled * 100, 1)
+
+    # Calculate best_odds_won
+    for won_bet in won_bets:
+        try:
+            odds_value = float(won_bet.odds)
+            if odds_value > summary["best_odds_won"]:
+                summary["best_odds_won"] = odds_value
+        except (ValueError, TypeError):
+            continue
+
+    summary["best_odds_won"] = round(summary["best_odds_won"], 2)
+
+    return {
+        "user_id": target_user.id,
+        "username": target_user.username,
+        "summary": summary,
+        "picks": picks
+    }
+
+
+# Get group acca stats
+@router.get("/groups/{group_id}/acca-stats")
+@limiter.limit("30/minute")
+def get_acca_stats(
+    request: Request,
+    group_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Get statistics about accas in a group"""
+
+    # Verify requesting user is a member
+    membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this group"
+        )
+
+    # Get all accas in this group
+    accas = db.query(models.Acca).filter(models.Acca.group_id == group_id).all()
+
+    # Count accas by status
+    total_accas = len(accas)
+    won_accas = 0
+    lost_accas = 0
+    settled_accas = 0
+    open_accas = 0
+    locked_accas = 0
+
+    for acca in accas:
+        if acca.status == "won":
+            won_accas += 1
+            settled_accas += 1
+        elif acca.status == "lost":
+            lost_accas += 1
+            settled_accas += 1
+        elif acca.status == "settled":
+            settled_accas += 1
+        elif acca.status == "open":
+            open_accas += 1
+        elif acca.status == "locked":
+            locked_accas += 1
+
+    # Calculate success rate
+    success_rate = 0.0
+    if won_accas + lost_accas > 0:
+        success_rate = round(won_accas / (won_accas + lost_accas) * 100, 1)
+
+    return {
+        "total_accas": total_accas,
+        "won_accas": won_accas,
+        "lost_accas": lost_accas,
+        "settled_accas": settled_accas,
+        "open_accas": open_accas,
+        "locked_accas": locked_accas,
+        "success_rate": success_rate
+    }
+
+
 # Remove member endpoint (admin only)
 @router.delete("/groups/{group_id}/members/{target_user_id}")
 @limiter.limit("3/minute")
