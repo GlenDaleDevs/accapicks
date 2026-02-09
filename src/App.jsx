@@ -10,6 +10,7 @@ import TopBar from "./components/TopBar";
 import GroupsList from "./components/GroupsList";
 import GroupDetail from "./components/GroupDetail";
 import AccaDetail from "./components/AccaDetail";
+import MemberPickHistory from "./components/MemberPickHistory";
 import UserSettings from "./components/UserSettings";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
@@ -333,6 +334,10 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
         <Route
           path="/groups/:groupId"
           element={<GroupDetail user={user} onRefreshGroups={onRefreshGroups} />}
+        />
+        <Route
+          path="/groups/:groupId/members/:userId"
+          element={<MemberPickHistory user={user} />}
         />
         <Route
           path="/groups/:groupId/accas/:accaId"
