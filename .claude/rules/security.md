@@ -19,6 +19,7 @@ Rules derived from security audits. Follow these when writing any new code.
 - Sanitize/strip HTML from user text input to prevent stored XSS
 - Invite codes: regex-strip non-alphanumeric, enforce max 6 chars server-side
 - Validate Content-Length header with try/except (can be non-numeric)
+- Validate date query params with regex `^\d{4}-\d{2}-\d{2}$` — don't rely on string comparison alone
 
 ## Headers & Middleware
 
@@ -33,10 +34,13 @@ Rules derived from security audits. Follow these when writing any new code.
 - Rate limiter must use FIRST IP in X-Forwarded-For (`split(",")[0]`), not last — last is the proxy
 - All auth endpoints must be rate-limited (signup: 5/min, login: 10/min, logout: 10/min)
 - Destructive endpoints (delete account, leave group) should be rate-limited
+- Admin-only endpoints still need rate limits — don't skip just because auth is required
+- Health/status endpoints must be rate-limited if they hit the database
 
 ## Logging
 
-- Log security events: failed logins, account lockouts, blacklisted token usage, failed password changes
+- Log security events: failed logins, failed password changes, account lockouts, blacklisted token usage
+- Log both the attempt AND the lockout trigger (separate log lines)
 - Include user_id in security logs where available
 - Never log passwords, tokens, or full email addresses
 
@@ -46,6 +50,7 @@ Rules derived from security audits. Follow these when writing any new code.
 - .dockerignore must exclude .env, *.db, node_modules, __pycache__
 - Run `npm audit` and `pip-audit` before major deploys
 - `Base.metadata.create_all()` runs before Alembic — always use `IF NOT EXISTS` guards in migrations
+- Environment variables with admin/privilege implications must default to empty, never to a valid ID
 
 ## Frontend
 
