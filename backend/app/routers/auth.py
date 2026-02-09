@@ -23,7 +23,10 @@ router = APIRouter()
 
 
 # Dependency to get current user from Authorization header
-def get_current_user(authorization: Optional[str] = Header(None)) -> int:
+def get_current_user(
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+) -> int:
     """Extract user_id from Bearer token in Authorization header"""
     if not authorization:
         raise HTTPException(
@@ -40,7 +43,20 @@ def get_current_user(authorization: Optional[str] = Header(None)) -> int:
         )
 
     token = parts[1]
-    return auth.get_current_user_id(token)
+    user_id = auth.get_current_user_id(token)
+
+    # Check blacklist (only for tokens with jti)
+    payload = auth.verify_token(token)
+    jti = payload.get("jti") if payload else None
+    if jti:
+        blacklisted = db.query(models.BlacklistedToken).filter(
+            models.BlacklistedToken.jti == jti
+        ).first()
+        if blacklisted:
+            logger.warning(f"Blacklisted token used: jti={jti}")
+            raise HTTPException(status_code=401, detail="Token has been revoked")
+
+    return user_id
 
 
 # Signup endpoint
@@ -182,8 +198,10 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
     # Verify password
     if not auth.verify_password(credentials.password, user.hashed_password):
         user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+        logger.warning(f"Failed login for: {credentials.identifier[:50]}")
         if user.failed_login_attempts >= 10:
             user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+            logger.warning(f"Account locked: {credentials.identifier[:50]}")
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -214,6 +232,42 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
         "token_type": "bearer",
         "user": user
     }
+
+
+# Logout endpoint
+@router.post("/auth/logout")
+@limiter.limit("10/minute")
+def logout(
+    request: Request,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Logout and blacklist current token"""
+    if not authorization:
+        return {"message": "Logged out"}
+
+    parts = authorization.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return {"message": "Logged out"}
+
+    token = parts[1]
+    payload = auth.verify_token(token)
+    if not payload:
+        return {"message": "Logged out"}
+
+    jti = payload.get("jti")
+    if not jti:
+        return {"message": "Logged out"}
+
+    try:
+        expires_at = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
+        blacklisted = models.BlacklistedToken(jti=jti, expires_at=expires_at)
+        db.add(blacklisted)
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    return {"message": "Logged out"}
 
 
 # Verify email endpoint
@@ -481,6 +535,20 @@ def change_password(
 
     # Hash new password
     user.hashed_password = auth.hash_password(data.new_password)
+
+    # Blacklist current token to force re-login
+    try:
+        token = request.headers.get("authorization", "").split()[-1]
+        token_payload = auth.verify_token(token)
+        if token_payload and token_payload.get("jti"):
+            expires_at = datetime.fromtimestamp(token_payload["exp"], tz=timezone.utc)
+            blacklisted = models.BlacklistedToken(
+                jti=token_payload["jti"], expires_at=expires_at
+            )
+            db.add(blacklisted)
+    except Exception:
+        pass  # Don't block password change if blacklisting fails
+
     db.commit()
 
     return {"message": "Password changed successfully"}
