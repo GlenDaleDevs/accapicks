@@ -91,6 +91,14 @@ export const getMe = async () => {
   return response.data;
 };
 
+export const logout = async () => {
+  try {
+    await axios.post(`${API_URL}/auth/logout`);
+  } catch (err) {
+    // Fire-and-forget: don't block logout if API call fails
+  }
+};
+
 // Groups
 export const getGroups = async () => {
   const response = await axios.get(`${API_URL}/groups`);

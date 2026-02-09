@@ -53,7 +53,7 @@ def get_current_user(
             models.BlacklistedToken.jti == jti
         ).first()
         if blacklisted:
-            logger.warning(f"Blacklisted token used: jti={jti}")
+            logger.warning(f"Blacklisted token used: jti={jti}, user_id={user_id}")
             raise HTTPException(status_code=401, detail="Token has been revoked")
 
     return user_id
