@@ -341,9 +341,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
           <div className="lock-countdown lock-countdown-open">
             Locks: {lockCountdown}
           </div>
-          <p className="bet-settlement-info">
-            The acca locks when the earliest picked match kicks off.
-          </p>
         </div>
       )}
 
@@ -591,6 +588,8 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         oddsFormat={oddsFormat}
         bookmakerComparison={bookmakerComparison}
         bookmakerLinks={bookmakerLinks}
+        onRemovePick={handleRemovePick}
+        user={user}
       />
     </div>
     </>
