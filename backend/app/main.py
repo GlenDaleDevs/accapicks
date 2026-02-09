@@ -245,7 +245,8 @@ async def cleanup_blacklisted_tokens():
 
 # Health check
 @app.get("/api/health")
-def health_check():
+@limiter.limit("30/minute")
+def health_check(request: Request):
     try:
         db = SessionLocal()
         db.execute(text("SELECT 1"))

@@ -1,7 +1,10 @@
+import re
 from fastapi import APIRouter, Depends, Request, HTTPException
 from .. import odds_api
 from .auth import get_current_user
 from ..limiter import limiter
+
+DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 router = APIRouter()
 
@@ -50,6 +53,9 @@ def get_filtered_matches(
     leagues: comma-separated sport keys e.g. "soccer_epl,soccer_spain_la_liga"
     date_from/date_to: date strings e.g. "2026-02-08"
     """
+    if not DATE_PATTERN.match(date_from) or not DATE_PATTERN.match(date_to):
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
     league_list = [l.strip() for l in leagues.split(",") if l.strip()]
     for league in league_list:
         if league not in VALID_SPORT_KEYS:
