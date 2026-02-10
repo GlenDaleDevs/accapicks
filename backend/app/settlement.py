@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
 from . import models
 from .odds_api import get_scores
+from .normalization import normalize
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,18 @@ def settle_locked_accas(db: Session):
                 models.Bet.commence_time.isnot(None)
             ).all()
 
+            # Auto-void legacy bets (no event_id) that are 7+ days old
+            legacy_bets = db.query(models.Bet).filter(
+                models.Bet.acca_id == acca.id,
+                models.Bet.result.is_(None),
+                models.Bet.event_id.is_(None),
+            ).all()
+
+            for bet in legacy_bets:
+                if not bet.commence_time or (now - bet.commence_time) >= timedelta(days=7):
+                    logger.info(f"Auto-voiding legacy bet {bet.id} (no event_id, acca {acca.id})")
+                    bet.result = "void"
+
             if not unsettled_bets:
                 # No unsettled auto-settleable bets — check if acca can be finalized
                 all_bets = db.query(models.Bet).filter(models.Bet.acca_id == acca.id).all()
@@ -66,9 +79,9 @@ def settle_locked_accas(db: Session):
             # Collect unique sport_keys for ready bets
             sport_keys = set(bet.sport_key for bet in ready_bets if bet.sport_key)
 
-            # Calculate days_from based on oldest ready bet (min 3, max 7)
+            # Calculate days_from based on oldest ready bet (min 3, max 14)
             oldest_kickoff = min(bet.commence_time for bet in ready_bets)
-            days_since_oldest = max(3, min(7, int((now - oldest_kickoff).total_seconds() / 86400) + 1))
+            days_since_oldest = max(3, min(14, int((now - oldest_kickoff).total_seconds() / 86400) + 1))
 
             # Fetch scores for each sport
             scores_by_event = {}
@@ -82,14 +95,20 @@ def settle_locked_accas(db: Session):
                 score_data = scores_by_event.get(bet.event_id)
 
                 if not score_data:
-                    # Score not found - check if it's been >72 hours
                     time_since_kickoff = now - bet.commence_time
                     if time_since_kickoff >= timedelta(hours=72):
-                        logger.warning(f"Bet {bet.id} (event {bet.event_id}) not settled after 72 hours. Manual review required.")
+                        logger.warning(f"Bet {bet.id} (event {bet.event_id}): no score data after {time_since_kickoff.total_seconds() / 3600:.0f}h")
+                    else:
+                        logger.info(f"Bet {bet.id} (event {bet.event_id}): awaiting score data ({time_since_kickoff.total_seconds() / 3600:.0f}h since kickoff)")
                     continue
 
                 # Check if match is completed
                 if not score_data.get('completed'):
+                    # Auto-void if 48+ hours past kickoff and still not completed
+                    time_since_kickoff = now - bet.commence_time
+                    if time_since_kickoff >= timedelta(hours=48):
+                        logger.warning(f"Bet {bet.id} (event {bet.event_id}): match not completed after 48h, voiding")
+                        bet.result = "void"
                     continue
 
                 # Extract scores
@@ -113,10 +132,10 @@ def settle_locked_accas(db: Session):
                     except (ValueError, TypeError):
                         continue
 
-                    # Match team name to home/away
-                    if team_name == bet.home_team:
+                    # Match team name to home/away (normalized)
+                    if normalize(team_name) == normalize(bet.home_team):
                         home_score = score_int
-                    elif team_name == bet.away_team:
+                    elif normalize(team_name) == normalize(bet.away_team):
                         away_score = score_int
 
                 if home_score is None or away_score is None:

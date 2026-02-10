@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
@@ -6,6 +7,8 @@ from .. import models, schemas, odds_api
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -334,6 +337,12 @@ def debug_settlement(
     if not membership:
         raise HTTPException(status_code=403, detail="Not a member")
 
+    # Restrict to acca creator or group admin
+    is_creator = acca.created_by == user_id
+    is_admin = membership.role == "admin"
+    if not is_creator and not is_admin:
+        raise HTTPException(status_code=403, detail="Only the acca creator or group admin can access diagnostics")
+
     now = datetime.now(timezone.utc)
     all_bets = db.query(models.Bet).filter(models.Bet.acca_id == acca_id).all()
 
@@ -401,8 +410,9 @@ def debug_settlement(
                 "event_matches": matched,
             }
         except Exception as e:
-            debug["scores_found"][sport_key] = {"error": str(e)}
-            debug["issues"].append(f"Error fetching scores for {sport_key}: {e}")
+            logger.error(f"Debug settlement: error fetching scores for {sport_key}: {e}")
+            debug["scores_found"][sport_key] = {"error": "Failed to fetch scores"}
+            debug["issues"].append(f"Error fetching scores for {sport_key}")
 
     if not sport_keys:
         debug["issues"].append("No bets have sport_key set — settlement cannot fetch scores")
