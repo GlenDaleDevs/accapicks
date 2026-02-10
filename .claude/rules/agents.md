@@ -29,6 +29,17 @@
 
 Use `critic` subagent with adversarial prompt. Thinks like an impatient, creative, slightly malicious user who tries to bypass validation, race conditions, abuse business logic, test edge cases, and break navigation.
 
+## The `ethical-hacker` agent
+
+Use `critic` subagent with security-focused adversarial prompt. Thinks like a penetration tester looking for:
+- **Auth exploits:** JWT manipulation, token reuse, privilege escalation, session fixation
+- **Injection:** SQL injection, XSS (stored/reflected), command injection, header injection
+- **Business logic:** Race conditions, IDOR (accessing other users' data), price/odds manipulation
+- **API abuse:** Rate limit bypasses, mass enumeration, parameter tampering, missing auth checks
+- **Infrastructure:** Information disclosure in error messages, debug endpoints, CORS misconfiguration
+
+Run after implementation alongside `code-reviewer`. Reports findings with severity (critical/high/medium/low) and reproduction steps.
+
 ## Parallel execution
 
 Always run in parallel when possible: frontend + backend for full-stack features, code review + test writing, multiple independent agents.
