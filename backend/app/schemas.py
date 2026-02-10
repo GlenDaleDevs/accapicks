@@ -313,17 +313,6 @@ class AccaWithBets(BaseModel):
     class Config:
         from_attributes = True
 
-# Schema for updating bet result (what we receive)
-class BetResultUpdate(BaseModel):
-    result: str
-
-    @field_validator("result")
-    @classmethod
-    def result_must_be_valid(cls, v):
-        if v not in ("won", "lost", "void"):
-            raise ValueError("Result must be 'won', 'lost', or 'void'")
-        return v
-
 # Schema for bookmaker click tracking
 class BookmakerClickRequest(BaseModel):
     bookmaker_key: str
