@@ -183,11 +183,6 @@ export const deleteBet = async (betId) => {
   return response.data;
 };
 
-export const updateBetResult = async (betId, result) => {
-  const response = await axios.put(`${API_URL}/bets/${betId}/result`, { result });
-  return response.data;
-};
-
 // Odds
 export const getMatches = async (sport = "soccer_epl") => {
   const response = await axios.get(`${API_URL}/odds/matches?sport=${sport}`);

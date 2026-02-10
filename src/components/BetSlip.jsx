@@ -10,13 +10,11 @@ export default function BetSlip({
   bookmakerLinks = {},
   onRemovePick,
   onAddPick,
-  onSettleBet,
   user,
   members = [],
 }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
-  const [settlingBetId, setSettlingBetId] = useState(null);
 
   if (!acca || members.length === 0) return null;
 
@@ -146,32 +144,6 @@ export default function BetSlip({
                     >
                       REMOVE
                     </button>
-                  )}
-                  {acca.status === "locked" && !bet.result && !bet.event_id && user && acca.created_by === user.id && onSettleBet && (
-                    <div className="bet-slip-settle-btns">
-                      <button
-                        className="bet-slip-settle-won"
-                        disabled={settlingBetId === bet.id}
-                        onClick={async () => {
-                          setSettlingBetId(bet.id);
-                          await onSettleBet(bet.id, "won");
-                          setSettlingBetId(null);
-                        }}
-                      >
-                        WON
-                      </button>
-                      <button
-                        className="bet-slip-settle-lost"
-                        disabled={settlingBetId === bet.id}
-                        onClick={async () => {
-                          setSettlingBetId(bet.id);
-                          await onSettleBet(bet.id, "lost");
-                          setSettlingBetId(null);
-                        }}
-                      >
-                        LOST
-                      </button>
-                    </div>
                   )}
                 </div>
               );
