@@ -316,7 +316,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     }
   };
 
-  const userAlreadyPicked = user && acca.bets.some((b) => b.user_id === user.id);
   const canDeleteAcca = user && acca.created_by === user.id && acca.status === "open";
 
   return (
@@ -377,37 +376,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
 
           <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} accaId={accaId} />
         </>
-      )}
-
-      {/* Add Pick - Fixture Grid Flow */}
-      {acca.status === "open" && !showFixtureGrid && !showAddBet && (
-        <div className="mb-20" style={{ textAlign: "center" }}>
-          {!userAlreadyPicked && (
-            <p className="pick-hint">Everyone gets one pick — make yours count!</p>
-          )}
-          <button
-            className={`btn ${userAlreadyPicked ? "btn-secondary" : "btn-primary"}`}
-            disabled={userAlreadyPicked}
-            onClick={() => {
-              if (
-                acca.leagues &&
-                acca.leagues.length > 0 &&
-                acca.match_dates &&
-                acca.match_dates.length > 0
-              ) {
-                if (acca.leagues.length === 1) {
-                  setFixtureLeague(acca.leagues[0]);
-                  loadFilteredMatches(acca.leagues, acca.match_dates);
-                }
-                setShowFixtureGrid(true);
-              } else {
-                setShowAddBet(true);
-              }
-            }}
-          >
-            {userAlreadyPicked ? "Pick Already Submitted" : "+ Add Your Pick"}
-          </button>
-        </div>
       )}
 
       {/* Fixture Grid - only show after clicking Add Your Pick */}

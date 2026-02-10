@@ -1423,12 +1423,12 @@
   background-image: radial-gradient(circle, var(--bg-primary) 3px, transparent 3px);
   background-size: 12px 10px;
   background-position: center;
-  background-color: #f5f3ed;
+  background-color: #e8e4da;
   border-radius: 4px 4px 0 0;
 }
 
 .bet-slip-inner {
-  background-color: #f5f3ed;
+  background-color: #e8e4da;
   padding: 20px 20px 24px;
   border-radius: 0 0 4px 4px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -1445,7 +1445,7 @@
 }
 
 .bet-slip-header-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -1453,7 +1453,7 @@
 }
 
 .bet-slip-header-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: #666666;
   margin-top: 4px;
   display: flex;
@@ -1506,14 +1506,14 @@
 
 .bet-slip-pick-number {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 15px;
   color: #1a1a2e;
   flex-shrink: 0;
   min-width: 20px;
 }
 
 .bet-slip-pick-description {
-  font-size: 13px;
+  font-size: 15px;
   color: #1a1a2e;
   white-space: nowrap;
   overflow: hidden;
@@ -1529,7 +1529,7 @@
 
 .bet-slip-pick-odds {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
   color: #1a1a2e;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
@@ -1538,7 +1538,7 @@
 .bet-slip-pick-meta {
   display: flex;
   gap: 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: #666666;
   margin-top: 2px;
   padding-left: 20px;
@@ -1566,7 +1566,7 @@
 }
 
 .bet-slip-pick-empty-text {
-  font-size: 13px;
+  font-size: 15px;
   color: #999999;
   font-style: italic;
 }
@@ -1585,7 +1585,7 @@
 }
 
 .bet-slip-pick-empty-cta {
-  font-size: 13px;
+  font-size: 15px;
   color: #00855a;
   font-weight: 700;
 }
@@ -1633,7 +1633,7 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1649,7 +1649,7 @@
 }
 
 .bet-slip-total-odds {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #00855a;
   font-variant-numeric: tabular-nums;
@@ -1659,7 +1659,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
@@ -1667,7 +1667,7 @@
   color: #00855a;
   text-decoration: none;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   border-bottom: 1px solid #00855a;
   transition: opacity 150ms ease-out;
 }
@@ -1775,7 +1775,7 @@
   }
 
   .bet-slip-pick-description {
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 
