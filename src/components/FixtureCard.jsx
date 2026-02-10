@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { formatOdds } from "../utils/formatters";
 import { getBttsOdds } from "../api/client";
 
@@ -6,6 +6,7 @@ export default function FixtureCard({ match, fixtureTaken, takenBet, onPickMatch
   const [expanded, setExpanded] = useState(false);
   const [bttsData, setBttsData] = useState(null);
   const [loadingBtts, setLoadingBtts] = useState(false);
+  const fetchingRef = useRef(false);
 
   const kickoff = new Date(match.commence_time).toLocaleTimeString("en-GB", {
     hour: "2-digit", minute: "2-digit",
@@ -14,7 +15,8 @@ export default function FixtureCard({ match, fixtureTaken, takenBet, onPickMatch
   const toggleExpanded = async () => {
     const willExpand = !expanded;
     setExpanded(willExpand);
-    if (willExpand && !bttsData && !loadingBtts && !match.btts_yes) {
+    if (willExpand && !bttsData && !fetchingRef.current && !match.btts_yes) {
+      fetchingRef.current = true;
       setLoadingBtts(true);
       try {
         const data = await getBttsOdds(match.id, match.league);
@@ -22,6 +24,7 @@ export default function FixtureCard({ match, fixtureTaken, takenBet, onPickMatch
       } catch (err) {
         // BTTS not available for this match — silently ignore
       } finally {
+        fetchingRef.current = false;
         setLoadingBtts(false);
       }
     }
