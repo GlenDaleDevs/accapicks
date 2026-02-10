@@ -16,7 +16,7 @@ _scores_cache = {}  # Separate cache for scores
 CACHE_TTL_SECONDS = int(os.getenv('ODDS_CACHE_TTL', '7200'))  # 2 hours default
 SCORES_CACHE_TTL_SECONDS = 600  # 10 minutes for scores
 ODDS_REGIONS = os.getenv('ODDS_REGIONS', 'uk')
-ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h')
+ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h,btts,totals')
 
 def get_football_matches(sport='soccer_epl'):
     """
@@ -68,12 +68,43 @@ def format_match_for_display(match, league=None):
     if not bookmaker:
         return None
 
-    markets = bookmaker['markets'][0]['outcomes']
+    # Initialize odds
+    home_odds = None
+    away_odds = None
+    draw_odds = None
+    btts_yes = None
+    btts_no = None
+    over_2_5 = None
+    under_2_5 = None
+    totals_line = None
 
-    # Find odds for home, away, draw
-    home_odds = next((o['price'] for o in markets if o['name'] == home_team), None)
-    away_odds = next((o['price'] for o in markets if o['name'] == away_team), None)
-    draw_odds = next((o['price'] for o in markets if o['name'] == 'Draw'), None)
+    # Loop through markets to extract odds
+    for market in bookmaker.get('markets', []):
+        market_key = market.get('key')
+        outcomes = market.get('outcomes', [])
+
+        if market_key == 'h2h':
+            # Extract h2h outcomes
+            home_odds = next((o['price'] for o in outcomes if o['name'] == home_team), None)
+            away_odds = next((o['price'] for o in outcomes if o['name'] == away_team), None)
+            draw_odds = next((o['price'] for o in outcomes if o['name'] == 'Draw'), None)
+
+        elif market_key == 'btts':
+            # Extract btts outcomes
+            btts_yes = next((o['price'] for o in outcomes if o['name'] == 'Yes'), None)
+            btts_no = next((o['price'] for o in outcomes if o['name'] == 'No'), None)
+
+        elif market_key == 'totals':
+            # Extract totals outcomes (Over/Under 2.5)
+            for outcome in outcomes:
+                if outcome.get('point') == 2.5:
+                    if outcome['name'] == 'Over':
+                        over_2_5 = outcome['price']
+                        totals_line = outcome.get('point')
+                    elif outcome['name'] == 'Under':
+                        under_2_5 = outcome['price']
+                        if totals_line is None:
+                            totals_line = outcome.get('point')
 
     result = {
         'id': match['id'],
@@ -83,7 +114,12 @@ def format_match_for_display(match, league=None):
         'bookmaker': bookmaker['title'],
         'home_odds': home_odds,
         'away_odds': away_odds,
-        'draw_odds': draw_odds
+        'draw_odds': draw_odds,
+        'btts_yes': btts_yes,
+        'btts_no': btts_no,
+        'over_2_5': over_2_5,
+        'under_2_5': under_2_5,
+        'totals_line': totals_line,
     }
     if league:
         result['league'] = league
@@ -145,7 +181,48 @@ def compare_bookmakers_for_acca(bets):
     parsed_bets = []
     for bet_desc in bets:
         bet_lower = bet_desc.lower().strip()
-        # Remove common suffixes like "to win", "win"
+
+        # Check for BTTS bets first
+        if bet_lower.startswith("btts yes - "):
+            parsed_bets.append({
+                "original": bet_desc,
+                "market_type": "btts",
+                "outcome_name": "Yes",
+                "team": None,
+                "is_draw": False
+            })
+            continue
+        elif bet_lower.startswith("btts no - "):
+            parsed_bets.append({
+                "original": bet_desc,
+                "market_type": "btts",
+                "outcome_name": "No",
+                "team": None,
+                "is_draw": False
+            })
+            continue
+
+        # Check for totals bets
+        if bet_lower.startswith("over 2.5 goals - "):
+            parsed_bets.append({
+                "original": bet_desc,
+                "market_type": "totals",
+                "outcome_name": "Over",
+                "team": None,
+                "is_draw": False
+            })
+            continue
+        elif bet_lower.startswith("under 2.5 goals - "):
+            parsed_bets.append({
+                "original": bet_desc,
+                "market_type": "totals",
+                "outcome_name": "Under",
+                "team": None,
+                "is_draw": False
+            })
+            continue
+
+        # Otherwise, parse as h2h bet
         team_name = bet_desc.strip()
         if " to win" in bet_lower:
             team_name = bet_desc[:bet_lower.index(" to win")].strip()
@@ -154,7 +231,13 @@ def compare_bookmakers_for_acca(bets):
 
         # Check if it's a draw bet
         is_draw = bet_lower in ["draw", "the draw"] or bet_lower.startswith("draw - ")
-        parsed_bets.append({"original": bet_desc, "team": team_name, "is_draw": is_draw})
+        parsed_bets.append({
+            "original": bet_desc,
+            "market_type": "h2h",
+            "outcome_name": "Draw" if is_draw else team_name,
+            "team": team_name,
+            "is_draw": is_draw
+        })
 
     # Collect all cached matches across all sports
     all_matches = []
@@ -169,40 +252,61 @@ def compare_bookmakers_for_acca(bets):
     bet_odds_by_bookmaker = {}  # { bookmaker_key: [odds1, odds2, ...] }
 
     for parsed_bet in parsed_bets:
-        team = parsed_bet["team"]
-        is_draw = parsed_bet["is_draw"]
+        market_type = parsed_bet["market_type"]
+        outcome_name = parsed_bet["outcome_name"]
+        team = parsed_bet.get("team")
+        is_draw = parsed_bet.get("is_draw", False)
 
-        # Find the match containing this team or draw
+        # Find the match containing this bet
         matched_odds = None
         for match in all_matches:
             home = match.get("home_team", "")
             away = match.get("away_team", "")
 
-            # Check if this match contains the bet
-            if is_draw or team.lower() in [home.lower(), away.lower()]:
-                # Extract odds from all bookmakers for this match
-                for bookmaker in match.get("bookmakers", []):
-                    bookie_key = bookmaker.get("key")
-                    markets = bookmaker.get("markets", [])
+            # For h2h bets, check if this match contains the team or draw
+            # For btts/totals, any match works (we'll match all bookmakers)
+            if market_type == "h2h":
+                if not (is_draw or team.lower() in [home.lower(), away.lower()]):
+                    continue
 
-                    # Find h2h market
-                    h2h_market = next((m for m in markets if m.get("key") == "h2h"), None)
-                    if not h2h_market:
-                        continue
+            # Extract odds from all bookmakers for this match
+            for bookmaker in match.get("bookmakers", []):
+                bookie_key = bookmaker.get("key")
+                markets = bookmaker.get("markets", [])
 
-                    outcomes = h2h_market.get("outcomes", [])
+                # Find the correct market based on market_type
+                target_market = next((m for m in markets if m.get("key") == market_type), None)
+                if not target_market:
+                    continue
 
-                    # Find the specific outcome for this bet
+                outcomes = target_market.get("outcomes", [])
+
+                # Find the specific outcome
+                if market_type == "h2h":
                     if is_draw:
                         outcome = next((o for o in outcomes if o.get("name", "").lower() == "draw"), None)
                     else:
                         outcome = next((o for o in outcomes if o.get("name", "").lower() == team.lower()), None)
+                elif market_type == "btts":
+                    outcome = next((o for o in outcomes if o.get("name") == outcome_name), None)
+                elif market_type == "totals":
+                    # Match by name and point (2.5)
+                    outcome = next((o for o in outcomes if o.get("name") == outcome_name and o.get("point") == 2.5), None)
+                else:
+                    outcome = None
 
-                    if outcome and "price" in outcome:
-                        if bookie_key not in bet_odds_by_bookmaker:
-                            bet_odds_by_bookmaker[bookie_key] = []
-                        bet_odds_by_bookmaker[bookie_key].append(outcome["price"])
+                if outcome and "price" in outcome:
+                    if bookie_key not in bet_odds_by_bookmaker:
+                        bet_odds_by_bookmaker[bookie_key] = []
+                    bet_odds_by_bookmaker[bookie_key].append(outcome["price"])
 
+            # For btts/totals, we've checked all bookmakers for this match
+            if market_type in ("btts", "totals"):
+                matched_odds = True
+                break
+
+            # For h2h, check if we found the match
+            if market_type == "h2h" and (is_draw or team.lower() in [home.lower(), away.lower()]):
                 matched_odds = True
                 break
 
