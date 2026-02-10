@@ -16,7 +16,7 @@ _scores_cache = {}  # Separate cache for scores
 CACHE_TTL_SECONDS = int(os.getenv('ODDS_CACHE_TTL', '7200'))  # 2 hours default
 SCORES_CACHE_TTL_SECONDS = 600  # 10 minutes for scores
 ODDS_REGIONS = os.getenv('ODDS_REGIONS', 'uk')
-ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h,btts,totals')
+ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h,totals')
 
 def get_football_matches(sport='soccer_epl'):
     """
@@ -78,33 +78,29 @@ def format_match_for_display(match, league=None):
     under_2_5 = None
     totals_line = None
 
-    # Loop through markets to extract odds
+    # Extract h2h from first bookmaker
     for market in bookmaker.get('markets', []):
-        market_key = market.get('key')
-        outcomes = market.get('outcomes', [])
-
-        if market_key == 'h2h':
-            # Extract h2h outcomes
+        if market.get('key') == 'h2h':
+            outcomes = market.get('outcomes', [])
             home_odds = next((o['price'] for o in outcomes if o['name'] == home_team), None)
             away_odds = next((o['price'] for o in outcomes if o['name'] == away_team), None)
             draw_odds = next((o['price'] for o in outcomes if o['name'] == 'Draw'), None)
+            break
 
-        elif market_key == 'btts':
-            # Extract btts outcomes
-            btts_yes = next((o['price'] for o in outcomes if o['name'] == 'Yes'), None)
-            btts_no = next((o['price'] for o in outcomes if o['name'] == 'No'), None)
-
-        elif market_key == 'totals':
-            # Extract totals outcomes (Over/Under 2.5)
-            for outcome in outcomes:
-                if outcome.get('point') == 2.5:
-                    if outcome['name'] == 'Over':
-                        over_2_5 = outcome['price']
-                        totals_line = outcome.get('point')
-                    elif outcome['name'] == 'Under':
-                        under_2_5 = outcome['price']
-                        if totals_line is None:
-                            totals_line = outcome.get('point')
+    # Search all bookmakers for totals (first bookmaker may not offer it)
+    for bk in match.get('bookmakers', []):
+        for market in bk.get('markets', []):
+            if market.get('key') == 'totals':
+                for outcome in market.get('outcomes', []):
+                    if outcome.get('point') == 2.5:
+                        if outcome['name'] == 'Over' and over_2_5 is None:
+                            over_2_5 = outcome['price']
+                            totals_line = 2.5
+                        elif outcome['name'] == 'Under' and under_2_5 is None:
+                            under_2_5 = outcome['price']
+                            totals_line = 2.5
+        if over_2_5 is not None and under_2_5 is not None:
+            break
 
     result = {
         'id': match['id'],
