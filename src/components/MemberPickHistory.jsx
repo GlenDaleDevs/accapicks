@@ -30,7 +30,7 @@ export default function MemberPickHistory({ user }) {
       <div>
         <button className="btn btn-ghost mb-20" disabled>&larr; Back</button>
         <Skeleton width="200px" height="24px" count={1} />
-        <div style={{ marginTop: "20px" }}>
+        <div className="skeleton-spacer">
           <Skeleton width="100%" height="80px" count={2} />
         </div>
       </div>
@@ -107,7 +107,10 @@ export default function MemberPickHistory({ user }) {
       </div>
 
       {picks.length === 0 ? (
-        <p className="empty-state">No picks yet</p>
+        <p className="empty-state">
+          No picks yet
+          <span className="empty-state-hint">This member hasn't added any picks to accas in this group.</span>
+        </p>
       ) : (
         Object.values(picksByAcca).map((accaGroup) => (
           <div key={accaGroup.acca_id} className="member-acca-group">
