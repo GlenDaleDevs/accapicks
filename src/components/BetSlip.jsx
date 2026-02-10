@@ -15,10 +15,13 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
     if (acca.status === "locked" || isSettled) {
       return (
         <div className="bet-slip">
-          <h3 className="section-title">Bet Slip</h3>
-          <p className="text-secondary" style={{ textAlign: "center", padding: "20px 0" }}>
-            No picks were submitted before this acca locked.
-          </p>
+          <div className="bet-slip-perforation" />
+          <div className="bet-slip-inner">
+            <div className="bet-slip-header">
+              <div className="bet-slip-header-title">ACCUMULATOR BET SLIP</div>
+            </div>
+            <p className="bet-slip-empty">NO PICKS SUBMITTED</p>
+          </div>
         </div>
       );
     }
@@ -87,83 +90,103 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
 
   return (
     <div className="bet-slip">
-      <div className="bet-slip-title-row">
-        <h3 className="section-title" style={{ margin: 0 }}>Bet Slip</h3>
-        {isSettled && (
-          <span className={`badge badge-${acca.status}`}>
-            {acca.status}
-          </span>
-        )}
-      </div>
+      <div className="bet-slip-perforation" />
+      <div className="bet-slip-inner">
+        {/* Header */}
+        <div className="bet-slip-header">
+          <div className="bet-slip-header-title">ACCUMULATOR BET SLIP</div>
+          <div className="bet-slip-header-meta">
+            #{String(acca.id).padStart(5, "0")} | {new Date(acca.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+            {isSettled && (
+              <span className={`bet-slip-status bet-slip-status-${acca.status}`}>
+                {acca.status.toUpperCase()}
+              </span>
+            )}
+          </div>
+        </div>
 
-      <div className="bet-slip-picks">
-        {acca.bets.map((bet, index) => (
-          <div key={bet.id} className={`bet-slip-pick-item ${resultBorderClass(bet.result)}`}>
-            <div className="bet-slip-pick-main">
-              <span className="bet-slip-pick-number">{index + 1}.</span>
-              <span className="bet-slip-pick-description">{bet.description}</span>
-              <span className="bet-slip-pick-odds">@ {formatOdds(bet.odds, oddsFormat)}</span>
-              {resultIcon(bet.result)}
+        {/* Picks */}
+        <div className="bet-slip-picks">
+          {acca.bets.map((bet, index) => (
+            <div key={bet.id} className={`bet-slip-pick-item ${resultBorderClass(bet.result)}`}>
+              <div className="bet-slip-pick-row">
+                <span className="bet-slip-pick-number">{index + 1}.</span>
+                <span className="bet-slip-pick-description">{bet.description}</span>
+                <span className="bet-slip-pick-leader" />
+                <span className="bet-slip-pick-odds">{formatOdds(bet.odds, oddsFormat)}</span>
+                {resultIcon(bet.result)}
+              </div>
+              <div className="bet-slip-pick-meta">
+                {bet.commence_time && (
+                  <span>{formatKickoffTime(bet.commence_time)}</span>
+                )}
+                <span>Picked by {bet.username}</span>
+              </div>
+              {acca.status === "open" && user && bet.user_id === user.id && onRemovePick && (
+                <button
+                  className="bet-slip-remove-btn"
+                  onClick={() => onRemovePick(bet.id)}
+                >
+                  REMOVE
+                </button>
+              )}
             </div>
-            {bet.commence_time && (
-              <span className="bet-slip-pick-kickoff">{formatKickoffTime(bet.commence_time)}</span>
-            )}
-            <span className="bet-slip-pick-user">Picked by {bet.username}</span>
-            {acca.status === "open" && user && bet.user_id === user.id && onRemovePick && (
-              <button
-                className="btn btn-danger btn-sm"
-                style={{ marginTop: "6px", fontSize: "12px", padding: "4px 10px" }}
-                onClick={() => onRemovePick(bet.id)}
-              >
-                Remove Pick
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="bet-slip-summary">
-        <div className="bet-slip-combined-odds">
-          Combined Odds: <strong>{formatOdds(combinedOdds, oddsFormat)}</strong>
+          ))}
         </div>
 
-        {bestBookmaker && (
-          <div className="bet-slip-best-bookmaker">
-            Best Odds at: <strong>{bestBookmaker}</strong>
-            {!isSettled && bestBookmakerUrl && (
-              <a
-                href={bestBookmakerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bet-slip-bookmaker-link"
-                onClick={() => api.trackBookmakerClick(bestBookmakerKey, acca.id, "betslip")}
-              >
-                Visit
-              </a>
-            )}
+        {/* Summary */}
+        <div className="bet-slip-summary">
+          <div className="bet-slip-summary-row">
+            <span>COMBINED ODDS</span>
+            <span className="bet-slip-summary-leader" />
+            <span className="bet-slip-total-odds">{formatOdds(combinedOdds, oddsFormat)}</span>
+          </div>
+          {bestBookmaker && (
+            <div className="bet-slip-summary-row">
+              <span>BEST BOOKMAKER</span>
+              <span className="bet-slip-summary-leader" />
+              <span className="bet-slip-bookmaker-name">
+                {bestBookmaker}
+                {!isSettled && bestBookmakerUrl && (
+                  <a
+                    href={bestBookmakerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bet-slip-bookmaker-link"
+                    onClick={() => api.trackBookmakerClick(bestBookmakerKey, acca.id, "betslip")}
+                  >
+                    Visit
+                  </a>
+                )}
+              </span>
+            </div>
+          )}
+          {!bookmakerComparison && acca.status === "open" && (
+            <p className="bet-slip-hint">Compare bookmakers above for best odds</p>
+          )}
+        </div>
+
+        {/* Copy Button */}
+        {!isSettled && (
+          <button className={`btn-copy${copied ? " btn-copy-success" : ""}`} onClick={handleCopy}>
+            {copied ? "COPIED!" : "COPY TO CLIPBOARD"}
+          </button>
+        )}
+
+        {error && <div className="bet-slip-error">{error}</div>}
+
+        {/* Footer meta */}
+        {(acca.leagues || acca.match_dates) && (
+          <div className="bet-slip-meta">
+            {acca.leagues && acca.leagues.map(k => LEAGUE_NAME_MAP[k] || k).join(", ")}
+            {acca.leagues && acca.match_dates && " | "}
+            {acca.match_dates && [...acca.match_dates].sort().map(d => formatDisplayDate(d)).join(", ")}
           </div>
         )}
 
-        {!bookmakerComparison && acca.status === "open" && (
-          <p className="bet-slip-hint">Compare bookmakers above for best odds</p>
-        )}
+        {/* Barcode decoration */}
+        <div className="bet-slip-barcode" aria-hidden="true" />
       </div>
-
-      {!isSettled && (
-        <button className="btn-copy" onClick={handleCopy}>
-          {copied ? "Copied!" : "Copy to Clipboard"}
-        </button>
-      )}
-
-      {error && <div className="bet-slip-error">{error}</div>}
-
-      {(acca.leagues || acca.match_dates) && (
-        <div className="bet-slip-meta">
-          {acca.leagues && acca.leagues.map(k => LEAGUE_NAME_MAP[k] || k).join(", ")}
-          {acca.leagues && acca.match_dates && " | "}
-          {acca.match_dates && [...acca.match_dates].sort().map(d => formatDisplayDate(d)).join(", ")}
-        </div>
-      )}
     </div>
   );
 }

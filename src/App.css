@@ -1411,174 +1411,342 @@
 .text-right { text-align: right; }
 .font-bold { font-weight: 700; }
 
-/* ---- Bet Slip ---- */
+/* ---- Bet Slip (Paper Style) ---- */
 .bet-slip {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-top: 24px;
+  max-width: 420px;
+  margin: 24px auto 0;
+  position: relative;
 }
 
+.bet-slip-perforation {
+  height: 10px;
+  background-image: radial-gradient(circle, var(--bg-primary) 3px, transparent 3px);
+  background-size: 12px 10px;
+  background-position: center;
+  background-color: #f5f3ed;
+  border-radius: 4px 4px 0 0;
+}
+
+.bet-slip-inner {
+  background-color: #f5f3ed;
+  padding: 20px 20px 24px;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: 'Courier New', Courier, monospace;
+  color: #1a1a2e;
+}
+
+/* Header */
+.bet-slip-header {
+  text-align: center;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 2px dashed #b8b5aa;
+}
+
+.bet-slip-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #1a1a2e;
+}
+
+.bet-slip-header-meta {
+  font-size: 11px;
+  color: #666666;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bet-slip-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+
+.bet-slip-status-won {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.bet-slip-status-lost {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.bet-slip-status-settled {
+  background-color: rgba(139, 156, 170, 0.15);
+  color: #666666;
+}
+
+/* Picks */
 .bet-slip-picks {
   margin-bottom: 16px;
 }
 
 .bet-slip-pick-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
   padding: 8px 0;
-  color: var(--text-primary);
 }
 
-.bet-slip-pick-main {
+.bet-slip-pick-item + .bet-slip-pick-item {
+  border-top: 1px dotted #d4d1c6;
+}
+
+.bet-slip-pick-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-}
-
-.bet-slip-pick-user {
-  font-size: 12px;
-  color: var(--text-muted);
-  padding-left: 28px;
-}
-
-.bet-slip-pick-kickoff {
-  font-size: 12px;
-  color: var(--text-muted);
-  padding-left: 28px;
+  gap: 6px;
 }
 
 .bet-slip-pick-number {
   font-weight: 700;
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: #1a1a2e;
+  flex-shrink: 0;
   min-width: 20px;
 }
 
 .bet-slip-pick-description {
-  flex: 1;
+  font-size: 13px;
+  color: #1a1a2e;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.bet-slip-pick-leader {
+  flex: 1;
+  border-bottom: 1px dotted #d4d1c6;
+  min-width: 12px;
+  margin-bottom: 4px;
 }
 
 .bet-slip-pick-odds {
-  font-weight: 600;
-  color: var(--accent-primary);
-}
-
-.bet-slip-summary {
-  padding: 12px 0;
-  border-top: 1px solid var(--border-color);
-  margin-bottom: 16px;
-}
-
-.bet-slip-combined-odds {
-  font-size: 16px;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.bet-slip-combined-odds strong {
-  color: var(--accent-primary);
-  font-size: 18px;
-}
-
-.bet-slip-best-bookmaker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
+  font-weight: 700;
   font-size: 14px;
+  color: #1a1a2e;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
-.bet-slip-bookmaker-link {
-  color: var(--accent-primary);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 13px;
-  transition: color var(--transition-fast);
-}
-
-.bet-slip-bookmaker-link:hover {
-  color: var(--accent-secondary);
-}
-
-.bet-slip-hint {
-  margin: 8px 0 0 0;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-style: italic;
-}
-
-.btn-copy {
-  width: 100%;
-  padding: 12px 20px;
-  background-color: var(--accent-primary);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-copy:hover {
-  background-color: var(--accent-secondary);
-  box-shadow: var(--shadow-md);
-}
-
-.bet-slip-error {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: var(--color-danger);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-}
-
-.bet-slip-title-row {
+.bet-slip-pick-meta {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 10px;
+  font-size: 11px;
+  color: #666666;
+  margin-top: 2px;
+  padding-left: 20px;
+}
+
+/* Result styling on picks */
+.bet-slip-pick-won {
+  border-left: 3px solid #16a34a;
+  padding-left: 8px;
+}
+
+.bet-slip-pick-lost {
+  border-left: 3px solid #dc2626;
+  padding-left: 8px;
+}
+
+.bet-slip-pick-void {
+  border-left: 3px solid #999999;
+  padding-left: 8px;
 }
 
 .bet-slip-result-icon {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
   margin-left: 4px;
   flex-shrink: 0;
 }
 
-.bet-slip-result-won { color: var(--color-success); }
-.bet-slip-result-lost { color: var(--color-danger); }
-.bet-slip-result-void { color: var(--text-secondary); }
+.bet-slip-result-won { color: #16a34a; }
+.bet-slip-result-lost { color: #dc2626; }
+.bet-slip-result-void { color: #999999; }
 
-.bet-slip-pick-won {
-  border-left: 3px solid var(--color-success);
-  padding-left: 10px;
+/* Remove button */
+.bet-slip-remove-btn {
+  margin-top: 4px;
+  margin-left: 20px;
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid #dc2626;
+  color: #dc2626;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 150ms ease-out;
 }
 
-.bet-slip-pick-lost {
-  border-left: 3px solid var(--color-danger);
-  padding-left: 10px;
+.bet-slip-remove-btn:hover {
+  background-color: rgba(220, 38, 38, 0.1);
 }
 
-.bet-slip-pick-void {
-  border-left: 3px solid var(--text-secondary);
-  padding-left: 10px;
+/* Summary */
+.bet-slip-summary {
+  padding-top: 16px;
+  margin-bottom: 16px;
+  border-top: 2px dashed #b8b5aa;
 }
 
+.bet-slip-summary-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.bet-slip-summary-leader {
+  flex: 1;
+  border-bottom: 1px dotted #d4d1c6;
+  min-width: 12px;
+  margin-bottom: 4px;
+}
+
+.bet-slip-total-odds {
+  font-size: 16px;
+  font-weight: 700;
+  color: #00855a;
+  font-variant-numeric: tabular-nums;
+}
+
+.bet-slip-bookmaker-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.bet-slip-bookmaker-link {
+  color: #00855a;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 11px;
+  border-bottom: 1px solid #00855a;
+  transition: opacity 150ms ease-out;
+}
+
+.bet-slip-bookmaker-link:hover {
+  opacity: 0.7;
+}
+
+.bet-slip-hint {
+  margin: 8px 0 0 0;
+  color: #666666;
+  font-size: 11px;
+  font-style: italic;
+}
+
+/* Copy Button */
+.btn-copy {
+  width: 100%;
+  padding: 12px;
+  background-color: #1a1a2e;
+  color: #f5f3ed;
+  border: 2px solid #1a1a2e;
+  border-radius: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.btn-copy:hover {
+  background-color: #2a2a3e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-copy-success {
+  background-color: #00855a;
+  border-color: #00855a;
+}
+
+.btn-copy-success:hover {
+  background-color: #00855a;
+  border-color: #00855a;
+}
+
+/* Error */
+.bet-slip-error {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background-color: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #dc2626;
+  border-radius: 2px;
+  font-size: 11px;
+}
+
+/* Empty state */
+.bet-slip-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: #666666;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+/* Footer meta */
 .bet-slip-meta {
   margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-color);
-  font-size: 12px;
-  color: var(--text-muted);
+  padding-top: 10px;
+  border-top: 1px dotted #d4d1c6;
+  font-size: 10px;
+  color: #999999;
   text-align: center;
+  letter-spacing: 0.3px;
+}
+
+/* Barcode decoration */
+.bet-slip-barcode {
+  height: 36px;
+  width: 100px;
+  margin: 16px auto 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    #1a1a2e 0px, #1a1a2e 1.5px,
+    transparent 1.5px, transparent 3px,
+    #1a1a2e 3px, #1a1a2e 5px,
+    transparent 5px, transparent 6.5px,
+    #1a1a2e 6.5px, #1a1a2e 7.5px,
+    transparent 7.5px, transparent 9px,
+    #1a1a2e 9px, #1a1a2e 12px,
+    transparent 12px, transparent 13.5px,
+    #1a1a2e 13.5px, #1a1a2e 15px,
+    transparent 15px, transparent 16px
+  );
+  opacity: 0.7;
+}
+
+/* Responsive */
+@media (max-width: 440px) {
+  .bet-slip-inner {
+    padding: 16px 14px 20px;
+  }
+
+  .bet-slip-pick-description {
+    font-size: 12px;
+  }
 }
 
 /* ---- Responsible Gambling Footer ---- */
