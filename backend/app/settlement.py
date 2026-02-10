@@ -66,10 +66,14 @@ def settle_locked_accas(db: Session):
             # Collect unique sport_keys for ready bets
             sport_keys = set(bet.sport_key for bet in ready_bets if bet.sport_key)
 
+            # Calculate days_from based on oldest ready bet (min 3, max 7)
+            oldest_kickoff = min(bet.commence_time for bet in ready_bets)
+            days_since_oldest = max(3, min(7, int((now - oldest_kickoff).total_seconds() / 86400) + 1))
+
             # Fetch scores for each sport
             scores_by_event = {}
             for sport_key in sport_keys:
-                scores = get_scores(sport_key, days_from=3)
+                scores = get_scores(sport_key, days_from=days_since_oldest)
                 for score_obj in scores:
                     scores_by_event[score_obj['id']] = score_obj
 

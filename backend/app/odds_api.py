@@ -102,7 +102,7 @@ def get_scores(sport, days_from=3):
         List of score objects with: id, sport_key, home_team, away_team,
         commence_time, completed, scores
     """
-    cache_key = f"{sport}_scores"
+    cache_key = f"{sport}_scores_{days_from}"
 
     # Check cache
     if cache_key in _scores_cache:
