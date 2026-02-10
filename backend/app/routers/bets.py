@@ -86,6 +86,18 @@ def create_bet(
             detail="You've already added a bet to this acca"
         )
 
+    # Fixture-level exclusion: block if any outcome from this fixture is already picked
+    if bet.event_id:
+        fixture_conflict = db.query(models.Bet).filter(
+            models.Bet.acca_id == bet.acca_id,
+            models.Bet.event_id == bet.event_id
+        ).first()
+        if fixture_conflict:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Another member has already picked from this fixture"
+            )
+
     # Check if the same pick already exists in this acca (no duplicate selections)
     duplicate_pick = db.query(models.Bet).filter(
         models.Bet.acca_id == bet.acca_id,
