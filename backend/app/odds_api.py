@@ -18,6 +18,9 @@ SCORES_CACHE_TTL_SECONDS = 600  # 10 minutes for scores
 ODDS_REGIONS = os.getenv('ODDS_REGIONS', 'uk')
 ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h,totals')
 
+_btts_cache = {}  # { event_id: { "data": [...bookmakers], "timestamp": float } }
+BTTS_CACHE_TTL_SECONDS = 86400  # 24 hours
+
 def get_football_matches(sport='soccer_epl'):
     """
     Get upcoming football matches with odds.
@@ -121,6 +124,74 @@ def format_match_for_display(match, league=None):
         result['league'] = league
     return result
 
+def get_btts_for_event(sport_key, event_id):
+    """
+    Get BTTS odds for a specific event (lazy-fetched, 24h cache).
+
+    Args:
+        sport_key: Sport key (e.g., 'soccer_epl')
+        event_id: The-Odds-API event ID
+
+    Returns:
+        Dictionary with btts_yes and btts_no odds (can be None if not found)
+    """
+    # Purge expired entries from cache to prevent unbounded growth
+    now = time.time()
+    expired_keys = [eid for eid, entry in _btts_cache.items()
+                    if now - entry["timestamp"] >= BTTS_CACHE_TTL_SECONDS]
+    for eid in expired_keys:
+        del _btts_cache[eid]
+
+    # Check if we have fresh cached data
+    if event_id in _btts_cache:
+        age = now - _btts_cache[event_id]["timestamp"]
+        if age < BTTS_CACHE_TTL_SECONDS:
+            # Extract display odds from cached bookmakers
+            bookmakers = _btts_cache[event_id]["data"]
+            for bookmaker in bookmakers:
+                for market in bookmaker.get("markets", []):
+                    if market.get("key") == "btts":
+                        outcomes = market.get("outcomes", [])
+                        btts_yes = next((o["price"] for o in outcomes if o["name"] == "Yes"), None)
+                        btts_no = next((o["price"] for o in outcomes if o["name"] == "No"), None)
+                        if btts_yes is not None or btts_no is not None:
+                            return {"btts_yes": btts_yes, "btts_no": btts_no}
+
+    # Not cached or expired - fetch from API
+    url = f'{ODDS_API_BASE_URL}/sports/{sport_key}/events/{event_id}/odds'
+
+    params = {
+        'apiKey': ODDS_API_KEY,
+        'markets': 'btts',
+        'regions': 'uk',
+        'oddsFormat': 'decimal'
+    }
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        event_data = response.json()
+
+        # Store bookmakers in cache
+        bookmakers = event_data.get("bookmakers", [])
+        _btts_cache[event_id] = {"data": bookmakers, "timestamp": time.time()}
+
+        # Extract display odds
+        for bookmaker in bookmakers:
+            for market in bookmaker.get("markets", []):
+                if market.get("key") == "btts":
+                    outcomes = market.get("outcomes", [])
+                    btts_yes = next((o["price"] for o in outcomes if o["name"] == "Yes"), None)
+                    btts_no = next((o["price"] for o in outcomes if o["name"] == "No"), None)
+                    if btts_yes is not None or btts_no is not None:
+                        return {"btts_yes": btts_yes, "btts_no": btts_no}
+
+        return {"btts_yes": None, "btts_no": None}
+
+    except Exception as e:
+        logger.error(f"Error fetching BTTS odds for event {event_id}: {e}")
+        return {"btts_yes": None, "btts_no": None}
+
 def get_scores(sport, days_from=3):
     """
     Get scores for completed matches from The-Odds-API.
@@ -180,21 +251,25 @@ def compare_bookmakers_for_acca(bets):
 
         # Check for BTTS bets first
         if bet_lower.startswith("btts yes - "):
+            teams_part = bet_desc[len("BTTS Yes - "):]  # "TeamA vs TeamB"
             parsed_bets.append({
                 "original": bet_desc,
                 "market_type": "btts",
                 "outcome_name": "Yes",
                 "team": None,
-                "is_draw": False
+                "is_draw": False,
+                "match_teams": teams_part
             })
             continue
         elif bet_lower.startswith("btts no - "):
+            teams_part = bet_desc[len("BTTS No - "):]
             parsed_bets.append({
                 "original": bet_desc,
                 "market_type": "btts",
                 "outcome_name": "No",
                 "team": None,
-                "is_draw": False
+                "is_draw": False,
+                "match_teams": teams_part
             })
             continue
 
@@ -260,9 +335,20 @@ def compare_bookmakers_for_acca(bets):
             away = match.get("away_team", "")
 
             # For h2h bets, check if this match contains the team or draw
-            # For btts/totals, any match works (we'll match all bookmakers)
+            # For btts/totals, match by team names from bet description
             if market_type == "h2h":
                 if not (is_draw or team.lower() in [home.lower(), away.lower()]):
+                    continue
+            elif market_type == "btts":
+                # Match by team names from bet description
+                match_teams = parsed_bet.get("match_teams", "")
+                if " vs " in match_teams.lower():
+                    bet_home, bet_away = match_teams.lower().split(" vs ", 1)
+                    bet_home = bet_home.strip()
+                    bet_away = bet_away.strip()
+                    if not (bet_home == home.lower() and bet_away == away.lower()):
+                        continue
+                else:
                     continue
 
             # Extract odds from all bookmakers for this match
@@ -295,6 +381,22 @@ def compare_bookmakers_for_acca(bets):
                     if bookie_key not in bet_odds_by_bookmaker:
                         bet_odds_by_bookmaker[bookie_key] = []
                     bet_odds_by_bookmaker[bookie_key].append(outcome["price"])
+
+            # If btts and no odds found in regular cache, check _btts_cache
+            if market_type == "btts":
+                event_id = match.get("id")
+                if event_id and event_id in _btts_cache:
+                    btts_entry = _btts_cache[event_id]
+                    if time.time() - btts_entry["timestamp"] < BTTS_CACHE_TTL_SECONDS:
+                        for bookmaker in btts_entry["data"]:
+                            bookie_key = bookmaker.get("key")
+                            for mkt in bookmaker.get("markets", []):
+                                if mkt.get("key") == "btts":
+                                    outcome = next((o for o in mkt.get("outcomes", []) if o.get("name") == outcome_name), None)
+                                    if outcome and "price" in outcome:
+                                        if bookie_key not in bet_odds_by_bookmaker:
+                                            bet_odds_by_bookmaker[bookie_key] = []
+                                        bet_odds_by_bookmaker[bookie_key].append(outcome["price"])
 
             # For btts/totals, we've checked all bookmakers for this match
             if market_type in ("btts", "totals"):

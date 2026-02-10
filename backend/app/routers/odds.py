@@ -5,6 +5,7 @@ from .auth import get_current_user
 from ..limiter import limiter
 
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+EVENT_ID_PATTERN = re.compile(r"^[a-f0-9]{1,64}$")
 
 router = APIRouter()
 
@@ -76,3 +77,14 @@ def get_filtered_matches(
     formatted_matches.sort(key=lambda m: m["commence_time"])
 
     return formatted_matches
+
+
+@router.get("/odds/matches/{event_id}/btts")
+@limiter.limit("30/minute")
+def get_btts_odds(event_id: str, sport_key: str, request: Request, user_id: int = Depends(get_current_user)):
+    """Get BTTS odds for a specific event (lazy-fetched, 24h cache)"""
+    if sport_key not in VALID_SPORT_KEYS:
+        raise HTTPException(status_code=400, detail=f"Invalid sport key: '{sport_key}'")
+    if not EVENT_ID_PATTERN.match(event_id):
+        raise HTTPException(status_code=400, detail="Invalid event ID format")
+    return odds_api.get_btts_for_event(sport_key, event_id)
