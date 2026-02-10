@@ -13,8 +13,15 @@ export default function FixtureGrid({
   oddsFormat = "decimal",
   isSubmitting = false,
 }) {
-  // Build set of already-taken pick descriptions in this acca
-  const takenPicks = new Set((acca?.bets || []).map((b) => b.description));
+  // Build set of taken event_ids (fixture-level exclusion)
+  const takenEventIds = new Set(
+    (acca?.bets || []).filter((b) => b.event_id).map((b) => b.event_id)
+  );
+  // Map event_id to the bet that took it (for banner display)
+  const takenEventBets = {};
+  (acca?.bets || []).forEach((b) => {
+    if (b.event_id) takenEventBets[b.event_id] = b;
+  });
 
   // League selector when multiple leagues and none selected yet
   if (!fixtureLeague && acca.leagues && acca.leagues.length > 1) {
@@ -80,11 +87,15 @@ export default function FixtureGrid({
                     "en-GB",
                     { hour: "2-digit", minute: "2-digit" },
                   );
-                  const homeTaken = takenPicks.has(`${match.home_team} to win`);
-                  const drawTaken = takenPicks.has(`Draw - ${match.home_team} vs ${match.away_team}`);
-                  const awayTaken = takenPicks.has(`${match.away_team} to win`);
+                  const fixtureTaken = takenEventIds.has(match.id);
+                  const takenBet = takenEventBets[match.id];
                   return (
-                    <div key={idx} className="fixture-card">
+                    <div key={idx} className={`fixture-card${fixtureTaken ? " fixture-card-taken" : ""}`}>
+                      {fixtureTaken && takenBet && (
+                        <div className="fixture-taken-banner">
+                          Picked by {takenBet.username}: {takenBet.description}
+                        </div>
+                      )}
                       <div className="fixture-teams-row">
                         <span className="fixture-team">{match.home_team}</span>
                         <span className="fixture-kickoff">{kickoff}</span>
@@ -94,38 +105,38 @@ export default function FixtureGrid({
                       </div>
                       <div className="fixture-odds-row">
                         <button
-                          className={`fixture-odds-btn${homeTaken ? " fixture-odds-taken" : ""}`}
-                          onClick={() => !homeTaken && onPickMatch(match, "home")}
-                          disabled={homeTaken || isSubmitting}
+                          className={`fixture-odds-btn${fixtureTaken ? " fixture-odds-taken" : ""}`}
+                          onClick={() => !fixtureTaken && onPickMatch(match, "home")}
+                          disabled={fixtureTaken || isSubmitting}
                         >
                           <div className="fixture-odds-label">
-                            {homeTaken ? "Taken" : "Home"}
+                            {fixtureTaken ? "Taken" : "Home"}
                           </div>
-                          <div className={homeTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
+                          <div className={fixtureTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
                             {formatOdds(match.home_odds, oddsFormat)}
                           </div>
                         </button>
                         <button
-                          className={`fixture-odds-btn${drawTaken ? " fixture-odds-taken" : ""}`}
-                          onClick={() => !drawTaken && onPickMatch(match, "draw")}
-                          disabled={drawTaken || isSubmitting}
+                          className={`fixture-odds-btn${fixtureTaken ? " fixture-odds-taken" : ""}`}
+                          onClick={() => !fixtureTaken && onPickMatch(match, "draw")}
+                          disabled={fixtureTaken || isSubmitting}
                         >
                           <div className="fixture-odds-label">
-                            {drawTaken ? "Taken" : "Draw"}
+                            {fixtureTaken ? "Taken" : "Draw"}
                           </div>
-                          <div className={drawTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
+                          <div className={fixtureTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
                             {formatOdds(match.draw_odds, oddsFormat)}
                           </div>
                         </button>
                         <button
-                          className={`fixture-odds-btn${awayTaken ? " fixture-odds-taken" : ""}`}
-                          onClick={() => !awayTaken && onPickMatch(match, "away")}
-                          disabled={awayTaken || isSubmitting}
+                          className={`fixture-odds-btn${fixtureTaken ? " fixture-odds-taken" : ""}`}
+                          onClick={() => !fixtureTaken && onPickMatch(match, "away")}
+                          disabled={fixtureTaken || isSubmitting}
                         >
                           <div className="fixture-odds-label">
-                            {awayTaken ? "Taken" : "Away"}
+                            {fixtureTaken ? "Taken" : "Away"}
                           </div>
-                          <div className={awayTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
+                          <div className={fixtureTaken ? "fixture-odds-value-taken" : "fixture-odds-value"}>
                             {formatOdds(match.away_odds, oddsFormat)}
                           </div>
                         </button>
