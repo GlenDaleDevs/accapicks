@@ -173,7 +173,7 @@ export default function BetSlip({
                 >
                   <div className="bet-slip-pick-row">
                     <span className="bet-slip-pick-number">{index + 1}.</span>
-                    <span className="bet-slip-pick-empty-cta">+ {member.username}, add your pick</span>
+                    <span className="bet-slip-pick-empty-cta">+ Add Your Pick</span>
                   </div>
                 </div>
               );
