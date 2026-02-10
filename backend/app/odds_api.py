@@ -153,7 +153,7 @@ def compare_bookmakers_for_acca(bets):
             team_name = bet_desc[:-4].strip()
 
         # Check if it's a draw bet
-        is_draw = bet_lower in ["draw", "the draw"]
+        is_draw = bet_lower in ["draw", "the draw"] or bet_lower.startswith("draw - ")
         parsed_bets.append({"original": bet_desc, "team": team_name, "is_draw": is_draw})
 
     # Collect all cached matches across all sports
