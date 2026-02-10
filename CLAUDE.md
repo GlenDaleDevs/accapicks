@@ -65,6 +65,13 @@ Current design system for the `web-design-planner` agent to reference:
 - **Animations:** Subtle transitions only — no flashy animations that feel like a casino
 - **Tone:** Modern, clean, trustworthy — not garish or gambling-site cliche
 
+## Debugging
+
+- When hitting multiple errors or investigating bugs, **proactively offer to run the backend server in the background** so you can read live logs
+- Use `Bash` with `run_in_background: true` to start uvicorn, then tail the output to see stack traces
+- This avoids guessing at errors — you get the actual tracebacks
+- For production (Railway) bugs, ask the user to check Railway deploy logs since you can't access those directly
+
 ## Code Style
 
 - Small, targeted edits over broad refactors
