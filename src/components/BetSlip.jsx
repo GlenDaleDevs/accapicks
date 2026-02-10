@@ -3,30 +3,36 @@ import { BOOKMAKER_DISPLAY_NAMES, LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatOdds, formatBetSlipText, formatDisplayDate, formatKickoffTime } from "../utils/formatters";
 import * as api from "../api/client";
 
-export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmakerLinks = {}, onRemovePick, user }) {
+export default function BetSlip({
+  acca,
+  oddsFormat,
+  bookmakerComparison,
+  bookmakerLinks = {},
+  onRemovePick,
+  onAddPick,
+  user,
+  members = [],
+}) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
-  if (!acca) return null;
+  if (!acca || members.length === 0) return null;
 
   const isSettled = ["settled", "won", "lost"].includes(acca.status);
+  const isOpen = acca.status === "open";
 
-  if (acca.bets.length === 0) {
-    if (acca.status === "locked" || isSettled) {
-      return (
-        <div className="bet-slip">
-          <div className="bet-slip-perforation" />
-          <div className="bet-slip-inner">
-            <div className="bet-slip-header">
-              <div className="bet-slip-header-title">ACCUMULATOR BET SLIP</div>
-            </div>
-            <p className="bet-slip-empty">NO PICKS SUBMITTED</p>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  }
+  // Map user_id to bet
+  const betByUser = {};
+  (acca.bets || []).forEach((b) => {
+    betByUser[b.user_id] = b;
+  });
+
+  // Sort: current user first, then alphabetical
+  const sorted = [...members].sort((a, b) => {
+    if (user && a.user_id === user.id) return -1;
+    if (user && b.user_id === user.id) return 1;
+    return a.username.localeCompare(b.username);
+  });
 
   // Find best bookmaker from comparison data
   let bestBookmaker = null;
@@ -45,7 +51,10 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
     }
   }
 
-  const combinedOdds = acca.bets.reduce((acc, bet) => acc * parseFloat(bet.odds), 1);
+  const filledBets = acca.bets.filter((b) => b.odds);
+  const combinedOdds = filledBets.length > 0
+    ? filledBets.reduce((acc, bet) => acc * parseFloat(bet.odds), 1)
+    : 0;
 
   const handleCopy = async () => {
     setError("");
@@ -105,69 +114,119 @@ export default function BetSlip({ acca, oddsFormat, bookmakerComparison, bookmak
           </div>
         </div>
 
-        {/* Picks */}
+        {/* Member Slots */}
         <div className="bet-slip-picks">
-          {acca.bets.map((bet, index) => (
-            <div key={bet.id} className={`bet-slip-pick-item ${resultBorderClass(bet.result)}`}>
-              <div className="bet-slip-pick-row">
-                <span className="bet-slip-pick-number">{index + 1}.</span>
-                <span className="bet-slip-pick-description">{bet.description}</span>
-                <span className="bet-slip-pick-leader" />
-                <span className="bet-slip-pick-odds">{formatOdds(bet.odds, oddsFormat)}</span>
-                {resultIcon(bet.result)}
-              </div>
-              <div className="bet-slip-pick-meta">
-                {bet.commence_time && (
-                  <span>{formatKickoffTime(bet.commence_time)}</span>
-                )}
-                <span>Picked by {bet.username}</span>
-              </div>
-              {acca.status === "open" && user && bet.user_id === user.id && onRemovePick && (
-                <button
-                  className="bet-slip-remove-btn"
-                  onClick={() => onRemovePick(bet.id)}
+          {sorted.map((member, index) => {
+            const bet = betByUser[member.user_id];
+            const isSelf = user && member.user_id === user.id;
+
+            // Filled slot — member has a pick
+            if (bet) {
+              return (
+                <div key={member.user_id} className={`bet-slip-pick-item ${resultBorderClass(bet.result)}`}>
+                  <div className="bet-slip-pick-row">
+                    <span className="bet-slip-pick-number">{index + 1}.</span>
+                    <span className="bet-slip-pick-description">{bet.description}</span>
+                    <span className="bet-slip-pick-leader" />
+                    <span className="bet-slip-pick-odds">{formatOdds(bet.odds, oddsFormat)}</span>
+                    {resultIcon(bet.result)}
+                  </div>
+                  <div className="bet-slip-pick-meta">
+                    {bet.commence_time && (
+                      <span>{formatKickoffTime(bet.commence_time)}</span>
+                    )}
+                    <span>{member.username}</span>
+                  </div>
+                  {isSelf && isOpen && onRemovePick && (
+                    <button
+                      className="bet-slip-remove-btn"
+                      onClick={() => onRemovePick(bet.id)}
+                    >
+                      REMOVE
+                    </button>
+                  )}
+                </div>
+              );
+            }
+
+            // Empty slot — missed (locked/settled)
+            if (!isOpen) {
+              return (
+                <div key={member.user_id} className="bet-slip-pick-item bet-slip-pick-empty">
+                  <div className="bet-slip-pick-row">
+                    <span className="bet-slip-pick-number">{index + 1}.</span>
+                    <span className="bet-slip-pick-empty-text">{member.username} — missed</span>
+                  </div>
+                </div>
+              );
+            }
+
+            // Empty slot — self, can add pick
+            if (isSelf) {
+              return (
+                <div
+                  key={member.user_id}
+                  className="bet-slip-pick-item bet-slip-pick-empty bet-slip-pick-self"
+                  onClick={onAddPick}
+                  role="button"
+                  tabIndex={0}
                 >
-                  REMOVE
-                </button>
-              )}
-            </div>
-          ))}
+                  <div className="bet-slip-pick-row">
+                    <span className="bet-slip-pick-number">{index + 1}.</span>
+                    <span className="bet-slip-pick-empty-cta">+ {member.username}, add your pick</span>
+                  </div>
+                </div>
+              );
+            }
+
+            // Empty slot — other member, waiting
+            return (
+              <div key={member.user_id} className="bet-slip-pick-item bet-slip-pick-empty">
+                <div className="bet-slip-pick-row">
+                  <span className="bet-slip-pick-number">{index + 1}.</span>
+                  <span className="bet-slip-pick-empty-text">{member.username} — waiting...</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Summary */}
-        <div className="bet-slip-summary">
-          <div className="bet-slip-summary-row">
-            <span>COMBINED ODDS</span>
-            <span className="bet-slip-summary-leader" />
-            <span className="bet-slip-total-odds">{formatOdds(combinedOdds, oddsFormat)}</span>
-          </div>
-          {bestBookmaker && (
+        {/* Summary — only show when there are picks */}
+        {filledBets.length > 0 && (
+          <div className="bet-slip-summary">
             <div className="bet-slip-summary-row">
-              <span>BEST BOOKMAKER</span>
+              <span>COMBINED ODDS</span>
               <span className="bet-slip-summary-leader" />
-              <span className="bet-slip-bookmaker-name">
-                {bestBookmaker}
-                {!isSettled && bestBookmakerUrl && (
-                  <a
-                    href={bestBookmakerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bet-slip-bookmaker-link"
-                    onClick={() => api.trackBookmakerClick(bestBookmakerKey, acca.id, "betslip")}
-                  >
-                    Visit
-                  </a>
-                )}
-              </span>
+              <span className="bet-slip-total-odds">{formatOdds(combinedOdds, oddsFormat)}</span>
             </div>
-          )}
-          {!bookmakerComparison && acca.status === "open" && (
-            <p className="bet-slip-hint">Compare bookmakers above for best odds</p>
-          )}
-        </div>
+            {bestBookmaker && (
+              <div className="bet-slip-summary-row">
+                <span>BEST BOOKMAKER</span>
+                <span className="bet-slip-summary-leader" />
+                <span className="bet-slip-bookmaker-name">
+                  {bestBookmaker}
+                  {!isSettled && bestBookmakerUrl && (
+                    <a
+                      href={bestBookmakerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bet-slip-bookmaker-link"
+                      onClick={() => api.trackBookmakerClick(bestBookmakerKey, acca.id, "betslip")}
+                    >
+                      Visit
+                    </a>
+                  )}
+                </span>
+              </div>
+            )}
+            {!bookmakerComparison && acca.status === "open" && (
+              <p className="bet-slip-hint">Compare bookmakers above for best odds</p>
+            )}
+          </div>
+        )}
 
-        {/* Copy Button */}
-        {!isSettled && (
+        {/* Copy Button — only when there are picks and not settled */}
+        {filledBets.length > 0 && !isSettled && (
           <button className={`btn-copy${copied ? " btn-copy-success" : ""}`} onClick={handleCopy}>
             {copied ? "COPIED!" : "COPY TO CLIPBOARD"}
           </button>
