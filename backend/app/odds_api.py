@@ -13,7 +13,7 @@ ODDS_API_BASE_URL = 'https://api.the-odds-api.com/v4'
 # Simple in-memory cache: { sport_key: { "data": [...], "timestamp": float } }
 _cache = {}
 _scores_cache = {}  # Separate cache for scores
-CACHE_TTL_SECONDS = int(os.getenv('ODDS_CACHE_TTL', '1800'))  # 30 minutes default
+CACHE_TTL_SECONDS = int(os.getenv('ODDS_CACHE_TTL', '3600'))  # 60 minutes default
 SCORES_CACHE_TTL_SECONDS = 600  # 10 minutes for scores
 ODDS_REGIONS = os.getenv('ODDS_REGIONS', 'uk')
 ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h')
