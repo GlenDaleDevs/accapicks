@@ -37,7 +37,19 @@ def settle_locked_accas(db: Session):
             ).all()
 
             if not unsettled_bets:
-                # No unsettled auto-settleable bets for this acca
+                # No unsettled auto-settleable bets — check if acca can be finalized
+                all_bets = db.query(models.Bet).filter(models.Bet.acca_id == acca.id).all()
+                if all_bets and all(bet.result is not None for bet in all_bets):
+                    non_void_bets = [bet for bet in all_bets if bet.result != "void"]
+                    if not non_void_bets:
+                        acca.status = "settled"
+                    elif all(bet.result == "won" for bet in non_void_bets):
+                        acca.status = "won"
+                    elif any(bet.result == "lost" for bet in all_bets):
+                        acca.status = "lost"
+                    else:
+                        acca.status = "settled"
+                    db.commit()
                 continue
 
             # Filter to only bets whose matches should be finished (3+ hours past kickoff)
