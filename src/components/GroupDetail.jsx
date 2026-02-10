@@ -213,13 +213,13 @@ export default function GroupDetail({ user, onRefreshGroups }) {
           &larr; Back to Groups
         </button>
         <Skeleton width="200px" height="24px" count={1} />
-        <div style={{ marginTop: "20px" }}>
+        <div className="skeleton-spacer">
           <Skeleton width="100%" height="80px" count={1} />
         </div>
-        <div style={{ marginTop: "20px" }}>
+        <div className="skeleton-spacer">
           <Skeleton width="100%" height="120px" count={1} />
         </div>
-        <div style={{ marginTop: "20px" }}>
+        <div className="skeleton-spacer">
           <Skeleton width="60%" height="20px" count={1} />
           <Skeleton width="80%" height="16px" count={1} />
           <Skeleton width="70%" height="16px" count={1} />
@@ -258,6 +258,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
           </button>
         ) : (
           <div className="invite-panel">
+            <button className="invite-panel-close" onClick={() => setShowInvite(false)} aria-label="Close invite panel">&times;</button>
             <div className="invite-code-row">
               <code className="invite-code">{group.invite_code}</code>
               <button className="btn btn-primary btn-sm" onClick={copyInviteLink}>
@@ -492,7 +493,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       })()}
 
       {/* Leave Group */}
-      <div style={{ marginTop: "40px", paddingTop: "20px", borderTop: "1px solid #e5e7eb", textAlign: "center" }}>
+      <div className="group-leave-section">
         <button
           className="btn btn-danger"
           onClick={handleLeaveGroup}

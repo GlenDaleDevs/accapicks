@@ -23,7 +23,11 @@ export default function Calendar({ selectedDates, maxDates, currentMonth, onTogg
       <div
         key={dateStr}
         onClick={() => !isPast && onToggleDate(dateStr)}
+        onKeyDown={(e) => { if (!isPast && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onToggleDate(dateStr); } }}
         className={`calendar-day${isPast ? " calendar-day-past" : ""}${isSelected ? " calendar-day-selected" : ""}`}
+        role={isPast ? undefined : "button"}
+        tabIndex={isPast ? -1 : 0}
+        aria-pressed={isPast ? undefined : isSelected}
       >
         {day}
       </div>,

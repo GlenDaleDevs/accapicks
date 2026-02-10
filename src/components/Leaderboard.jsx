@@ -27,7 +27,8 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
         </div>
       ) : leaderboard.length === 0 ? (
         <p className="empty-state">
-          No stats yet. Start placing bets and marking results!
+          No stats yet — results update automatically after matches finish.
+          <span className="empty-state-hint">Create an acca and add your picks to get started.</span>
         </p>
       ) : (
         <div className="league-table">
@@ -43,6 +44,9 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
               key={entry.user_id}
               className={`league-table-row${entry.rank === 1 ? " league-table-row-first" : ""}`}
               onClick={() => navigate(`/groups/${groupId}/members/${entry.user_id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/groups/${groupId}/members/${entry.user_id}`); } }}
             >
               <div className="league-col league-col-pos">
                 <span className={`league-pos${entry.rank === 1 ? " league-pos-first" : ""}`}>
