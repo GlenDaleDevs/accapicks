@@ -133,9 +133,10 @@ def settle_locked_accas(db: Session):
                         continue
 
                     # Match team name to home/away (normalized)
-                    if normalize(team_name) == normalize(bet.home_team):
+                    norm_name = normalize(team_name)
+                    if norm_name and norm_name == normalize(bet.home_team):
                         home_score = score_int
-                    elif normalize(team_name) == normalize(bet.away_team):
+                    elif norm_name and norm_name == normalize(bet.away_team):
                         away_score = score_int
 
                 if home_score is None or away_score is None:

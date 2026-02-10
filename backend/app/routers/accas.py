@@ -7,6 +7,7 @@ from .. import models, schemas, odds_api
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
+from ..normalization import normalize
 
 logger = logging.getLogger(__name__)
 
@@ -399,8 +400,10 @@ def debug_settlement(
                             "away_team_api": score_data.get("away_team"),
                             "home_team_bet": bet.home_team,
                             "away_team_bet": bet.away_team,
-                            "home_match": score_data.get("home_team") == bet.home_team,
-                            "away_match": score_data.get("away_team") == bet.away_team,
+                            "home_match_exact": score_data.get("home_team") == bet.home_team,
+                            "away_match_exact": score_data.get("away_team") == bet.away_team,
+                            "home_match_normalized": normalize(score_data.get("home_team", "")) == normalize(bet.home_team or ""),
+                            "away_match_normalized": normalize(score_data.get("away_team", "")) == normalize(bet.away_team or ""),
                         }
                     else:
                         matched[bet.event_id] = "NOT_FOUND_IN_SCORES"
