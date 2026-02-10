@@ -307,3 +307,104 @@ def delete_acca(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete acca"
         )
+
+
+# Diagnostic: debug settlement for a specific acca
+@router.get("/accas/{acca_id}/debug-settlement")
+@limiter.limit("5/minute")
+def debug_settlement(
+    request: Request,
+    acca_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Debug why an acca isn't settling. Returns diagnostic info."""
+    from datetime import timedelta
+    from ..odds_api import get_scores
+
+    acca = db.query(models.Acca).filter(models.Acca.id == acca_id).first()
+    if not acca:
+        raise HTTPException(status_code=404, detail="Acca not found")
+
+    # Verify membership
+    membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == acca.group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not a member")
+
+    now = datetime.now(timezone.utc)
+    all_bets = db.query(models.Bet).filter(models.Bet.acca_id == acca_id).all()
+
+    debug = {
+        "acca_id": acca.id,
+        "acca_status": acca.status,
+        "total_bets": len(all_bets),
+        "bets": [],
+        "scores_found": {},
+        "issues": [],
+    }
+
+    for bet in all_bets:
+        bet_info = {
+            "id": bet.id,
+            "description": bet.description,
+            "result": bet.result,
+            "event_id": bet.event_id,
+            "sport_key": bet.sport_key,
+            "home_team": bet.home_team,
+            "away_team": bet.away_team,
+            "pick_type": bet.pick_type,
+            "commence_time": str(bet.commence_time) if bet.commence_time else None,
+        }
+
+        if not bet.event_id:
+            bet_info["issue"] = "no event_id — not auto-settleable"
+        elif not bet.sport_key:
+            bet_info["issue"] = "no sport_key — cannot fetch scores"
+        elif not bet.commence_time:
+            bet_info["issue"] = "no commence_time"
+        elif (now - bet.commence_time) < timedelta(hours=3):
+            bet_info["issue"] = f"match too recent — {(now - bet.commence_time).total_seconds() / 3600:.1f}h since kickoff (need 3h)"
+        else:
+            bet_info["issue"] = None
+            bet_info["hours_since_kickoff"] = round((now - bet.commence_time).total_seconds() / 3600, 1)
+
+        debug["bets"].append(bet_info)
+
+    # Try fetching scores for each sport_key
+    sport_keys = set(b.sport_key for b in all_bets if b.sport_key)
+    for sport_key in sport_keys:
+        try:
+            scores = get_scores(sport_key, days_from=7)
+            matched = {}
+            for bet in all_bets:
+                if bet.sport_key == sport_key and bet.event_id:
+                    score_data = next((s for s in scores if s['id'] == bet.event_id), None)
+                    if score_data:
+                        matched[bet.event_id] = {
+                            "completed": score_data.get("completed"),
+                            "scores": score_data.get("scores"),
+                            "home_team_api": score_data.get("home_team"),
+                            "away_team_api": score_data.get("away_team"),
+                            "home_team_bet": bet.home_team,
+                            "away_team_bet": bet.away_team,
+                            "home_match": score_data.get("home_team") == bet.home_team,
+                            "away_match": score_data.get("away_team") == bet.away_team,
+                        }
+                    else:
+                        matched[bet.event_id] = "NOT_FOUND_IN_SCORES"
+                        debug["issues"].append(f"event {bet.event_id} not found in {sport_key} scores ({len(scores)} results)")
+            debug["scores_found"][sport_key] = {
+                "total_scores_returned": len(scores),
+                "event_matches": matched,
+            }
+        except Exception as e:
+            debug["scores_found"][sport_key] = {"error": str(e)}
+            debug["issues"].append(f"Error fetching scores for {sport_key}: {e}")
+
+    if not sport_keys:
+        debug["issues"].append("No bets have sport_key set — settlement cannot fetch scores")
+
+    return debug
