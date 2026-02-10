@@ -198,9 +198,21 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     } else if (pickType === "away") {
       description = `${match.away_team} to win`;
       odds = String(match.away_odds);
-    } else {
+    } else if (pickType === "draw") {
       description = `Draw - ${match.home_team} vs ${match.away_team}`;
       odds = String(match.draw_odds);
+    } else if (pickType === "btts_yes") {
+      description = `BTTS Yes - ${match.home_team} vs ${match.away_team}`;
+      odds = String(match.btts_yes);
+    } else if (pickType === "btts_no") {
+      description = `BTTS No - ${match.home_team} vs ${match.away_team}`;
+      odds = String(match.btts_no);
+    } else if (pickType === "over_2_5") {
+      description = `Over ${match.totals_line} Goals - ${match.home_team} vs ${match.away_team}`;
+      odds = String(match.over_2_5);
+    } else if (pickType === "under_2_5") {
+      description = `Under ${match.totals_line} Goals - ${match.home_team} vs ${match.away_team}`;
+      odds = String(match.under_2_5);
     }
 
     // Build structured data for auto-settlement

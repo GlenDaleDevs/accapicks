@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatDisplayDate, formatOdds } from "../utils/formatters";
 
@@ -13,6 +14,17 @@ export default function FixtureGrid({
   oddsFormat = "decimal",
   isSubmitting = false,
 }) {
+  const [expandedMatches, setExpandedMatches] = useState(new Set());
+
+  const toggleExpanded = (matchId) => {
+    setExpandedMatches(prev => {
+      const next = new Set(prev);
+      if (next.has(matchId)) next.delete(matchId);
+      else next.add(matchId);
+      return next;
+    });
+  };
+
   // Build set of taken event_ids (fixture-level exclusion)
   const takenEventIds = new Set(
     (acca?.bets || []).filter((b) => b.event_id).map((b) => b.event_id)
@@ -141,6 +153,61 @@ export default function FixtureGrid({
                           </div>
                         </button>
                       </div>
+                      {/* More bets toggle - only if match has BTTS or totals odds */}
+                      {(match.btts_yes || match.over_2_5) && !fixtureTaken && (
+                        <>
+                          <button
+                            className="fixture-more-bets-toggle"
+                            onClick={() => toggleExpanded(match.id)}
+                          >
+                            {expandedMatches.has(match.id) ? "Less bets" : "More bets"}
+                          </button>
+                          {expandedMatches.has(match.id) && (
+                            <div className="fixture-extra-odds">
+                              {match.btts_yes && (
+                                <div className="fixture-extra-odds-row">
+                                  <button
+                                    className="fixture-odds-btn"
+                                    onClick={() => onPickMatch(match, "btts_yes")}
+                                    disabled={isSubmitting}
+                                  >
+                                    <div className="fixture-odds-label">BTTS Yes</div>
+                                    <div className="fixture-odds-value">{formatOdds(match.btts_yes, oddsFormat)}</div>
+                                  </button>
+                                  <button
+                                    className="fixture-odds-btn"
+                                    onClick={() => onPickMatch(match, "btts_no")}
+                                    disabled={isSubmitting}
+                                  >
+                                    <div className="fixture-odds-label">BTTS No</div>
+                                    <div className="fixture-odds-value">{formatOdds(match.btts_no, oddsFormat)}</div>
+                                  </button>
+                                </div>
+                              )}
+                              {match.over_2_5 && (
+                                <div className="fixture-extra-odds-row">
+                                  <button
+                                    className="fixture-odds-btn"
+                                    onClick={() => onPickMatch(match, "over_2_5")}
+                                    disabled={isSubmitting}
+                                  >
+                                    <div className="fixture-odds-label">Over {match.totals_line}</div>
+                                    <div className="fixture-odds-value">{formatOdds(match.over_2_5, oddsFormat)}</div>
+                                  </button>
+                                  <button
+                                    className="fixture-odds-btn"
+                                    onClick={() => onPickMatch(match, "under_2_5")}
+                                    disabled={isSubmitting}
+                                  >
+                                    <div className="fixture-odds-label">Under {match.totals_line}</div>
+                                    <div className="fixture-odds-value">{formatOdds(match.under_2_5, oddsFormat)}</div>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   );
                 })}

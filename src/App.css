@@ -2439,3 +2439,36 @@
 /* ---- Additional Utilities ---- */
 .text-center { text-align: center; }
 .w-full { width: 100%; }
+
+/* More bets toggle */
+.fixture-more-bets-toggle {
+  display: block;
+  width: 100%;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  color: #4ade80;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: center;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.fixture-more-bets-toggle:hover {
+  opacity: 1;
+}
+
+/* Extra odds section (BTTS, Over/Under) */
+.fixture-extra-odds {
+  padding: 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fixture-extra-odds-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
