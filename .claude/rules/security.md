@@ -37,12 +37,24 @@ Rules derived from security audits. Follow these when writing any new code.
 - Admin-only endpoints still need rate limits — don't skip just because auth is required
 - Health/status endpoints must be rate-limited if they hit the database
 
+## Settlement
+
+- **No manual settlement endpoints** — all bet results determined by auto-settlement only
+- Never expose endpoints that let users mark bets as won/lost — this is a leaderboard manipulation vector
+- Team name matching uses normalized comparison (`backend/app/normalization.py`) — always guard against empty strings
+- Legacy bets (no `event_id`) are auto-voided after 7 days — no manual intervention path
+- Cancelled/abandoned matches (48h+ incomplete) are auto-voided
+- Score lookup window is 14 days max — sufficient for delayed results without API abuse
+- Debug/diagnostic endpoints must be restricted to acca creator or group admin
+- Debug endpoints must redact internal errors — log full error server-side, return generic message to client
+
 ## Logging
 
 - Log security events: failed logins, failed password changes, account lockouts, blacklisted token usage
 - Log both the attempt AND the lockout trigger (separate log lines)
 - Include user_id in security logs where available
 - Never log passwords, tokens, or full email addresses
+- Settlement: log at INFO for <72h missing scores, WARNING for 72h+ stale matches
 
 ## Production
 
