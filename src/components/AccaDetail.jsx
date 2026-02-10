@@ -240,6 +240,15 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     }
   };
 
+  const handleSettleBet = async (betId, result) => {
+    try {
+      await api.updateBetResult(betId, result);
+      await loadAccaDetails(false);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to update result");
+    }
+  };
+
   const handleDeleteAcca = async () => {
     if (isSubmitting) return;
     if (!window.confirm("Are you sure? This will delete the acca and all picks.")) {
@@ -559,6 +568,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         bookmakerComparison={bookmakerComparison}
         bookmakerLinks={bookmakerLinks}
         onRemovePick={handleRemovePick}
+        onSettleBet={handleSettleBet}
         onAddPick={() => {
           if (acca.leagues?.length > 0 && acca.match_dates?.length > 0) {
             if (acca.leagues.length === 1) {

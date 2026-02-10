@@ -1621,6 +1621,52 @@
   background-color: rgba(220, 38, 38, 0.1);
 }
 
+/* Manual settle buttons */
+.bet-slip-settle-btns {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  margin-left: 20px;
+}
+
+.bet-slip-settle-won,
+.bet-slip-settle-lost {
+  padding: 3px 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 150ms ease-out;
+}
+
+.bet-slip-settle-won {
+  background: transparent;
+  border: 1px solid #16a34a;
+  color: #16a34a;
+}
+
+.bet-slip-settle-won:hover:not(:disabled) {
+  background-color: rgba(22, 163, 74, 0.1);
+}
+
+.bet-slip-settle-lost {
+  background: transparent;
+  border: 1px solid #dc2626;
+  color: #dc2626;
+}
+
+.bet-slip-settle-lost:hover:not(:disabled) {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.bet-slip-settle-won:disabled,
+.bet-slip-settle-lost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Summary */
 .bet-slip-summary {
   padding-top: 16px;
