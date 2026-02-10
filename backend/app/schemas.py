@@ -171,8 +171,8 @@ class BetCreate(BaseModel):
     @field_validator("pick_type")
     @classmethod
     def validate_pick_type(cls, v):
-        if v is not None and v not in ("home", "away", "draw"):
-            raise ValueError("pick_type must be 'home', 'away', or 'draw'")
+        if v is not None and v not in ("home", "away", "draw", "btts_yes", "btts_no", "over_2_5", "under_2_5"):
+            raise ValueError("pick_type must be 'home', 'away', 'draw', 'btts_yes', 'btts_no', 'over_2_5', or 'under_2_5'")
         return v
 
     @field_validator("sport_key")

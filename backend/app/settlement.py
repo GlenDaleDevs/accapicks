@@ -151,8 +151,19 @@ def settle_locked_accas(db: Session):
                 else:
                     actual_result = "draw"
 
-                # Compare with bet pick_type
-                if bet.pick_type == actual_result:
+                # Determine result based on pick_type
+                total_goals = home_score + away_score
+                both_scored = home_score > 0 and away_score > 0
+
+                if bet.pick_type == "btts_yes":
+                    bet.result = "won" if both_scored else "lost"
+                elif bet.pick_type == "btts_no":
+                    bet.result = "won" if not both_scored else "lost"
+                elif bet.pick_type == "over_2_5":
+                    bet.result = "won" if total_goals > 2.5 else "lost"
+                elif bet.pick_type == "under_2_5":
+                    bet.result = "won" if total_goals < 2.5 else "lost"
+                elif bet.pick_type == actual_result:
                     bet.result = "won"
                 else:
                     bet.result = "lost"
