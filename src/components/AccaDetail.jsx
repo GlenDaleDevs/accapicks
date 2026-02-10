@@ -132,7 +132,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       setBookmakerComparison(data);
     } catch (err) {
       console.error("Error comparing bookmakers:", err);
-      setError("Failed to compare bookmakers");
+      showToast(err.response?.data?.detail || "Failed to compare bookmakers", "error");
     } finally {
       setComparingBookmakers(false);
     }
