@@ -7,7 +7,6 @@ import * as api from "../api/client";
 import FixtureGrid from "./FixtureGrid";
 import BookmakerComparison from "./BookmakerComparison";
 import BetSlip from "./BetSlip";
-import MemberSlotGrid from "./MemberSlotGrid";
 import Skeleton from "./Skeleton";
 
 export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLinks = {} }) {
@@ -380,29 +379,6 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         </>
       )}
 
-      {/* Member Slot Grid */}
-      {members.length > 0 && (
-        <MemberSlotGrid
-          members={members}
-          bets={acca.bets}
-          currentUser={user}
-          accaStatus={acca.status}
-          onAddPick={() => {
-            if (acca.leagues?.length > 0 && acca.match_dates?.length > 0) {
-              if (acca.leagues.length === 1) {
-                setFixtureLeague(acca.leagues[0]);
-                loadFilteredMatches(acca.leagues, acca.match_dates);
-              }
-              setShowFixtureGrid(true);
-            } else {
-              setShowAddBet(true);
-            }
-          }}
-          onRemovePick={handleRemovePick}
-          oddsFormat={oddsFormat}
-        />
-      )}
-
       {/* Add Pick - Fixture Grid Flow */}
       {acca.status === "open" && !showFixtureGrid && !showAddBet && (
         <div className="mb-20" style={{ textAlign: "center" }}>
@@ -615,7 +591,19 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
         bookmakerComparison={bookmakerComparison}
         bookmakerLinks={bookmakerLinks}
         onRemovePick={handleRemovePick}
+        onAddPick={() => {
+          if (acca.leagues?.length > 0 && acca.match_dates?.length > 0) {
+            if (acca.leagues.length === 1) {
+              setFixtureLeague(acca.leagues[0]);
+              loadFilteredMatches(acca.leagues, acca.match_dates);
+            }
+            setShowFixtureGrid(true);
+          } else {
+            setShowAddBet(true);
+          }
+        }}
         user={user}
+        members={members}
       />
     </div>
     </>
