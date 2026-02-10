@@ -148,10 +148,10 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
           &larr; Back to Accas
         </button>
         <Skeleton width="250px" height="28px" count={1} />
-        <div style={{ marginTop: "20px" }}>
+        <div className="skeleton-spacer">
           <Skeleton width="100%" height="100px" count={1} />
         </div>
-        <div style={{ marginTop: "20px" }}>
+        <div className="skeleton-spacer">
           <Skeleton width="90%" height="80px" count={1} />
           <Skeleton width="85%" height="80px" count={1} />
         </div>
@@ -328,13 +328,12 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       </button>
 
     <div className={`page-acca-detail acca-status-${acca?.status || "open"}`}>
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <h2 className="section-title" style={{ marginBottom: 0 }}>{acca.name}</h2>
+      <div className="acca-detail-header">
+        <h2 className="section-title mb-0">{acca.name}</h2>
         {canDeleteAcca && (
           <button
-            className="btn btn-danger"
+            className="btn btn-danger acca-delete-btn"
             onClick={handleDeleteAcca}
-            style={{ fontSize: "14px", padding: "8px 16px", marginTop: "8px" }}
           >
             Delete
           </button>
@@ -343,7 +342,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
 
       {/* Lock countdown / status */}
       {acca.locks_at && acca.status === "open" && (
-        <div style={{ textAlign: "center" }}>
+        <div className="text-center">
           <div className="lock-countdown lock-countdown-open">
             Locks: {lockCountdown}
           </div>
@@ -351,7 +350,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       )}
 
       {acca.status === "locked" && (
-        <div style={{ textAlign: "center" }}>
+        <div className="text-center">
           <div className="lock-countdown lock-countdown-locked">
             LOCKED - No more picks allowed
           </div>
@@ -364,7 +363,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       {/* Bookmaker Comparison - only when there are picks */}
       {acca.status === "open" && acca.bets.length > 0 && (
         <>
-          <div className="mb-20" style={{ textAlign: "center" }}>
+          <div className="mb-20 text-center">
             <button
               className="btn btn-secondary"
               onClick={handleCompareBookmakers}

@@ -165,9 +165,8 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
           </div>
           <button
             type="submit"
-            className="btn btn-primary"
+            className="btn btn-primary w-full mt-8"
             disabled={loading}
-            style={{ width: "100%", marginTop: "8px" }}
           >
             {loading ? "Changing Password..." : "Change Password"}
           </button>
@@ -175,17 +174,16 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
       </div>
 
       {/* Danger Zone */}
-      <div className="settings-section" style={{ marginTop: "40px", borderColor: "#ef4444" }}>
-        <h3 className="settings-section-title" style={{ color: "#ef4444" }}>Danger Zone</h3>
-        <p style={{ marginBottom: "16px", color: "#6b7280" }}>
+      <div className="settings-section settings-section-danger" style={{ marginTop: "40px" }}>
+        <h3 className="settings-section-title">Danger Zone</h3>
+        <p className="settings-danger-desc">
           This will permanently delete your account and remove you from all groups. This action cannot be undone.
         </p>
 
         {!showDeleteConfirmation ? (
           <button
-            className="btn btn-danger"
+            className="btn btn-danger w-full"
             onClick={() => setShowDeleteConfirmation(true)}
-            style={{ width: "100%" }}
           >
             Delete Account
           </button>
@@ -201,7 +199,7 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
                 maxLength={128}
               />
             </div>
-            <div className="btn-group" style={{ marginTop: "8px" }}>
+            <div className="btn-group mt-8">
               <button
                 type="submit"
                 className="btn btn-danger"

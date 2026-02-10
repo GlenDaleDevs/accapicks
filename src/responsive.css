@@ -3,6 +3,45 @@
    ============================================ */
 
 /* ================================================
+   374px breakpoint - Very small phones
+   (iPhone SE 1st gen, narrow viewports)
+   ================================================ */
+
+@media (max-width: 374px) {
+  .fixture-odds-btn {
+    padding: 6px;
+  }
+
+  .fixture-odds-value,
+  .fixture-odds-value-taken {
+    font-size: 15px;
+  }
+
+  .fixture-odds-label {
+    font-size: 10px;
+  }
+
+  .group-card-lb {
+    width: 90px;
+    padding-left: 8px;
+  }
+
+  .mini-lb-name {
+    font-size: 11px;
+  }
+
+  .mini-lb-row {
+    gap: 4px;
+  }
+
+  .mini-lb-pos {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+}
+
+/* ================================================
    480px breakpoint - Small phones
    (iPhone SE, Galaxy S, etc.)
    ================================================ */

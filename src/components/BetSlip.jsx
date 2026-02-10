@@ -168,6 +168,7 @@ export default function BetSlip({
                   key={member.user_id}
                   className="bet-slip-pick-item bet-slip-pick-empty bet-slip-pick-self"
                   onClick={onAddPick}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onAddPick(); } }}
                   role="button"
                   tabIndex={0}
                 >
