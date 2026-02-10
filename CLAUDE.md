@@ -47,6 +47,24 @@ python migrate.py                # run Alembic migrations
 - Ask a clarifying question only if truly blocked; otherwise assume and proceed
 - **Soft override:** If asked for "details", "explanation", or "review" — comply but stay concise
 
+## Planning
+
+- **Always use plan mode** (`EnterPlanMode`) for non-trivial changes before implementing
+- Plan mode lets you explore the codebase, design the approach, and get user approval first
+- Skip plan mode only for: single-file bug fixes, copy/text changes, config tweaks, obvious one-liners
+
+## Web Design
+
+Current design system for the `web-design-planner` agent to reference:
+
+- **Theme:** Dark mode, sports/betting aesthetic
+- **Colors:** Dark backgrounds (#1a1a2e, #16213e), accent green (#4ade80), amber for warnings
+- **Typography:** Clean sans-serif, bold headings, tabular numbers for odds/stats
+- **Components:** Card-based layouts, rounded corners, subtle shadows, glass-morphism effects
+- **Mobile-first:** All layouts must work on mobile; bottom nav on mobile, sidebar on desktop
+- **Animations:** Subtle transitions only — no flashy animations that feel like a casino
+- **Tone:** Modern, clean, trustworthy — not garish or gambling-site cliche
+
 ## Code Style
 
 - Small, targeted edits over broad refactors
