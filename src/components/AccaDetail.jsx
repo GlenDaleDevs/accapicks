@@ -41,8 +41,8 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     }
   }, [acca?.group_id]);
 
-  const loadAccaDetails = async () => {
-    setLoadingAcca(true);
+  const loadAccaDetails = async (showLoading = true) => {
+    if (showLoading) setLoadingAcca(true);
     try {
       const data = await api.getAccaById(accaId);
       if (data.group_id !== parseInt(groupId)) {
@@ -82,7 +82,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
   useEffect(() => {
     if (!acca || acca.status !== "open") return;
     const interval = setInterval(() => {
-      loadAccaDetails();
+      loadAccaDetails(false);
     }, 30000);
     return () => clearInterval(interval);
   }, [acca?.status]);
