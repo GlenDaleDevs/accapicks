@@ -306,12 +306,16 @@ def compare_bookmakers_for_acca(bets):
 
         # Check if it's a draw bet
         is_draw = bet_lower in ["draw", "the draw"] or bet_lower.startswith("draw - ")
+        draw_teams = None
+        if is_draw and " - " in bet_desc:
+            draw_teams = bet_desc.split(" - ", 1)[1]  # "TeamA vs TeamB"
         parsed_bets.append({
             "original": bet_desc,
             "market_type": "h2h",
             "outcome_name": "Draw" if is_draw else team_name,
             "team": team_name,
-            "is_draw": is_draw
+            "is_draw": is_draw,
+            "match_teams": draw_teams
         })
 
     # Collect all cached matches across all sports
@@ -339,11 +343,11 @@ def compare_bookmakers_for_acca(bets):
             away = match.get("away_team", "")
 
             # For h2h bets, check if this match contains the team or draw
-            # For btts/totals, match by team names from bet description
-            if market_type == "h2h":
-                if not (is_draw or team.lower() in [home.lower(), away.lower()]):
+            # For btts/totals/draws, match by team names from bet description
+            if market_type == "h2h" and not is_draw:
+                if team.lower() not in [home.lower(), away.lower()]:
                     continue
-            elif market_type in ("btts", "totals"):
+            elif market_type in ("btts", "totals") or is_draw:
                 # Match by team names from bet description
                 match_teams = parsed_bet.get("match_teams", "")
                 if " vs " in match_teams.lower():
@@ -402,15 +406,9 @@ def compare_bookmakers_for_acca(bets):
                                             bet_odds_by_bookmaker[bookie_key] = []
                                         bet_odds_by_bookmaker[bookie_key].append(outcome["price"])
 
-            # For btts/totals, we've checked all bookmakers for this match
-            if market_type in ("btts", "totals"):
-                matched_odds = True
-                break
-
-            # For h2h, check if we found the match
-            if market_type == "h2h" and (is_draw or team.lower() in [home.lower(), away.lower()]):
-                matched_odds = True
-                break
+            # We matched the correct event via team filtering above — stop
+            matched_odds = True
+            break
 
         # If this bet couldn't be matched, we can't build a full acca
         if not matched_odds:
