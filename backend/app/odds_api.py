@@ -275,21 +275,25 @@ def compare_bookmakers_for_acca(bets):
 
         # Check for totals bets
         if bet_lower.startswith("over 2.5 goals - "):
+            teams_part = bet_desc[len("Over 2.5 Goals - "):]
             parsed_bets.append({
                 "original": bet_desc,
                 "market_type": "totals",
                 "outcome_name": "Over",
                 "team": None,
-                "is_draw": False
+                "is_draw": False,
+                "match_teams": teams_part
             })
             continue
         elif bet_lower.startswith("under 2.5 goals - "):
+            teams_part = bet_desc[len("Under 2.5 Goals - "):]
             parsed_bets.append({
                 "original": bet_desc,
                 "market_type": "totals",
                 "outcome_name": "Under",
                 "team": None,
-                "is_draw": False
+                "is_draw": False,
+                "match_teams": teams_part
             })
             continue
 
@@ -339,7 +343,7 @@ def compare_bookmakers_for_acca(bets):
             if market_type == "h2h":
                 if not (is_draw or team.lower() in [home.lower(), away.lower()]):
                     continue
-            elif market_type == "btts":
+            elif market_type in ("btts", "totals"):
                 # Match by team names from bet description
                 match_teams = parsed_bet.get("match_teams", "")
                 if " vs " in match_teams.lower():
