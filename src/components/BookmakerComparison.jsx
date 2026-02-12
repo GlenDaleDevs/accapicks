@@ -5,7 +5,7 @@ import * as api from "../api/client";
 
 const DEFAULT_VISIBLE = 5;
 
-export default function BookmakerComparison({ data, oddsFormat = "decimal", bookmakerLinks = {}, accaId }) {
+export default function BookmakerComparison({ data, oddsFormat = "decimal", bookmakerLinks = {}, accaId, bets = [] }) {
   const [showAll, setShowAll] = useState(false);
 
   if (!data || typeof data !== "object") return null;
@@ -85,6 +85,14 @@ export default function BookmakerComparison({ data, oddsFormat = "decimal", book
         >
           {showAll ? "Show fewer sites" : `Show all ${entries.length} bookmakers`}
         </button>
+      )}
+      {bets.some(b => {
+        const d = (b.description || "").toLowerCase();
+        return d.startsWith("btts") || d.startsWith("over") || d.startsWith("under");
+      }) && (
+        <p className="text-muted mt-8" style={{ fontSize: "0.8rem" }}>
+          Limited bookmaker coverage for BTTS and Over/Under markets.
+        </p>
       )}
     </div>
   );

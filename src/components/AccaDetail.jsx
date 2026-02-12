@@ -385,7 +385,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
             </button>
           </div>
 
-          <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} accaId={accaId} />
+          <BookmakerComparison data={bookmakerComparison} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} accaId={accaId} bets={acca.bets} />
         </>
       )}
 
