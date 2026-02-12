@@ -91,6 +91,7 @@ def format_match_for_display(match, league=None):
             break
 
     # Search all bookmakers for totals (first bookmaker may not offer it)
+    totals_bookmaker = None
     for bk in match.get('bookmakers', []):
         for market in bk.get('markets', []):
             if market.get('key') == 'totals':
@@ -99,6 +100,7 @@ def format_match_for_display(match, league=None):
                         if outcome['name'] == 'Over' and over_2_5 is None:
                             over_2_5 = outcome['price']
                             totals_line = 2.5
+                            totals_bookmaker = bk.get('title')
                         elif outcome['name'] == 'Under' and under_2_5 is None:
                             under_2_5 = outcome['price']
                             totals_line = 2.5
@@ -119,6 +121,7 @@ def format_match_for_display(match, league=None):
         'over_2_5': over_2_5,
         'under_2_5': under_2_5,
         'totals_line': totals_line,
+        'totals_bookmaker': totals_bookmaker,
     }
     if league:
         result['league'] = league
