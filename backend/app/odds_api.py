@@ -65,7 +65,7 @@ def format_match_for_display(match, league=None):
     away_team = match['away_team']
     commence_time = match['commence_time']
 
-    # Get odds from first bookmaker (usually Bet365)
+    # Get h2h odds from first bookmaker in API response (e.g. Unibet for UK)
     bookmaker = match['bookmakers'][0] if match.get('bookmakers') else None
 
     if not bookmaker:
