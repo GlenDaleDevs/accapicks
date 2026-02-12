@@ -195,51 +195,6 @@ def get_btts_for_event(sport_key, event_id):
         logger.error(f"Error fetching BTTS odds for event {event_id}: {e}")
         return {"btts_yes": None, "btts_no": None}
 
-def debug_totals_coverage(sport_key, event_id):
-    """
-    Temporary debug: compare how many bookmakers offer totals
-    in the bulk cache vs the per-event endpoint.
-    """
-    # Check bulk cache for this event
-    bulk_totals_bookmakers = []
-    for sk, cache_entry in _cache.items():
-        if time.time() - cache_entry["timestamp"] < CACHE_TTL_SECONDS:
-            for match in cache_entry["data"]:
-                if match.get("id") == event_id:
-                    for bk in match.get("bookmakers", []):
-                        for market in bk.get("markets", []):
-                            if market.get("key") == "totals":
-                                bulk_totals_bookmakers.append(bk.get("title"))
-                    break
-
-    # Fetch per-event totals from API
-    per_event_bookmakers = []
-    try:
-        url = f'{ODDS_API_BASE_URL}/sports/{sport_key}/events/{event_id}/odds'
-        params = {
-            'apiKey': ODDS_API_KEY,
-            'markets': 'totals',
-            'regions': 'uk',
-            'oddsFormat': 'decimal'
-        }
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-        event_data = response.json()
-        for bk in event_data.get("bookmakers", []):
-            for market in bk.get("markets", []):
-                if market.get("key") == "totals":
-                    per_event_bookmakers.append(bk.get("title"))
-    except Exception as e:
-        per_event_bookmakers = [f"Error: {str(e)}"]
-
-    return {
-        "event_id": event_id,
-        "bulk_endpoint_totals_bookmakers": bulk_totals_bookmakers,
-        "bulk_count": len(bulk_totals_bookmakers),
-        "per_event_endpoint_totals_bookmakers": per_event_bookmakers,
-        "per_event_count": len(per_event_bookmakers),
-    }
-
 def get_scores(sport, days_from=3):
     """
     Get scores for completed matches from The-Odds-API.

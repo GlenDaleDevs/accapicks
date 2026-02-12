@@ -88,14 +88,3 @@ def get_btts_odds(event_id: str, sport_key: str, request: Request, user_id: int 
     if not EVENT_ID_PATTERN.match(event_id):
         raise HTTPException(status_code=400, detail="Invalid event ID format")
     return odds_api.get_btts_for_event(sport_key, event_id)
-
-
-@router.get("/odds/matches/{event_id}/debug-totals")
-@limiter.limit("10/minute")
-def debug_totals_coverage(event_id: str, sport_key: str, request: Request, user_id: int = Depends(get_current_user)):
-    """Temporary debug: compare bulk vs per-event totals bookmaker coverage"""
-    if sport_key not in VALID_SPORT_KEYS:
-        raise HTTPException(status_code=400, detail=f"Invalid sport key: '{sport_key}'")
-    if not EVENT_ID_PATTERN.match(event_id):
-        raise HTTPException(status_code=400, detail="Invalid event ID format")
-    return odds_api.debug_totals_coverage(sport_key, event_id)
