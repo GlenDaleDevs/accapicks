@@ -26,7 +26,7 @@ def get_matches(request: Request, sport: str = "soccer_epl", user_id: int = Depe
     Available sports: soccer_epl, soccer_spain_la_liga, soccer_germany_bundesliga, soccer_italy_serie_a
     """
     if sport not in VALID_SPORT_KEYS:
-        raise HTTPException(status_code=400, detail=f"Invalid sport key: '{sport}'")
+        raise HTTPException(status_code=400, detail="Invalid sport key")
     matches = odds_api.get_football_matches(sport)
 
     # Format matches for easier display
@@ -60,7 +60,7 @@ def get_filtered_matches(
     league_list = [l.strip() for l in leagues.split(",") if l.strip()]
     for league in league_list:
         if league not in VALID_SPORT_KEYS:
-            raise HTTPException(status_code=400, detail=f"Invalid league: '{league}'")
+            raise HTTPException(status_code=400, detail="Invalid league")
     formatted_matches = []
 
     for league in league_list:
@@ -84,7 +84,7 @@ def get_filtered_matches(
 def get_btts_odds(event_id: str, sport_key: str, request: Request, user_id: int = Depends(get_current_user)):
     """Get BTTS odds for a specific event (lazy-fetched, 24h cache)"""
     if sport_key not in VALID_SPORT_KEYS:
-        raise HTTPException(status_code=400, detail=f"Invalid sport key: '{sport_key}'")
+        raise HTTPException(status_code=400, detail="Invalid sport key")
     if not EVENT_ID_PATTERN.match(event_id):
         raise HTTPException(status_code=400, detail="Invalid event ID format")
     return odds_api.get_btts_for_event(sport_key, event_id)

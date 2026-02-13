@@ -87,8 +87,10 @@ def upgrade() -> None:
     # Insert bookmaker links
     for bookmaker_key, display_name, url in bookmakers:
         op.execute(
-            f"INSERT INTO bookmaker_links (bookmaker_key, display_name, url, is_active) "
-            f"VALUES ('{bookmaker_key}', '{display_name}', '{url}', true)"
+            sa.text(
+                "INSERT INTO bookmaker_links (bookmaker_key, display_name, url, is_active) "
+                "VALUES (:key, :name, :url, true)"
+            ).bindparams(key=bookmaker_key, name=display_name, url=url)
         )
 
 
