@@ -49,7 +49,7 @@ def get_football_matches(sport='soccer_epl'):
     }
 
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
         # Store in cache
@@ -171,7 +171,7 @@ def get_btts_for_event(sport_key, event_id):
     }
 
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         event_data = response.json()
 
@@ -224,7 +224,7 @@ def get_scores(sport, days_from=3):
     }
 
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
         # Store in cache
