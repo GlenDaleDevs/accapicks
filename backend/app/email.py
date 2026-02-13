@@ -11,6 +11,14 @@ if not resend.api_key:
     logger.warning("RESEND_API_KEY is not set - emails will not be sent")
 
 
+def _redact_email(email: str) -> str:
+    """Redact email for logging: u***@domain.com"""
+    if "@" in email:
+        local, domain = email.rsplit("@", 1)
+        return f"{local[0]}***@{domain}" if local else f"***@{domain}"
+    return "***"
+
+
 def send_verification_email(to_email: str, code: str, username: str) -> Optional[dict]:
     """Send a verification email with the 6-digit code."""
     try:
@@ -34,7 +42,7 @@ def send_verification_email(to_email: str, code: str, username: str) -> Optional
         })
         return response
     except Exception as e:
-        logger.error(f"Failed to send verification email to {to_email}: {e}")
+        logger.error(f"Failed to send verification email to {_redact_email(to_email)}: {e}")
         return None
 
 
@@ -65,5 +73,5 @@ def send_password_reset_email(to_email: str, code: str, username: str) -> Option
         })
         return response
     except Exception as e:
-        logger.error(f"Failed to send password reset email to {to_email}: {e}")
+        logger.error(f"Failed to send password reset email to {_redact_email(to_email)}: {e}")
         return None

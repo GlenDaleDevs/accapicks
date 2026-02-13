@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
@@ -323,6 +324,9 @@ def debug_settlement(
     user_id: int = Depends(get_current_user)
 ):
     """Debug why an acca isn't settling. Returns diagnostic info."""
+    if os.getenv("ENVIRONMENT") == "production":
+        raise HTTPException(status_code=404, detail="Not found")
+
     from datetime import timedelta
     from ..odds_api import get_scores
 
