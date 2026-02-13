@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "./Landing.css";
 import { showToast } from "../utils/toast";
 import { checkUsername } from "../api/client";
@@ -206,10 +207,9 @@ export default function AuthView({
         </div>
       </div>
 
-      {displayError && <div className="alert-error">{displayError}</div>}
-      {successMessage && <div className="alert-success">{successMessage}</div>}
-
       <div className="auth-form-container">
+        {displayError && <div className="alert-error">{displayError}</div>}
+        {successMessage && <div className="alert-success">{successMessage}</div>}
         <form className="auth-form" onSubmit={handleSubmit}>
         {mode === "verify" ? (
           <>
@@ -407,6 +407,14 @@ export default function AuthView({
         )}
       </form>
       </div>
+
+      <footer className="landing-footer">
+        <div className="landing-footer-links">
+          <Link to="/terms">Terms of Service</Link>
+          <Link to="/privacy">Privacy Policy</Link>
+        </div>
+        <p className="landing-footer-responsible">18+ only. Please gamble responsibly.</p>
+      </footer>
     </div>
   );
 }
