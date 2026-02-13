@@ -25,6 +25,10 @@ COPY alembic/ ./alembic/
 # Copy built frontend
 COPY --from=frontend /app/dist ./dist
 
+# Run as non-root user
+RUN adduser --disabled-password --no-create-home appuser
+USER appuser
+
 EXPOSE 8000
 
 CMD python -m alembic upgrade head && uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}

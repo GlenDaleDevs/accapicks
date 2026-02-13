@@ -15,3 +15,5 @@
 - `locks_at` must be calculated from earliest kickoff of **actually picked** matches, not all matches. Recalculate on every bet add/remove
 - Railway deploy logs only show build/startup — for runtime debugging, return debug info in API response and check via DevTools
 - `Base.metadata.create_all()` runs before Alembic migrations — use `IF NOT EXISTS` guards in migrations that create tables
+- The-Odds-API: BTTS market is NOT available on the bulk `/sports/{sport}/odds/` endpoint (returns 422). Must use per-event endpoint `/sports/{sport}/events/{eventId}/odds?markets=btts` (1 credit per call) — lazy-fetch and cache
+- The-Odds-API: Compare Bookmakers is best-effort — the API is a third-party aggregator with incomplete coverage, so not all bookmakers that offer a bet will appear
