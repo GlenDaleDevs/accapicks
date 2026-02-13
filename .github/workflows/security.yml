@@ -26,4 +26,4 @@ jobs:
           python-version: "3.12"
       - run: pip install -r backend/requirements.txt
       - run: pip install pip-audit
-      - run: pip-audit
+      - run: pip-audit --ignore-vuln CVE-2024-23342  # ecdsa timing side-channel — we use HMAC, not EC keys
