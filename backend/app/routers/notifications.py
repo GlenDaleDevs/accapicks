@@ -4,6 +4,7 @@ import hashlib
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
@@ -60,7 +61,19 @@ def subscribe_push(
         subscription_json=json.dumps(subscription),
     )
     db.add(new_sub)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        # Race condition: another request created the same subscription
+        existing = db.query(models.PushSubscription).filter(
+            models.PushSubscription.user_id == user_id,
+            models.PushSubscription.endpoint_hash == endpoint_hash,
+        ).first()
+        if existing:
+            existing.subscription_json = json.dumps(subscription)
+            db.commit()
+        return {"message": "Subscription updated"}
 
     logger.info(f"Push subscription created for user {user_id}")
     return {"message": "Subscription created"}
