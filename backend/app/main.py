@@ -239,10 +239,14 @@ async def cleanup_blacklisted_tokens():
             if deleted > 0:
                 logger.info(f"Cleaned up {deleted} expired blacklisted token(s)")
 
-            # Also cleanup stale push subscriptions (90+ days old, never used)
+            # Cleanup stale push subscriptions (90+ days old: never used or abandoned)
+            from sqlalchemy import or_
             stale_cutoff = now - timedelta(days=90)
             stale_subs = db.query(models.PushSubscription).filter(
-                models.PushSubscription.last_used_at.is_(None),
+                or_(
+                    models.PushSubscription.last_used_at.is_(None),
+                    models.PushSubscription.last_used_at < stale_cutoff,
+                ),
                 models.PushSubscription.created_at < stale_cutoff,
             ).delete(synchronize_session=False)
             if stale_subs > 0:

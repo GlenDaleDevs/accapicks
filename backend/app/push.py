@@ -60,6 +60,6 @@ def send_push_to_group(db: Session, group_id: int, payload: dict, exclude_user_i
     ).all()
 
     for member in members:
-        if exclude_user_id and member.user_id == exclude_user_id:
+        if exclude_user_id is not None and member.user_id == exclude_user_id:
             continue
         send_push(db, member.user_id, payload)
