@@ -4,6 +4,7 @@ import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatCountdown } from "../utils/formatters";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
+import { isPushSupported, getPushPermission, subscribeToPush } from "../utils/pushNotifications";
 import AccaWizard from "./AccaWizard";
 import Leaderboard from "./Leaderboard";
 import Skeleton from "./Skeleton";
@@ -27,6 +28,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
 
   useEffect(() => {
     if (groupId) {
@@ -51,6 +53,13 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [accas]);
+
+  useEffect(() => {
+    if (!isPushSupported()) return;
+    if (localStorage.getItem("push-prompt-dismissed")) return;
+    if (getPushPermission() !== "default") return;
+    setShowPushPrompt(true);
+  }, []);
 
   const loadGroupData = async () => {
     setLoadingGroup(true);
@@ -203,6 +212,24 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     }
   };
 
+  const handleEnableNotifications = async () => {
+    try {
+      await subscribeToPush();
+      showToast("Notifications enabled!", "success");
+      setShowPushPrompt(false);
+    } catch (err) {
+      if (err.message?.includes("denied")) {
+        showToast("Notifications blocked. You can enable them in browser settings.", "warning");
+      }
+      setShowPushPrompt(false);
+    }
+  };
+
+  const handleDismissPushPrompt = () => {
+    localStorage.setItem("push-prompt-dismissed", "1");
+    setShowPushPrompt(false);
+  };
+
   // Determine if current user is admin
   const isCurrentUserAdmin = members.find(m => m.user_id === user?.id)?.role === "admin";
 
@@ -292,6 +319,23 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         groupId={groupId}
         accaStats={accaStats}
       />
+
+      {/* Push Notification Prompt */}
+      {showPushPrompt && (
+        <div className="card" style={{ marginBottom: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          <span style={{ fontSize: '14px', color: 'var(--text-secondary, #94a3b8)' }}>
+            Get notified when mates add picks?
+          </span>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+            <button className="btn btn-primary btn-sm" onClick={handleEnableNotifications}>
+              Enable
+            </button>
+            <button className="btn btn-ghost btn-sm" onClick={handleDismissPushPrompt}>
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Create Acca Wizard */}
       {!showAccaWizard ? (

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
+import { isPushSupported, getPushPermission, subscribeToPush, unsubscribeFromPush, isSubscribedToPush } from "../utils/pushNotifications";
 
 export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout }) {
   const navigate = useNavigate();
@@ -14,6 +15,16 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [pushSupported] = useState(() => isPushSupported());
+  const [pushPermission, setPushPermission] = useState(() => getPushPermission());
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+
+  useEffect(() => {
+    if (pushSupported) {
+      isSubscribedToPush().then(setPushSubscribed);
+    }
+  }, [pushSupported]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -78,6 +89,31 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
     }
   };
 
+  const handleTogglePush = async () => {
+    setPushLoading(true);
+    try {
+      if (pushSubscribed) {
+        await unsubscribeFromPush();
+        setPushSubscribed(false);
+        showToast("Notifications disabled", "success");
+      } else {
+        await subscribeToPush();
+        setPushSubscribed(true);
+        setPushPermission(getPushPermission());
+        showToast("Notifications enabled!", "success");
+      }
+    } catch (err) {
+      if (err.message?.includes("denied")) {
+        setPushPermission("denied");
+        showToast("Notifications blocked by browser", "warning");
+      } else {
+        showToast("Failed to update notification settings", "error");
+      }
+    } finally {
+      setPushLoading(false);
+    }
+  };
+
   return (
     <div className="settings-container">
       <button
@@ -126,6 +162,29 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
           </button>
         </div>
       </div>
+
+      {/* Notifications */}
+      {pushSupported && (
+        <div className="settings-section">
+          <h3 className="settings-section-title">Notifications</h3>
+          {pushPermission === "denied" ? (
+            <p style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '14px' }}>
+              Notifications are blocked. To enable them, update your browser&apos;s notification settings for this site.
+            </p>
+          ) : (
+            <div className="settings-info-row" style={{ borderBottom: 'none' }}>
+              <span className="settings-info-label">Push notifications</span>
+              <button
+                className={`btn btn-sm ${pushSubscribed ? 'btn-danger' : 'btn-primary'}`}
+                onClick={handleTogglePush}
+                disabled={pushLoading}
+              >
+                {pushLoading ? '...' : pushSubscribed ? 'Disable' : 'Enable'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Change Password */}
       <div className="settings-section">
