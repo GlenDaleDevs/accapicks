@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, Link } from "react-router-dom";
+import { useRegisterSW } from "virtual:pwa-register/react";
 import * as api from "./api/client";
 import "./App.css";
 import "./responsive.css";
@@ -31,6 +32,29 @@ function App() {
   });
   const [bookmakerLinks, setBookmakerLinks] = useState({});
   const [miniLeaderboards, setMiniLeaderboards] = useState({});
+
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
+
+  useEffect(() => {
+    if (needRefresh) {
+      showToast(
+        <span>
+          Update available{' '}
+          <button
+            onClick={() => updateServiceWorker(true)}
+            style={{ color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, font: 'inherit' }}
+          >
+            Refresh
+          </button>
+        </span>,
+        'info',
+        10000
+      );
+    }
+  }, [needRefresh]);
 
   useEffect(() => {
     const token = api.getStoredToken();
