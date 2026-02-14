@@ -167,6 +167,25 @@ def create_bet(
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create bet")
 
+    # Send push notification to group members
+    try:
+        from ..push import send_push_to_group
+        user_obj = db.query(models.User).filter(models.User.id == user_id).first()
+        username = user_obj.username if user_obj else "Someone"
+        send_push_to_group(
+            db,
+            acca.group_id,
+            {
+                "title": "New Pick Added",
+                "body": f"{username} added a pick to {acca.name}",
+                "tag": f"bet-{acca.id}",
+                "url": f"/groups/{acca.group_id}/accas/{acca.id}",
+            },
+            exclude_user_id=user_id,
+        )
+    except Exception:
+        pass  # Push is best-effort, don't fail the bet creation
+
     # Get the user to include username in response
     user = db.query(models.User).filter(models.User.id == user_id).first()
 

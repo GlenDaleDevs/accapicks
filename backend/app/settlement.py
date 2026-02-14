@@ -62,6 +62,24 @@ def settle_locked_accas(db: Session):
                         acca.status = "lost"
                     else:
                         acca.status = "settled"
+
+                    try:
+                        from .push import send_push_to_group
+                        status_text = "won" if acca.status == "won" else "lost" if acca.status == "lost" else "settled"
+                        emoji = "🎉" if acca.status == "won" else "😞" if acca.status == "lost" else "✅"
+                        send_push_to_group(
+                            db,
+                            acca.group_id,
+                            {
+                                "title": f"Acca {status_text.title()}! {emoji}",
+                                "body": f"{acca.name} has been {status_text}",
+                                "tag": f"settle-{acca.id}",
+                                "url": f"/groups/{acca.group_id}/accas/{acca.id}",
+                            },
+                        )
+                    except Exception:
+                        pass
+
                     db.commit()
                 continue
 
@@ -187,6 +205,23 @@ def settle_locked_accas(db: Session):
                 else:
                     # Mixed or unclear - mark as settled
                     acca.status = "settled"
+
+                try:
+                    from .push import send_push_to_group
+                    status_text = "won" if acca.status == "won" else "lost" if acca.status == "lost" else "settled"
+                    emoji = "🎉" if acca.status == "won" else "😞" if acca.status == "lost" else "✅"
+                    send_push_to_group(
+                        db,
+                        acca.group_id,
+                        {
+                            "title": f"Acca {status_text.title()}! {emoji}",
+                            "body": f"{acca.name} has been {status_text}",
+                            "tag": f"settle-{acca.id}",
+                            "url": f"/groups/{acca.group_id}/accas/{acca.id}",
+                        },
+                    )
+                except Exception:
+                    pass
 
             # Commit this acca's changes
             db.commit()
