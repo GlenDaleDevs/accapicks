@@ -337,3 +337,10 @@ class UsernameCheckResponse(BaseModel):
     username: str
     available: bool
     reason: Optional[str] = None
+
+# Push notification schemas
+class PushSubscriptionCreate(BaseModel):
+    subscription: dict
+
+class PushSubscriptionDelete(BaseModel):
+    endpoint: str
