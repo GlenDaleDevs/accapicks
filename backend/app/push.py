@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
 VAPID_CLAIMS = {"sub": "mailto:notifications@accapicks.com"}
 
+if not VAPID_PRIVATE_KEY:
+    logger.warning("VAPID_PRIVATE_KEY not configured — push notifications disabled")
+
 
 def send_push(db: Session, user_id: int, payload: dict):
     """Send push notification to all of a user's subscriptions."""

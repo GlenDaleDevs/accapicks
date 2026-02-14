@@ -30,7 +30,9 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  const url = event.notification.data?.url || '/'
+  // Only allow relative URLs (prevent XSS via javascript: or external domains)
+  const rawUrl = event.notification.data?.url || '/'
+  const url = rawUrl.startsWith('/') ? rawUrl : '/'
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {

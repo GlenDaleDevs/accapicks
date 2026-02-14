@@ -3,9 +3,9 @@ let listeners = [];
 let nextId = 0;
 const MAX_TOASTS = 5;
 
-export function showToast(message, type = "info") {
-  // Deduplicate: skip if same message already visible
-  if (toasts.some(t => t.message === message && t.type === type)) {
+export function showToast(message, type = "info", duration = null) {
+  // Deduplicate: skip if same string message already visible
+  if (typeof message === "string" && toasts.some(t => t.message === message && t.type === type)) {
     return;
   }
 
@@ -19,8 +19,8 @@ export function showToast(message, type = "info") {
 
   listeners.forEach(fn => fn(toasts));
 
-  // Auto-dismiss: longer for errors so users can read them
-  const timeout = type === "error" ? 6000 : 4000;
+  // Auto-dismiss: custom duration, or longer for errors so users can read them
+  const timeout = duration || (type === "error" ? 6000 : 4000);
   setTimeout(() => dismissToast(toast.id), timeout);
 
   return toast.id;

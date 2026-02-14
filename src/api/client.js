@@ -252,3 +252,21 @@ export const removeMember = async (groupId, userId) => {
   const response = await axios.delete(`${API_URL}/groups/${groupId}/members/${userId}`);
   return response.data;
 };
+
+// Push Notifications
+export const getVapidKey = async () => {
+  const response = await axios.get(`${API_URL}/notifications/vapid-key`);
+  return response.data;
+};
+
+export const subscribePush = async (subscription) => {
+  const response = await axios.post(`${API_URL}/notifications/subscribe`, { subscription });
+  return response.data;
+};
+
+export const unsubscribePush = async (endpoint) => {
+  const response = await axios.delete(`${API_URL}/notifications/unsubscribe`, {
+    data: { endpoint },
+  });
+  return response.data;
+};
