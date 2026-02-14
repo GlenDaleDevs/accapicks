@@ -339,8 +339,24 @@ class UsernameCheckResponse(BaseModel):
     reason: Optional[str] = None
 
 # Push notification schemas
+class PushSubscriptionKeys(BaseModel):
+    p256dh: str = Field(max_length=256)
+    auth: str = Field(max_length=64)
+
+class PushSubscriptionData(BaseModel):
+    endpoint: str = Field(max_length=1024)
+    expirationTime: Optional[int] = None
+    keys: PushSubscriptionKeys
+
+    @field_validator("endpoint")
+    @classmethod
+    def endpoint_must_be_https(cls, v):
+        if not v.startswith("https://"):
+            raise ValueError("Push endpoint must be HTTPS")
+        return v
+
 class PushSubscriptionCreate(BaseModel):
-    subscription: dict
+    subscription: PushSubscriptionData
 
 class PushSubscriptionDelete(BaseModel):
-    endpoint: str
+    endpoint: str = Field(max_length=1024)

@@ -38,40 +38,45 @@ def subscribe_push(
 ):
     """Save a push subscription for the current user."""
     subscription = body.subscription
-    endpoint = subscription.get("endpoint", "")
-    if not endpoint:
-        raise HTTPException(status_code=400, detail="Invalid subscription: missing endpoint")
+    endpoint = subscription.endpoint
+    subscription_dict = subscription.model_dump()
 
     endpoint_hash = hashlib.sha256(endpoint.encode()).hexdigest()
 
-    # Upsert: delete existing subscription with same endpoint, then create new
+    # Upsert: update existing subscription with same endpoint
     existing = db.query(models.PushSubscription).filter(
         models.PushSubscription.user_id == user_id,
         models.PushSubscription.endpoint_hash == endpoint_hash,
     ).first()
 
     if existing:
-        existing.subscription_json = json.dumps(subscription)
+        existing.subscription_json = json.dumps(subscription_dict)
         db.commit()
         return {"message": "Subscription updated"}
+
+    # Per-user subscription cap (max 10 devices)
+    count = db.query(models.PushSubscription).filter(
+        models.PushSubscription.user_id == user_id
+    ).count()
+    if count >= 10:
+        raise HTTPException(status_code=400, detail="Maximum subscriptions reached (10)")
 
     new_sub = models.PushSubscription(
         user_id=user_id,
         endpoint_hash=endpoint_hash,
-        subscription_json=json.dumps(subscription),
+        subscription_json=json.dumps(subscription_dict),
     )
     db.add(new_sub)
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
-        # Race condition: another request created the same subscription
         existing = db.query(models.PushSubscription).filter(
             models.PushSubscription.user_id == user_id,
             models.PushSubscription.endpoint_hash == endpoint_hash,
         ).first()
         if existing:
-            existing.subscription_json = json.dumps(subscription)
+            existing.subscription_json = json.dumps(subscription_dict)
             db.commit()
         return {"message": "Subscription updated"}
 
