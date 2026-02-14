@@ -161,3 +161,21 @@ class BlacklistedToken(Base):
 
     def __repr__(self):
         return f"<BlacklistedToken {self.jti}>"
+
+# PushSubscription model - stores web push notification subscriptions
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'endpoint_hash', name='uq_push_sub_user_endpoint'),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    endpoint_hash = Column(String, nullable=False)  # SHA-256 of endpoint URL
+    subscription_json = Column(String, nullable=False)  # Full subscription object as JSON string
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_used_at = Column(DateTime(timezone=True), nullable=True)
+
+    def __repr__(self):
+        return f"<PushSubscription user:{self.user_id}>"

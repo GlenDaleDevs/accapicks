@@ -14,7 +14,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from .database import engine, Base, SessionLocal
 from . import models
-from .routers import auth, groups, accas, bets, odds, users, affiliate
+from .routers import auth, groups, accas, bets, odds, users, affiliate, notifications
 from .limiter import limiter
 from .logging_config import setup_logging
 
@@ -82,6 +82,7 @@ async def add_security_headers(request: Request, call_next):
         "img-src 'self' data:; "
         "font-src 'self' https://fonts.gstatic.com; "
         "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; "
+        "worker-src 'self'; "
         "frame-ancestors 'none'"
     )
     return response
@@ -120,6 +121,7 @@ app.include_router(bets.router, prefix="/api", tags=["bets"])
 app.include_router(odds.router, prefix="/api", tags=["odds"])
 app.include_router(users.router, prefix="/api", tags=["users"])
 app.include_router(affiliate.router, prefix="/api", tags=["affiliate"])
+app.include_router(notifications.router, prefix="/api", tags=["notifications"])
 
 # Background task: auto-lock accas when locks_at time has passed
 async def auto_lock_accas():
@@ -234,9 +236,19 @@ async def cleanup_blacklisted_tokens():
             deleted = db.query(models.BlacklistedToken).filter(
                 models.BlacklistedToken.expires_at < now
             ).delete(synchronize_session=False)
-            db.commit()
             if deleted > 0:
                 logger.info(f"Cleaned up {deleted} expired blacklisted token(s)")
+
+            # Also cleanup stale push subscriptions (90+ days old, never used)
+            stale_cutoff = now - timedelta(days=90)
+            stale_subs = db.query(models.PushSubscription).filter(
+                models.PushSubscription.last_used_at.is_(None),
+                models.PushSubscription.created_at < stale_cutoff,
+            ).delete(synchronize_session=False)
+            if stale_subs > 0:
+                logger.info(f"Cleaned up {stale_subs} stale push subscription(s)")
+
+            db.commit()
         except Exception as e:
             logger.error(f"Error cleaning up blacklisted tokens: {e}")
             db.rollback()
