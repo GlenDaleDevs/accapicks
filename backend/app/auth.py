@@ -1,9 +1,12 @@
-import bcrypt
 import os
 import uuid
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import PyJWTError
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+import bcrypt  # kept for legacy hash migration only
 from typing import Optional
 
 # Load environment variables
@@ -16,25 +19,35 @@ if not SECRET_KEY:
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Hash a password using bcrypt directly
+# Argon2id password hasher (OWASP recommended)
+ph = PasswordHasher(time_cost=2, memory_cost=65536, parallelism=2)
+
+
 def hash_password(password: str) -> str:
-    """Takes a plain text password and returns the bcrypt hash"""
-    # bcrypt requires bytes, so we encode the string
-    password_bytes = password.encode('utf-8')
-    # Generate salt and hash the password
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password_bytes, salt)
-    # Return as string for storage
-    return hashed.decode('utf-8')
+    """Hash a password using argon2id"""
+    return ph.hash(password)
 
-# Verify a password against a hash
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Checks if the plain password matches the hashed password"""
-    password_bytes = plain_password.encode('utf-8')
-    hashed_bytes = hashed_password.encode('utf-8')
-    return bcrypt.checkpw(password_bytes, hashed_bytes)
+    """Verify a password against a hash. Supports both argon2 and legacy bcrypt."""
+    if hashed_password.startswith(("$2b$", "$2a$")):
+        # Legacy bcrypt hash — verify with bcrypt
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_password.encode('utf-8')
+        )
+    # Argon2 hash
+    try:
+        return ph.verify(hashed_password, plain_password)
+    except VerifyMismatchError:
+        return False
 
-# Create a JWT access token
+
+def needs_rehash(hashed_password: str) -> bool:
+    """Check if a password hash needs to be upgraded from bcrypt to argon2."""
+    return hashed_password.startswith(("$2b$", "$2a$"))
+
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Creates a JWT token that expires after a certain time"""
     to_encode = data.copy()
@@ -48,13 +61,13 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-# Verify a JWT token and extract the data
+
 def verify_token(token: str):
     """Decodes and verifies a JWT token"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except JWTError:
+    except PyJWTError:
         return None
 # Get current user from token (for FastAPI dependency injection)
 def get_current_user_id(token: str) -> int:

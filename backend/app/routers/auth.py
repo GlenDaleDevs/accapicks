@@ -14,6 +14,9 @@ from ..email import send_verification_email, send_password_reset_email
 
 logger = logging.getLogger(__name__)
 
+# Pre-computed argon2 hash for timing-attack protection on failed user lookups
+DUMMY_HASH = auth.hash_password("dummy")
+
 
 def generate_verification_code() -> str:
     """Generate a 6-digit verification code."""
@@ -175,8 +178,8 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
 
     # Check if user exists
     if not user:
-        # Constant-time: always run bcrypt to prevent timing-based user enumeration
-        auth.verify_password("dummy", "$2b$12$LJ3m4ys3Lg2HvSSvfOEqWOsonRUKDSCMIYPSYzPF1vFfGo/MlJl5e")
+        # Constant-time: always run argon2 verify to prevent timing-based user enumeration
+        auth.verify_password("dummy", DUMMY_HASH)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -207,6 +210,10 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
         )
+
+    # Transparent rehash: upgrade legacy bcrypt hashes to argon2
+    if auth.needs_rehash(user.hashed_password):
+        user.hashed_password = auth.hash_password(credentials.password)
 
     # Block unverified users
     if not user.email_verified:
