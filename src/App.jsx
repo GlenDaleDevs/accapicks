@@ -374,7 +374,7 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <div className="page-logout-footer">
-        <button className="btn btn-ghost" onClick={handleLogoutWithNav}>Logout</button>
+        <button className="btn btn-danger" onClick={handleLogoutWithNav}>Logout</button>
       </div>
     </div>
   );
