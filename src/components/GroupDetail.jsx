@@ -536,14 +536,14 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         );
       })()}
 
-      {/* Leave Group */}
+      {/* Leave Group — subtle link to avoid accidental taps near logout */}
       <div className="group-leave-section">
         <button
-          className="btn btn-danger"
+          className="group-leave-link"
           onClick={handleLeaveGroup}
           disabled={leaving}
         >
-          Leave Group
+          {leaving ? "Leaving..." : "Leave this group"}
         </button>
       </div>
     </>
