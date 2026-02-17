@@ -156,6 +156,33 @@ def join_group(
         db.rollback()
         raise HTTPException(status_code=400, detail="Already a member of this group")
 
+    # Recalculate locks_at for open accas where rejoining user has orphaned bets
+    open_accas = db.query(models.Acca).filter(
+        models.Acca.group_id == group.id,
+        models.Acca.status == "open"
+    ).all()
+    for open_acca in open_accas:
+        has_orphaned = db.query(models.Bet).filter(
+            models.Bet.acca_id == open_acca.id,
+            models.Bet.user_id == user_id,
+        ).first()
+        if has_orphaned:
+            # Recalculate including all current member bets
+            all_bets = db.query(models.Bet).filter(
+                models.Bet.acca_id == open_acca.id,
+                models.Bet.commence_time.isnot(None),
+            ).all()
+            # Now all bets from this user are "un-orphaned" since they're a member again
+            member_ids = [m.user_id for m in db.query(models.GroupMember.user_id).filter(
+                models.GroupMember.group_id == group.id
+            ).all()]
+            member_bets = [b for b in all_bets if b.user_id in member_ids]
+            if member_bets:
+                open_acca.locks_at = min(b.commence_time for b in member_bets)
+            else:
+                open_acca.locks_at = None
+    db.commit()
+
     return {"message": "Successfully joined group", "group": group.name}
 
 
@@ -615,30 +642,23 @@ def remove_member(
         )
 
     try:
-        # Only delete bets from OPEN accas (preserve historical data in locked/settled)
+        # Recalculate locks_at for open accas, excluding removed user's bets
         open_accas = db.query(models.Acca).filter(
             models.Acca.group_id == group_id,
             models.Acca.status == "open"
         ).all()
-        if open_accas:
-            open_acca_ids = [a.id for a in open_accas]
-            db.query(models.Bet).filter(
-                models.Bet.acca_id.in_(open_acca_ids),
-                models.Bet.user_id == target_user_id
-            ).delete(synchronize_session=False)
+        for open_acca in open_accas:
+            remaining_bets = db.query(models.Bet).filter(
+                models.Bet.acca_id == open_acca.id,
+                models.Bet.commence_time.isnot(None),
+                models.Bet.user_id != target_user_id,
+            ).all()
+            if remaining_bets:
+                open_acca.locks_at = min(b.commence_time for b in remaining_bets)
+            else:
+                open_acca.locks_at = None
 
-            # Recalculate locks_at for affected open accas
-            for open_acca in open_accas:
-                remaining_bets = db.query(models.Bet).filter(
-                    models.Bet.acca_id == open_acca.id,
-                    models.Bet.commence_time.isnot(None),
-                ).all()
-                if remaining_bets:
-                    open_acca.locks_at = min(b.commence_time for b in remaining_bets)
-                else:
-                    open_acca.locks_at = None
-
-        # Delete the membership
+        # Delete the membership (bets are preserved as orphans)
         db.delete(target_membership)
         db.commit()
     except HTTPException:
@@ -722,28 +742,21 @@ def leave_group(
                     models.Acca.created_by == user_id
                 ).update({"created_by": new_admin.user_id}, synchronize_session=False)
 
-            # Only delete bets from OPEN accas (preserve historical data in locked/settled)
+            # Recalculate locks_at for open accas, excluding leaving user's bets
             open_accas = db.query(models.Acca).filter(
                 models.Acca.group_id == group_id,
                 models.Acca.status == "open"
             ).all()
-            if open_accas:
-                open_acca_ids = [a.id for a in open_accas]
-                db.query(models.Bet).filter(
-                    models.Bet.acca_id.in_(open_acca_ids),
-                    models.Bet.user_id == user_id
-                ).delete(synchronize_session=False)
-
-                # Recalculate locks_at for affected open accas
-                for open_acca in open_accas:
-                    remaining_bets = db.query(models.Bet).filter(
-                        models.Bet.acca_id == open_acca.id,
-                        models.Bet.commence_time.isnot(None),
-                    ).all()
-                    if remaining_bets:
-                        open_acca.locks_at = min(b.commence_time for b in remaining_bets)
-                    else:
-                        open_acca.locks_at = None
+            for open_acca in open_accas:
+                remaining_bets = db.query(models.Bet).filter(
+                    models.Bet.acca_id == open_acca.id,
+                    models.Bet.commence_time.isnot(None),
+                    models.Bet.user_id != user_id,
+                ).all()
+                if remaining_bets:
+                    open_acca.locks_at = min(b.commence_time for b in remaining_bets)
+                else:
+                    open_acca.locks_at = None
 
             # Delete the membership
             db.delete(membership)

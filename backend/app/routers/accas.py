@@ -217,8 +217,14 @@ async def compare_bookmakers(
             detail="You are not a member of this group"
         )
 
-    # Get all bets
-    bets = db.query(models.Bet).filter(models.Bet.acca_id == acca_id).all()
+    # Get bets from current members only (exclude orphaned bets from ex-members)
+    member_ids = [m.user_id for m in db.query(models.GroupMember.user_id).filter(
+        models.GroupMember.group_id == acca.group_id
+    ).all()]
+    bets = db.query(models.Bet).filter(
+        models.Bet.acca_id == acca_id,
+        models.Bet.user_id.in_(member_ids)
+    ).all()
 
     if not bets:
         raise HTTPException(status_code=400, detail="No bets in this acca yet")

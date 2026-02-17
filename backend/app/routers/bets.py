@@ -10,12 +10,15 @@ from ..limiter import limiter
 router = APIRouter()
 
 
-def _recalculate_locks_at(db: Session, acca: models.Acca):
+def _recalculate_locks_at(db: Session, acca: models.Acca, member_ids: list[int] | None = None):
     """Recalculate locks_at based on earliest commence_time of actual picks."""
-    bets = db.query(models.Bet).filter(
+    query = db.query(models.Bet).filter(
         models.Bet.acca_id == acca.id,
         models.Bet.commence_time.isnot(None),
-    ).all()
+    )
+    if member_ids is not None:
+        query = query.filter(models.Bet.user_id.in_(member_ids))
+    bets = query.all()
 
     if bets:
         earliest = min(b.commence_time for b in bets)
@@ -66,6 +69,11 @@ def create_bet(
             detail="You are not a member of this group"
         )
 
+    # Get current member IDs for conflict checks
+    member_ids = [m.user_id for m in db.query(models.GroupMember.user_id).filter(
+        models.GroupMember.group_id == acca.group_id
+    ).all()]
+
     # Enforce league restrictions if acca has configured leagues
     if bet.sport_key and acca.leagues:
         if bet.sport_key not in acca.leagues:
@@ -86,22 +94,30 @@ def create_bet(
             detail="You've already added a bet to this acca"
         )
 
-    # Fixture-level exclusion: block if any outcome from this fixture is already picked
+    # Fixture-level exclusion: block if any CURRENT MEMBER already picked this fixture
     if bet.event_id:
         fixture_conflict = db.query(models.Bet).filter(
             models.Bet.acca_id == bet.acca_id,
-            models.Bet.event_id == bet.event_id
+            models.Bet.event_id == bet.event_id,
+            models.Bet.user_id.in_(member_ids)
         ).first()
         if fixture_conflict:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Another member has already picked from this fixture"
             )
+        # Clean up orphaned bets with same event_id (from ex-members)
+        db.query(models.Bet).filter(
+            models.Bet.acca_id == bet.acca_id,
+            models.Bet.event_id == bet.event_id,
+            ~models.Bet.user_id.in_(member_ids)
+        ).delete(synchronize_session=False)
 
-    # Check if the same pick already exists in this acca (no duplicate selections)
+    # Check if same pick already exists from a CURRENT MEMBER
     duplicate_pick = db.query(models.Bet).filter(
         models.Bet.acca_id == bet.acca_id,
-        models.Bet.description == bet.description
+        models.Bet.description == bet.description,
+        models.Bet.user_id.in_(member_ids)
     ).first()
 
     if duplicate_pick:
@@ -109,6 +125,12 @@ def create_bet(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This pick has already been taken by another member"
         )
+    # Clean up orphaned bets with same description (from ex-members)
+    db.query(models.Bet).filter(
+        models.Bet.acca_id == bet.acca_id,
+        models.Bet.description == bet.description,
+        ~models.Bet.user_id.in_(member_ids)
+    ).delete(synchronize_session=False)
 
     # Convert odds to string if it's not already
     odds_str = str(bet.odds)
@@ -153,7 +175,7 @@ def create_bet(
 
     db.add(new_bet)
     db.flush()  # Get new_bet into session so recalculate sees it
-    _recalculate_locks_at(db, acca)
+    _recalculate_locks_at(db, acca, member_ids)
     try:
         db.commit()
         db.refresh(new_bet)
