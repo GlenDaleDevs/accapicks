@@ -1447,15 +1447,15 @@
 }
 
 .bet-slip-header-title {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: #1a1a2e;
 }
 
 .bet-slip-header-meta {
-  font-size: 12px;
+  font-size: 14px;
   color: #666666;
   margin-top: 4px;
   display: flex;
@@ -1465,7 +1465,7 @@
 }
 
 .bet-slip-status {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 2px;
@@ -1508,15 +1508,16 @@
 }
 
 .bet-slip-pick-number {
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 800;
+  font-size: 18px;
   color: #1a1a2e;
   flex-shrink: 0;
-  min-width: 20px;
+  min-width: 22px;
 }
 
 .bet-slip-pick-description {
-  font-size: 15px;
+  font-size: 18px;
+  font-weight: 600;
   color: #1a1a2e;
   word-break: break-word;
 }
@@ -1529,8 +1530,8 @@
 }
 
 .bet-slip-pick-odds {
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 800;
+  font-size: 19px;
   color: #1a1a2e;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
@@ -1539,10 +1540,10 @@
 .bet-slip-pick-meta {
   display: flex;
   gap: 10px;
-  font-size: 12px;
+  font-size: 14px;
   color: #666666;
-  margin-top: 2px;
-  padding-left: 20px;
+  margin-top: 3px;
+  padding-left: 22px;
 }
 
 /* Result styling on picks */
@@ -1567,7 +1568,7 @@
 }
 
 .bet-slip-pick-empty-text {
-  font-size: 15px;
+  font-size: 18px;
   color: #999999;
   font-style: italic;
 }
@@ -1586,14 +1587,14 @@
 }
 
 .bet-slip-pick-empty-cta {
-  font-size: 15px;
+  font-size: 18px;
   color: #00855a;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .bet-slip-result-icon {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 18px;
   margin-left: 4px;
   flex-shrink: 0;
 }
@@ -1634,8 +1635,8 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #1a1a2e;
@@ -1650,8 +1651,8 @@
 }
 
 .bet-slip-total-odds {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   color: #00855a;
   font-variant-numeric: tabular-nums;
 }
