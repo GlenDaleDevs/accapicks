@@ -167,7 +167,7 @@ export default function AuthView({
   return (
     <div className="landing-container">
       <div className="landing-hero">
-        <h1 className="landing-brand">AccaPicks</h1>
+        <img src="/logo.png" alt="AccaPicks" className="landing-logo" />
         <h2 className="landing-headline">One group. One acca. Bragging rights.</h2>
         <p className="landing-subtitle">The acca tracker for your group chat.</p>
       </div>
