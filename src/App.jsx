@@ -40,19 +40,9 @@ function App() {
 
   useEffect(() => {
     if (needRefresh) {
-      showToast(
-        <span>
-          Update available{' '}
-          <button
-            onClick={() => updateServiceWorker(true).then(() => window.location.reload())}
-            style={{ color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, font: 'inherit' }}
-          >
-            Refresh
-          </button>
-        </span>,
-        'info',
-        10000
-      );
+      // Activate the new service worker and force reload
+      updateServiceWorker(true);
+      setTimeout(() => window.location.reload(), 500);
     }
   }, [needRefresh]);
 
