@@ -1990,12 +1990,19 @@
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  background: url("/groups-bg.webp") center top / cover no-repeat;
 }
 
 .groups-page::before {
   content: "";
-  position: absolute;
+  position: fixed;
+  inset: 0;
+  background: url("/groups-bg.webp") center top / cover no-repeat;
+  z-index: -2;
+}
+
+.groups-page::after {
+  content: "";
+  position: fixed;
   inset: 0;
   background: linear-gradient(
     to bottom,
@@ -2004,19 +2011,11 @@
     rgba(11, 50, 70, 0.6) 60%,
     rgba(15, 25, 35, 0.92) 100%
   );
-  z-index: 0;
-}
-
-.groups-page > * {
-  position: relative;
-  z-index: 1;
+  z-index: -1;
 }
 
 .dashboard-hero {
-  background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(59, 130, 246, 0.05));
-  border: 1px solid rgba(0, 212, 170, 0.15);
-  border-radius: var(--radius-lg);
-  padding: 24px 20px;
+  padding: 0 16px;
   margin-bottom: 24px;
 }
 
