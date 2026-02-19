@@ -7,11 +7,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 20px 24px;
-  background: url("/landing-bg.webp") center top / cover no-repeat;
+  padding: 40px 24px;
+  background: url("/landing-bg.webp") calc(50% + 10px) -20px / cover no-repeat;
   position: relative;
 }
 
@@ -81,10 +81,11 @@
 /* ---- Feature Strip ---- */
 .landing-features {
   display: flex;
-  gap: 24px;
+  flex-direction: column;
+  gap: 12px;
   justify-content: center;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
   animation: featuresFadeIn 800ms ease-out 200ms both;
 }
 
@@ -134,6 +135,7 @@
   border: none;
   border-radius: 0;
   padding: 0 28px;
+  margin-top: 20px;
   box-shadow: none;
   width: 100%;
   max-width: 400px;
@@ -180,16 +182,22 @@
 }
 
 .form-group {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="password"] {
-  height: 48px;
+  height: 36px;
   border-radius: var(--radius-lg);
   border: 1.5px solid var(--border-color);
   transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.auth-form-container .btn-primary {
+  height: 36px;
+  font-size: 14px;
 }
 
 .form-group input[type="text"]:focus,
@@ -238,8 +246,8 @@
 .auth-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .auth-links {
@@ -298,7 +306,7 @@
   }
 
   .landing-features {
-    gap: 16px;
+    gap: 10px;
   }
 
   .landing-feature-text {
@@ -306,18 +314,13 @@
   }
 
   .auth-form-container {
-    padding: 28px 20px;
+    padding: 0 20px;
   }
 }
 
 @media (max-width: 374px) {
   .landing-brand {
     font-size: 2rem;
-  }
-
-  .landing-features {
-    flex-direction: column;
-    gap: 12px;
   }
 
   .verification-code-input {
