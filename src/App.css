@@ -6,7 +6,7 @@
 .app-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px 24px;
+  padding: 12px 0;
 }
 
 /* ---- Buttons ---- */
@@ -200,7 +200,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  padding-bottom: 16px;
+  padding: 0 16px 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -224,6 +224,7 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0 0 16px 0;
+  padding: 0 16px;
 }
 
 .section-subtitle {
@@ -1180,7 +1181,7 @@
   color: var(--text-muted);
   font-size: 14px;
   text-align: center;
-  padding: 24px 0;
+  padding: 24px 16px;
 }
 
 /* ---- Loading Message ---- */
@@ -1335,6 +1336,7 @@
   align-items: center;
   gap: 12px;
   margin: 24px 0;
+  padding: 0 16px;
 }
 
 .groups-actions .btn {
@@ -1390,6 +1392,8 @@
 .text-success { color: var(--color-success); }
 .text-danger { color: var(--color-danger); }
 .text-warning { color: var(--color-warning); }
+
+.page-content { padding: 0 16px; }
 
 .mb-0 { margin-bottom: 0; }
 .mb-8 { margin-bottom: 8px; }
@@ -1784,7 +1788,7 @@
 /* ---- Responsible Gambling Footer ---- */
 .responsible-gambling-footer {
   text-align: center;
-  padding: 20px 0;
+  padding: 20px 16px;
   margin-top: 40px;
   color: var(--text-muted);
   font-size: 12px;
@@ -1806,7 +1810,7 @@
 .settings-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 16px;
 }
 
 .settings-back-link {
@@ -2072,6 +2076,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding: 0 16px;
 }
 
 /* ---- Group Stats Bar ---- */
@@ -2116,7 +2121,7 @@
 /* ---- Acca Status Border ---- */
 .page-acca-detail {
   border-top: 4px solid var(--border-color);
-  padding-top: 8px;
+  padding: 8px 16px 0;
 }
 
 .acca-status-open { border-top-color: var(--accent-primary); }
@@ -2376,7 +2381,7 @@
 /* ---- Group Leave Section ---- */
 .group-leave-section {
   margin-top: 40px;
-  padding-top: 20px;
+  padding: 20px 16px 0;
   text-align: center;
 }
 

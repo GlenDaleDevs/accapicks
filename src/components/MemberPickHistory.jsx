@@ -74,7 +74,7 @@ export default function MemberPickHistory({ user }) {
   };
 
   return (
-    <div>
+    <div className="page-content">
       <button className="btn btn-ghost mb-20" onClick={() => navigate(`/groups/${groupId}`)}>
         &larr; Back to Group
       </button>
