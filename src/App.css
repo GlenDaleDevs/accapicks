@@ -937,6 +937,24 @@
   background-color: rgba(78, 235, 211, 0.05);
 }
 
+.bookmaker-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bookmaker-est-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgb(245, 158, 11);
+  background: rgba(245, 158, 11, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
 /* ---- Fixture Grid ---- */
 .fixture-date-header {
   color: var(--text-primary);
