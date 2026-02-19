@@ -235,7 +235,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
 
   if (loadingGroup) {
     return (
-      <div className="page-content">
+      <div className="group-detail-page page-content">
         <button className="btn btn-ghost mb-20" disabled>
           &larr; Back to Groups
         </button>
@@ -257,7 +257,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
 
   if (error && !group) {
     return (
-      <div className="page-content">
+      <div className="group-detail-page page-content">
         <button className="btn btn-ghost mb-20" onClick={() => navigate("/")}>
           &larr; Back to Groups
         </button>
@@ -271,7 +271,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   }
 
   return (
-    <>
+    <div className="group-detail-page">
       <div className="group-detail-header">
         <button
           className="btn btn-ghost"
@@ -546,6 +546,6 @@ export default function GroupDetail({ user, onRefreshGroups }) {
           {leaving ? "Leaving..." : "Leave this group"}
         </button>
       </div>
-    </>
+    </div>
   );
 }
