@@ -390,18 +390,24 @@ export default function AuthView({
               <button type="submit" className="btn btn-primary" disabled={loading || (mode === "signup" && (usernameStatus === "taken" || usernameStatus === "invalid" || usernameStatus === "checking"))}>
                 {loading ? "Loading..." : mode === "signup" ? "Sign Up" : "Login"}
               </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => switchMode(mode === "signup" ? "login" : "signup")}
-              >
-                {mode === "signup" ? "Already have an account?" : "Need an account?"}
-              </button>
-              {mode === "login" && (
-                <button type="button" className="btn btn-ghost" onClick={() => switchMode("forgot")}>
-                  Forgot password?
-                </button>
-              )}
+              <div className="auth-links">
+                <a
+                  href="#"
+                  className="auth-link"
+                  onClick={(e) => { e.preventDefault(); switchMode(mode === "signup" ? "login" : "signup"); }}
+                >
+                  {mode === "signup" ? "Login" : "Sign up"}
+                </a>
+                {mode === "login" && (
+                  <a
+                    href="#"
+                    className="auth-link"
+                    onClick={(e) => { e.preventDefault(); switchMode("forgot"); }}
+                  >
+                    Forgot password?
+                  </a>
+                )}
+              </div>
             </div>
           </>
         )}
