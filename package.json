@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "audit": "npm audit --omit=dev",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -14,6 +15,9 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-router-dom": "7.13.0"
+  },
+  "overrides": {
+    "minimatch": ">=10.2.1"
   },
   "devDependencies": {
     "@eslint/js": "9.39.2",
