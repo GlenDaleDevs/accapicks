@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "./Skeleton";
-import MiniLeaderboard from "./MiniLeaderboard";
+import Leaderboard from "./Leaderboard";
 
-export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError, loading, miniLeaderboards }) {
+export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError, loading, leaderboards, accaStatsMap }) {
   const navigate = useNavigate();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
@@ -102,25 +102,23 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
         {loading ? (
           <Skeleton width="100%" height="80px" count={2} />
         ) : groups.length > 0 ? (
-          <div className={`groups-grid${groups.length === 1 ? " groups-grid-single" : ""}`}>
+          <div className="home-groups-list">
             {groups.map((group) => (
-              <div
-                key={group.id}
-                onClick={() => navigate(`/groups/${group.id}`)}
-                className="card card-clickable group-card"
-              >
-                <div className="group-card-info">
-                  <h3 className="group-card-name">{group.name}</h3>
-                  {group.description && (
-                    <p className="group-card-desc">{group.description}</p>
-                  )}
-                  <small className="group-card-date">
-                    Created {new Date(group.created_at).toLocaleDateString()}
-                  </small>
-                </div>
-                <div className="group-card-lb">
-                  <MiniLeaderboard entries={miniLeaderboards?.[group.id]} />
-                </div>
+              <div key={group.id} className="home-group-section">
+                <button
+                  className="home-group-header"
+                  onClick={() => navigate(`/groups/${group.id}`)}
+                >
+                  <span className="home-group-name">{group.name}</span>
+                  <span className="home-group-chevron">›</span>
+                </button>
+                <Leaderboard
+                  leaderboard={leaderboards?.[group.id] || []}
+                  loading={false}
+                  groupId={group.id}
+                  accaStats={accaStatsMap?.[group.id]}
+                  title={null}
+                />
               </div>
             ))}
           </div>

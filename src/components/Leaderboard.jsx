@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import Skeleton from "./Skeleton";
 
-export default function Leaderboard({ leaderboard, loading, accas, groupId, accaStats }) {
+export default function Leaderboard({ leaderboard, loading, accas, groupId, accaStats, title = "Group Leaderboard" }) {
   const navigate = useNavigate();
 
   return (
     <div className="leaderboard-container">
-      <h3 className="section-title">Group Leaderboard</h3>
+      {title !== null && <h3 className="section-title">{title}</h3>}
       {accaStats && (accaStats.won_accas > 0 || accaStats.lost_accas > 0) && (
         <div className="group-stats-bar">
           <span className="group-stats-record">
