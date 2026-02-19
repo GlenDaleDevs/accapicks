@@ -11,7 +11,7 @@
   min-height: 100vh;
   min-height: 100dvh;
   padding: 20px 24px;
-  background: url("/landing-bg.webp") center center / cover no-repeat fixed;
+  background: url("/landing-bg.webp") center top / cover no-repeat;
   position: relative;
 }
 
