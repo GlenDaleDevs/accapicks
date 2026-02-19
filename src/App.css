@@ -2014,6 +2014,35 @@
   z-index: -1;
 }
 
+/* ---- Group Detail Page Background ---- */
+.group-detail-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.group-detail-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url("/group-detail-bg.webp") center top / cover no-repeat;
+  z-index: -2;
+}
+
+.group-detail-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(11, 50, 70, 0.7) 0%,
+    rgba(11, 50, 70, 0.5) 30%,
+    rgba(11, 50, 70, 0.6) 60%,
+    rgba(15, 25, 35, 0.92) 100%
+  );
+  z-index: -1;
+}
+
 .dashboard-hero {
   padding: 0 16px;
   margin-bottom: 24px;
