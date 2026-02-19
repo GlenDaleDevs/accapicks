@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { pickSlotVariants } from "../utils/animations";
 import { BOOKMAKER_DISPLAY_NAMES, LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatOdds, formatBetSlipText, formatDisplayDate, formatKickoffTime } from "../utils/formatters";
 import * as api from "../api/client";
@@ -116,6 +118,7 @@ export default function BetSlip({
 
         {/* Member Slots */}
         <div className="bet-slip-picks">
+          <AnimatePresence mode="popLayout">
           {sorted.map((member, index) => {
             const bet = betByUser[member.user_id];
             const isSelf = user && member.user_id === user.id;
@@ -123,7 +126,15 @@ export default function BetSlip({
             // Filled slot — member has a pick
             if (bet) {
               return (
-                <div key={member.user_id} className={`bet-slip-pick-item ${resultBorderClass(bet.result)}`}>
+                <motion.div
+                  key={`filled-${member.user_id}`}
+                  className={`bet-slip-pick-item ${resultBorderClass(bet.result)}`}
+                  variants={pickSlotVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  layout
+                >
                   <div className="bet-slip-pick-row">
                     <span className="bet-slip-pick-number">{index + 1}.</span>
                     <span className="bet-slip-pick-description">{bet.description}</span>
@@ -145,28 +156,41 @@ export default function BetSlip({
                       REMOVE
                     </button>
                   )}
-                </div>
+                </motion.div>
               );
             }
 
             // Empty slot — missed (locked/settled)
             if (!isOpen) {
               return (
-                <div key={member.user_id} className="bet-slip-pick-item bet-slip-pick-empty">
+                <motion.div
+                  key={`empty-${member.user_id}`}
+                  className="bet-slip-pick-item bet-slip-pick-empty"
+                  variants={pickSlotVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  layout
+                >
                   <div className="bet-slip-pick-row">
                     <span className="bet-slip-pick-number">{index + 1}.</span>
                     <span className="bet-slip-pick-empty-text">{member.username} — missed</span>
                   </div>
-                </div>
+                </motion.div>
               );
             }
 
             // Empty slot — self, can add pick
             if (isSelf) {
               return (
-                <div
-                  key={member.user_id}
+                <motion.div
+                  key={`empty-${member.user_id}`}
                   className="bet-slip-pick-item bet-slip-pick-empty bet-slip-pick-self"
+                  variants={pickSlotVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  layout
                   onClick={onAddPick}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onAddPick(); } }}
                   role="button"
@@ -176,20 +200,29 @@ export default function BetSlip({
                     <span className="bet-slip-pick-number">{index + 1}.</span>
                     <span className="bet-slip-pick-empty-cta">+ Add Your Pick</span>
                   </div>
-                </div>
+                </motion.div>
               );
             }
 
             // Empty slot — other member, waiting
             return (
-              <div key={member.user_id} className="bet-slip-pick-item bet-slip-pick-empty">
+              <motion.div
+                key={`empty-${member.user_id}`}
+                className="bet-slip-pick-item bet-slip-pick-empty"
+                variants={pickSlotVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                layout
+              >
                 <div className="bet-slip-pick-row">
                   <span className="bet-slip-pick-number">{index + 1}.</span>
                   <span className="bet-slip-pick-empty-text">{member.username} — waiting...</span>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
+          </AnimatePresence>
         </div>
 
         {/* Summary — only show when there are picks */}

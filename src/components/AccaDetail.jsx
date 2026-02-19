@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatCountdown, formatDisplayDate, formatOdds } from "../utils/formatters";
@@ -76,6 +76,21 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [acca]);
+
+  // Confetti burst for won accas
+  const confettiFired = useRef(false);
+  useEffect(() => {
+    if (acca?.status !== "won" || confettiFired.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    confettiFired.current = true;
+    import("canvas-confetti").then(({ default: confetti }) => {
+      const colors = ["#4EEBD3", "#FFD700", "#51D218", "#ffffff"];
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors });
+      setTimeout(() => {
+        confetti({ particleCount: 50, spread: 60, origin: { x: 0.3, y: 0.6 }, colors });
+      }, 300);
+    });
+  }, [acca?.status]);
 
   // Poll for status updates when acca is open (catches auto-lock)
   useEffect(() => {

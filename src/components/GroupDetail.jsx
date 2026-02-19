@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { staggerContainer, staggerItem, CARD_HOVER, CARD_TAP } from "../utils/animations";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatCountdown } from "../utils/formatters";
 import * as api from "../api/client";
@@ -272,7 +274,8 @@ export default function GroupDetail({ user, onRefreshGroups }) {
 
   return (
     <div className="group-detail-page">
-      <div className="group-detail-header">
+      <motion.div variants={staggerContainer} initial="initial" animate="animate">
+      <motion.div variants={staggerItem} className="group-detail-header">
         <button
           className="btn btn-ghost"
           onClick={() => navigate("/")}
@@ -307,11 +310,12 @@ export default function GroupDetail({ user, onRefreshGroups }) {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
 
-      <h2 className="section-title">{group.name}</h2>
+      <motion.h2 variants={staggerItem} className="section-title">{group.name}</motion.h2>
 
       {/* Leaderboard Display */}
+      <motion.div variants={staggerItem}>
       <Leaderboard
         leaderboard={leaderboard}
         loading={loadingLeaderboard}
@@ -319,6 +323,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         groupId={groupId}
         accaStats={accaStats}
       />
+      </motion.div>
 
       {/* Push Notification Prompt */}
       {showPushPrompt && (
@@ -339,14 +344,14 @@ export default function GroupDetail({ user, onRefreshGroups }) {
 
       {/* Create Acca Wizard */}
       {!showAccaWizard ? (
-        <div className="groups-actions">
+        <motion.div variants={staggerItem} className="groups-actions">
           <button
             className="btn btn-primary"
             onClick={() => setShowAccaWizard(true)}
           >
             + Create New Acca
           </button>
-        </div>
+        </motion.div>
       ) : (
         <AccaWizard
           onCreated={handleWizardCreate}
@@ -375,10 +380,12 @@ export default function GroupDetail({ user, onRefreshGroups }) {
             ) : (
               <div>
                 {openAccas.map((acca) => (
-                  <div
+                  <motion.div
                     key={acca.id}
                     onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
                     className="card card-clickable"
+                    whileHover={CARD_HOVER}
+                    whileTap={CARD_TAP}
                   >
                     <div className="card-header">
                       <h3 className="group-card-name">{acca.name}</h3>
@@ -413,7 +420,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                         Locks in {accaCountdowns[acca.id] || "..."}
                       </small>
                     )}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -433,10 +440,12 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                 {showActive && (
                   <div>
                     {activeAccas.map((acca) => (
-                      <div
+                      <motion.div
                         key={acca.id}
                         onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
                         className="card card-clickable"
+                        whileHover={CARD_HOVER}
+                        whileTap={CARD_TAP}
                       >
                         <div className="card-header">
                           <h3 className="group-card-name">{acca.name}</h3>
@@ -469,7 +478,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                         <small className="acca-card-locked-status">
                           Matches in progress
                         </small>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 )}
@@ -491,10 +500,12 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                 {showSettled && (
                   <div>
                     {settledAccas.map((acca) => (
-                      <div
+                      <motion.div
                         key={acca.id}
                         onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
                         className="card card-clickable"
+                        whileHover={CARD_HOVER}
+                        whileTap={CARD_TAP}
                       >
                         <div className="card-header">
                           <h3 className="group-card-name">{acca.name}</h3>
@@ -526,7 +537,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                         <small className="acca-card-status">
                           Created {new Date(acca.created_at).toLocaleDateString()}
                         </small>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 )}
@@ -537,7 +548,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       })()}
 
       {/* Leave Group — subtle link to avoid accidental taps near logout */}
-      <div className="group-leave-section">
+      <motion.div variants={staggerItem} className="group-leave-section">
         <button
           className="group-leave-link"
           onClick={handleLeaveGroup}
@@ -545,7 +556,8 @@ export default function GroupDetail({ user, onRefreshGroups }) {
         >
           {leaving ? "Leaving..." : "Leave this group"}
         </button>
-      </div>
+      </motion.div>
+      </motion.div>
     </div>
   );
 }
