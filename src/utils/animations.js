@@ -8,22 +8,23 @@ export const pageVariants = {
 };
 
 export const staggerContainer = {
+  initial: {},
   animate: {
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05,
+      staggerChildren: 0.15,
+      delayChildren: 0.3,
     },
   },
 };
 
 export const staggerItem = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
 export const leaderboardRowVariants = {
-  initial: { opacity: 0, x: -12 },
-  animate: { opacity: 1, x: 0, transition: { duration: 0.35, ease: "easeOut" } },
+  initial: { opacity: 0, x: -16 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 export const pickSlotVariants = {
