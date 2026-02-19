@@ -364,8 +364,6 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       )}
 
       {/* Open Accas Section */}
-      <h3 className="section-title">Open Accas</h3>
-
       {(() => {
         const openAccas = accas.filter((a) => a.status === "open");
         const activeAccas = accas.filter((a) => a.status === "locked");
@@ -378,47 +376,31 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                 No open accumulators. Create one to get started!
               </p>
             ) : (
-              <div>
+              <div className="open-acca-list">
+                <span className="open-acca-label">Open Accas</span>
                 {openAccas.map((acca) => (
                   <motion.div
                     key={acca.id}
                     onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
-                    className="card card-clickable"
-                    whileHover={CARD_HOVER}
-                    whileTap={CARD_TAP}
+                    className="open-acca-row"
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <div className="card-header">
-                      <h3 className="group-card-name">{acca.name}</h3>
-                      <span className="badge badge-open">OPEN</span>
-                    </div>
-                    <div className="acca-card-meta">
-                      {acca.leagues && (
-                        <small className="acca-card-leagues">
-                          {acca.leagues.map((k) => LEAGUE_NAME_MAP[k] || k).join(", ")}
-                        </small>
-                      )}
-                      {acca.match_dates && (
-                        <small className="acca-card-dates">
-                          {[...acca.match_dates]
-                            .sort()
-                            .map((d) => {
-                              const dt = new Date(d + "T00:00:00");
-                              return dt.toLocaleDateString("en-GB", {
-                                month: "short",
-                                day: "numeric",
-                              });
-                            })
-                            .join(", ")}
-                        </small>
-                      )}
-                    </div>
-                    <small className="acca-card-status">
-                      Created {new Date(acca.created_at).toLocaleDateString()}
-                    </small>
-                    {acca.locks_at && (
-                      <small className="acca-card-countdown">
-                        Locks in {accaCountdowns[acca.id] || "..."}
+                    <div className="open-acca-bar" />
+                    <div className="open-acca-content">
+                      <span className="open-acca-name">{acca.name}</span>
+                      <small className="open-acca-meta">
+                        {acca.leagues && acca.leagues.map((k) => LEAGUE_NAME_MAP[k] || k).join(", ")}
+                        {acca.leagues && acca.match_dates && " · "}
+                        {acca.match_dates && [...acca.match_dates].sort().map((d) => {
+                          const dt = new Date(d + "T00:00:00");
+                          return dt.toLocaleDateString("en-GB", { month: "short", day: "numeric" });
+                        }).join(", ")}
                       </small>
+                    </div>
+                    {acca.locks_at && accaCountdowns[acca.id] ? (
+                      <span className="open-acca-countdown">{accaCountdowns[acca.id]}</span>
+                    ) : (
+                      <span className="open-acca-pill">Open</span>
                     )}
                   </motion.div>
                 ))}
