@@ -24,7 +24,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #4EEBD3, #72F0DD);
+  background: linear-gradient(135deg, #51D218, #66E830);
   color: #0B3246;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -32,8 +32,8 @@
   border-radius: 10px;
 }
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #72F0DD, #90F5E6);
-  box-shadow: 0 8px 20px rgba(78, 235, 211, 0.4);
+  background: linear-gradient(135deg, #66E830, #B5FE01);
+  box-shadow: 0 8px 20px rgba(81, 210, 24, 0.4);
   transform: translateY(-2px);
 }
 .btn-primary:disabled {
@@ -388,8 +388,20 @@
 }
 
 .league-table-row-first {
-  background: linear-gradient(90deg, rgba(78, 235, 211, 0.1), transparent);
-  border-left: 3px solid var(--accent-primary);
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08), transparent);
+  border-left: 3px solid #FFD700;
+  padding-left: 13px;
+}
+
+.league-table-row-second {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.06), transparent);
+  border-left: 3px solid #C0C0C0;
+  padding-left: 13px;
+}
+
+.league-table-row-third {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.06), transparent);
+  border-left: 3px solid #CD7F32;
   padding-left: 13px;
 }
 
@@ -434,9 +446,21 @@
 }
 
 .league-pos-first {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-  box-shadow: 0 0 10px rgba(78, 235, 211, 0.3);
+  background: linear-gradient(135deg, #FFD700, #FFC107);
+  color: #1a1a00;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+
+.league-pos-second {
+  background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+  color: #1a1a1a;
+  box-shadow: 0 0 8px rgba(192, 192, 192, 0.3);
+}
+
+.league-pos-third {
+  background: linear-gradient(135deg, #CD7F32, #B87333);
+  color: #1a1a00;
+  box-shadow: 0 0 8px rgba(205, 127, 50, 0.3);
 }
 
 .league-winrate {
@@ -447,7 +471,7 @@
 }
 
 .league-winrate-first {
-  color: var(--accent-primary);
+  color: #FFD700;
 }
 
 /* ---- Acca List Cards ---- */
