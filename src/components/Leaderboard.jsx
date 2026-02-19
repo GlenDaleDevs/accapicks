@@ -39,30 +39,35 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
             <div className="league-col league-col-stat">L</div>
             <div className="league-col league-col-winrate">Win %</div>
           </div>
-          {leaderboard.map((entry, index) => (
-            <div
-              key={entry.user_id}
-              className={`league-table-row${entry.rank === 1 ? " league-table-row-first" : ""}`}
-              onClick={() => navigate(`/groups/${groupId}/members/${entry.user_id}`)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/groups/${groupId}/members/${entry.user_id}`); } }}
-            >
-              <div className="league-col league-col-pos">
-                <span className={`league-pos${entry.rank === 1 ? " league-pos-first" : ""}`}>
-                  {entry.rank ?? index + 1}
-                </span>
+          {leaderboard.map((entry, index) => {
+            const rank = entry.rank ?? index + 1;
+            const rowRankClass = rank <= 3 ? ` league-table-row-${["first","second","third"][rank - 1]}` : "";
+            const posRankClass = rank <= 3 ? ` league-pos-${["first","second","third"][rank - 1]}` : "";
+            return (
+              <div
+                key={entry.user_id}
+                className={`league-table-row${rowRankClass}`}
+                onClick={() => navigate(`/groups/${groupId}/members/${entry.user_id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/groups/${groupId}/members/${entry.user_id}`); } }}
+              >
+                <div className="league-col league-col-pos">
+                  <span className={`league-pos${posRankClass}`}>
+                    {rank}
+                  </span>
+                </div>
+                <div className="league-col league-col-name">{entry.username}</div>
+                <div className="league-col league-col-stat">{entry.won}</div>
+                <div className="league-col league-col-stat">{entry.lost}</div>
+                <div className="league-col league-col-winrate">
+                  <span className={`league-winrate${rank === 1 ? " league-winrate-first" : ""}`}>
+                    {entry.win_rate}%
+                  </span>
+                </div>
               </div>
-              <div className="league-col league-col-name">{entry.username}</div>
-              <div className="league-col league-col-stat">{entry.won}</div>
-              <div className="league-col league-col-stat">{entry.lost}</div>
-              <div className="league-col league-col-winrate">
-                <span className={`league-winrate${entry.rank === 1 ? " league-winrate-first" : ""}`}>
-                  {entry.win_rate}%
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
