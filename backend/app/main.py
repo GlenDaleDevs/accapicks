@@ -284,7 +284,12 @@ if DIST_DIR.is_dir():
         # If the path points to an actual file in dist, serve it
         file_path = DIST_DIR / path
         if file_path.is_file():
-            return FileResponse(file_path)
+            media_type = None
+            if path.endswith(".webp"):
+                media_type = "image/webp"
+            elif path.endswith(".webmanifest"):
+                media_type = "application/manifest+json"
+            return FileResponse(file_path, media_type=media_type)
         # Otherwise serve index.html for client-side routing
         return FileResponse(DIST_DIR / "index.html")
 
