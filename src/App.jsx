@@ -31,7 +31,8 @@ function App() {
     return ["decimal", "fractional"].includes(stored) ? stored : "decimal";
   });
   const [bookmakerLinks, setBookmakerLinks] = useState({});
-  const [miniLeaderboards, setMiniLeaderboards] = useState({});
+  const [leaderboards, setLeaderboards] = useState({});
+  const [accaStatsMap, setAccaStatsMap] = useState({});
 
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -79,7 +80,7 @@ function App() {
         setUser(null);
         setIsLoggedIn(false);
         setGroups([]);
-        setMiniLeaderboards({});
+        setLeaderboards({}); setAccaStatsMap({});
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -154,21 +155,29 @@ function App() {
 
   useEffect(() => {
     if (groups.length === 0) return;
-    const fetchMiniLeaderboards = async () => {
+    const fetchLeaderboardData = async () => {
       try {
         const results = await Promise.all(
-          groups.map(g => api.getGroupLeaderboard(g.id).then(lb => [g.id, lb]).catch(() => [g.id, []]))
+          groups.map(g =>
+            Promise.all([
+              api.getGroupLeaderboard(g.id).catch(() => []),
+              api.getGroupAccaStats(g.id).catch(() => null),
+            ]).then(([lb, stats]) => [g.id, lb, stats])
+          )
         );
-        const map = {};
-        for (const [groupId, leaderboard] of results) {
-          map[groupId] = leaderboard;
+        const lbMap = {};
+        const statsMap = {};
+        for (const [groupId, leaderboard, stats] of results) {
+          lbMap[groupId] = leaderboard;
+          statsMap[groupId] = stats;
         }
-        setMiniLeaderboards(map);
+        setLeaderboards(lbMap);
+        setAccaStatsMap(statsMap);
       } catch (err) {
-        console.error("Failed to fetch mini leaderboards:", err);
+        console.error("Failed to fetch leaderboard data:", err);
       }
     };
-    fetchMiniLeaderboards();
+    fetchLeaderboardData();
   }, [groups]);
 
   const loadGroups = async () => {
@@ -253,7 +262,7 @@ function App() {
     setUser(null);
     setIsLoggedIn(false);
     setGroups([]);
-    setMiniLeaderboards({});
+    setLeaderboards({}); setAccaStatsMap({});
     window.history.replaceState({}, "", "/");
   };
 
@@ -315,7 +324,7 @@ function App() {
                     oddsFormat={oddsFormat}
                     setOddsFormat={setOddsFormat}
                     bookmakerLinks={bookmakerLinks}
-                    miniLeaderboards={miniLeaderboards}
+                    leaderboards={leaderboards} accaStatsMap={accaStatsMap}
                   />
                 )}
                 <footer className="responsible-gambling-footer">
@@ -333,7 +342,7 @@ function App() {
   );
 }
 
-function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks, miniLeaderboards }) {
+function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks, leaderboards, accaStatsMap }) {
   const navigate = useNavigate();
 
   const handleLogoutWithNav = () => {
@@ -353,7 +362,7 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
               onCreateGroup={onCreateGroup}
               onJoinGroup={onJoinGroup}
               error={error}
-              miniLeaderboards={miniLeaderboards}
+              leaderboards={leaderboards} accaStatsMap={accaStatsMap}
             />
           }
         />

@@ -1211,119 +1211,53 @@
   background-color: var(--bg-surface-hover);
 }
 
-/* ---- Group Card extras ---- */
-.group-card-name {
-  margin: 0 0 4px 0;
-  color: var(--text-primary);
-  font-size: 17px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.group-card-desc {
-  margin: 0 0 8px 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.group-card-date {
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
-/* ---- Group Card Split Layout ---- */
-.group-card {
-  display: flex;
-  gap: 16px;
-  align-items: stretch;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.group-card-info {
-  flex: 1;
-  min-width: 0;
+/* ---- Home Page Group Sections ---- */
+.home-groups-list {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.group-card-lb {
-  flex-shrink: 0;
-  width: 140px;
-  border-left: 1px solid var(--border-color);
-  padding-left: 14px;
-  display: flex;
-  align-items: center;
-}
-
-/* ---- Mini Leaderboard ---- */
-.mini-lb {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-}
-
-.mini-lb-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mini-lb-pos {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: var(--bg-elevated);
-  color: var(--text-secondary);
-  font-weight: 700;
-  font-size: 11px;
-}
-
-.mini-lb-pos-first {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-}
-
-.mini-lb-name {
-  flex: 1;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mini-lb-empty {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-style: italic;
-}
-
-/* ---- Groups Grid (2-column layout in dashboard hero) ---- */
-.groups-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 24px;
   margin: 16px 0;
 }
 
-.groups-grid-single {
-  grid-template-columns: 1fr;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+.home-group-section {
+  /* Each group gets its own section */
 }
 
-.group-card {
-  margin-bottom: 0;
+.home-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.home-group-header:hover {
+  opacity: 0.8;
+}
+
+.home-group-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-group-chevron {
+  font-size: 24px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.home-group-header:hover .home-group-chevron {
+  color: var(--accent-primary);
 }
 
 /* ---- Groups Actions (centered buttons) ---- */
