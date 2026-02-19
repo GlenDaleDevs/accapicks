@@ -130,13 +130,11 @@
 
 /* ---- Auth Container ---- */
 .auth-form-container {
-  background: rgba(11, 50, 70, 0.45);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 212, 170, 0.3);
-  border-top: 3px solid var(--accent-primary);
-  border-radius: var(--radius-xl);
-  padding: 32px 28px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(0, 212, 170, 0.05);
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0 28px;
+  box-shadow: none;
   width: 100%;
   max-width: 400px;
   animation: formFadeIn 800ms ease-out 400ms both;
