@@ -44,7 +44,7 @@ function App() {
         <span>
           Update available{' '}
           <button
-            onClick={() => updateServiceWorker(true)}
+            onClick={() => updateServiceWorker(true).then(() => window.location.reload())}
             style={{ color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, font: 'inherit' }}
           >
             Refresh
