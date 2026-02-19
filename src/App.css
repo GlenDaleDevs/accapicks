@@ -1999,6 +1999,25 @@
   z-index: -1;
 }
 
+/* ---- Staggered Content Fade-In ---- */
+@keyframes contentFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Groups page stagger */
+.groups-page .dashboard-hero    { animation: contentFadeIn 600ms ease-out 300ms both; }
+.groups-page .home-groups-list  { animation: contentFadeIn 600ms ease-out 500ms both; }
+.groups-page .groups-actions    { animation: contentFadeIn 600ms ease-out 700ms both; }
+.groups-page .welcome-guide     { animation: contentFadeIn 600ms ease-out 700ms both; }
+
+/* Group detail page stagger */
+.group-detail-page .group-detail-header  { animation: contentFadeIn 600ms ease-out 300ms both; }
+.group-detail-page > .section-title      { animation: contentFadeIn 600ms ease-out 400ms both; }
+.group-detail-page .leaderboard-container { animation: contentFadeIn 600ms ease-out 500ms both; }
+.group-detail-page .groups-actions       { animation: contentFadeIn 600ms ease-out 600ms both; }
+.group-detail-page .group-leave-section  { animation: contentFadeIn 600ms ease-out 700ms both; }
+
 .dashboard-hero {
   padding: 0 16px;
   margin-bottom: 24px;
