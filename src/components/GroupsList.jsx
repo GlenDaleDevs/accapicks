@@ -49,7 +49,7 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
   };
 
   return (
-    <>
+    <div className="groups-page">
       <div className="dashboard-hero">
         <div className="dashboard-header">
           <h2 className="dashboard-title">Your Groups</h2>
@@ -216,6 +216,6 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
         )}
 
       </div>
-    </>
+    </div>
   );
 }
