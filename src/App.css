@@ -523,6 +523,100 @@
   text-align: center;
 }
 
+/* ---- Open Acca Rows ---- */
+.open-acca-list {
+  margin-bottom: 20px;
+}
+
+.open-acca-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.open-acca-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 0;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-fast);
+}
+
+.open-acca-row:last-child {
+  border-bottom: none;
+}
+
+.open-acca-row:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.open-acca-row:hover .open-acca-bar {
+  background-color: #f59e0b;
+  opacity: 1;
+}
+
+.open-acca-bar {
+  width: 3px;
+  align-self: stretch;
+  min-height: 36px;
+  border-radius: 2px;
+  background-color: #f59e0b;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.open-acca-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.open-acca-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.open-acca-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.open-acca-countdown {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.open-acca-pill {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
 /* ---- Wizard ---- */
 .wizard-container {
   background-color: var(--bg-surface);
