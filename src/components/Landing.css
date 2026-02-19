@@ -10,7 +10,7 @@
   justify-content: flex-start;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 40px 16px;
+  padding: 40px 0;
   background: url("/landing-bg.webp") calc(50% + 10px) -20px / cover no-repeat;
   position: relative;
 }
