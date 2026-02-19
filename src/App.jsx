@@ -39,11 +39,24 @@ function App() {
   } = useRegisterSW();
 
   useEffect(() => {
-    if (needRefresh) {
-      // Activate the new service worker and force reload
-      updateServiceWorker(true);
-      setTimeout(() => window.location.reload(), 500);
+    if (!needRefresh) {
+      sessionStorage.removeItem('pwa-reloading');
+      return;
     }
+
+    // Already reloaded for this update — stop the loop
+    if (sessionStorage.getItem('pwa-reloading')) {
+      sessionStorage.removeItem('pwa-reloading');
+      setNeedRefresh(false);
+      return;
+    }
+
+    // Activate new service worker and reload when it takes control
+    sessionStorage.setItem('pwa-reloading', '1');
+    updateServiceWorker(true);
+    navigator.serviceWorker?.addEventListener('controllerchange', () => {
+      window.location.reload();
+    }, { once: true });
   }, [needRefresh]);
 
   useEffect(() => {
