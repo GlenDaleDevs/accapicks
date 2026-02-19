@@ -229,11 +229,11 @@ async def compare_bookmakers(
     if not bets:
         raise HTTPException(status_code=400, detail="No bets in this acca yet")
 
-    # Extract bet descriptions to compare
-    bet_descriptions = [bet.description for bet in bets]
+    # Extract bets with odds to compare
+    bets_with_odds = [(bet.description, float(bet.odds)) for bet in bets]
 
     # Try comparison with cached odds first
-    comparison = odds_api.compare_bookmakers_for_acca(bet_descriptions)
+    comparison = odds_api.compare_bookmakers_for_acca(bets_with_odds)
 
     # If no cached odds found, fetch fresh odds for the acca's leagues
     if not comparison and acca.leagues:
@@ -241,7 +241,7 @@ async def compare_bookmakers(
             await asyncio.to_thread(odds_api.get_football_matches, league)
 
         # Try comparison again with fresh odds
-        comparison = odds_api.compare_bookmakers_for_acca(bet_descriptions)
+        comparison = odds_api.compare_bookmakers_for_acca(bets_with_odds)
 
     if not comparison:
         raise HTTPException(

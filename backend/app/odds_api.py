@@ -21,6 +21,8 @@ ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h,totals')
 _btts_cache = {}  # { event_id: { "data": [...bookmakers], "timestamp": float } }
 BTTS_CACHE_TTL_SECONDS = 86400  # 24 hours
 
+COMPARISON_ESTIMATE_HAIRCUT = 0.97  # 3% reduction on estimated odds
+
 def get_football_matches(sport='soccer_epl'):
     """
     Get upcoming football matches with odds.
@@ -234,22 +236,25 @@ def get_scores(sport, days_from=3):
         logger.error(f"Error fetching scores for {sport}: {e}")
         return []
 
-def compare_bookmakers_for_acca(bets):
+def compare_bookmakers_for_acca(bets_with_odds):
     """
     Compare total acca odds across all bookmakers for a list of bets.
 
     Args:
-        bets: List of bet descriptions like "Arsenal to win", "Liverpool to win"
+        bets_with_odds: List of (description, picked_odds) tuples
 
     Returns:
         Dictionary with bookmaker comparisons
     """
-    if not bets:
+    if not bets_with_odds:
         return {}
+
+    bet_descriptions = [desc for desc, _ in bets_with_odds]
+    picked_odds = [odds for _, odds in bets_with_odds]
 
     # Parse team names from bet descriptions
     parsed_bets = []
-    for bet_desc in bets:
+    for bet_desc in bet_descriptions:
         bet_lower = bet_desc.lower().strip()
 
         # Check for BTTS bets first
@@ -331,9 +336,9 @@ def compare_bookmakers_for_acca(bets):
         return {}
 
     # Find odds for each bet
-    bet_odds_by_bookmaker = {}  # { bookmaker_key: [odds1, odds2, ...] }
+    bet_odds_by_bookmaker = {}  # { bookmaker_key: { leg_index: price } }
 
-    for parsed_bet in parsed_bets:
+    for leg_index, parsed_bet in enumerate(parsed_bets):
         market_type = parsed_bet["market_type"]
         outcome_name = parsed_bet["outcome_name"]
         team = parsed_bet.get("team")
@@ -390,8 +395,8 @@ def compare_bookmakers_for_acca(bets):
 
                 if outcome and "price" in outcome:
                     if bookie_key not in bet_odds_by_bookmaker:
-                        bet_odds_by_bookmaker[bookie_key] = []
-                    bet_odds_by_bookmaker[bookie_key].append(outcome["price"])
+                        bet_odds_by_bookmaker[bookie_key] = {}
+                    bet_odds_by_bookmaker[bookie_key][leg_index] = outcome["price"]
 
             # If btts and no odds found in regular cache, check _btts_cache
             if market_type == "btts":
@@ -406,8 +411,8 @@ def compare_bookmakers_for_acca(bets):
                                     outcome = next((o for o in mkt.get("outcomes", []) if o.get("name") == outcome_name), None)
                                     if outcome and "price" in outcome:
                                         if bookie_key not in bet_odds_by_bookmaker:
-                                            bet_odds_by_bookmaker[bookie_key] = []
-                                        bet_odds_by_bookmaker[bookie_key].append(outcome["price"])
+                                            bet_odds_by_bookmaker[bookie_key] = {}
+                                        bet_odds_by_bookmaker[bookie_key][leg_index] = outcome["price"]
 
             # We matched the correct event via team filtering above — stop
             matched_odds = True
@@ -417,20 +422,24 @@ def compare_bookmakers_for_acca(bets):
         if not matched_odds:
             continue
 
-    # Calculate total acca odds for bookmakers that have all bets
+    # Calculate total acca odds — use estimates for missing legs
     result = {}
-    num_bets = len(parsed_bets)
+    num_legs = len(parsed_bets)
 
-    for bookie_key, odds_list in bet_odds_by_bookmaker.items():
-        if len(odds_list) == num_bets:
-            # All bets available at this bookmaker - multiply odds together
-            total_odds = 1.0
-            for odds in odds_list:
-                total_odds *= odds
+    for bookie_key, odds_dict in bet_odds_by_bookmaker.items():
+        total_odds = 1.0
+        estimated = False
+        for i in range(num_legs):
+            if i in odds_dict:
+                total_odds *= odds_dict[i]
+            else:
+                total_odds *= picked_odds[i] * COMPARISON_ESTIMATE_HAIRCUT
+                estimated = True
 
-            result[bookie_key] = {
-                "total_odds": round(total_odds, 2),
-                "available": True
-            }
+        result[bookie_key] = {
+            "total_odds": round(total_odds, 2),
+            "available": True,
+            "estimated": estimated
+        }
 
     return result

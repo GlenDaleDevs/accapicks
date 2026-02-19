@@ -27,13 +27,16 @@ export default function BookmakerComparison({ data, oddsFormat = "decimal", book
     const content = (
       <>
         <div className="bookmaker-info">
-          <strong
-            className={isBest ? "bookmaker-name bookmaker-name-best" : "bookmaker-name bookmaker-name-other"}
-          >
-            {displayName}
-          </strong>
+          <span className="bookmaker-name-wrapper">
+            <strong
+              className={isBest ? "bookmaker-name bookmaker-name-best" : "bookmaker-name bookmaker-name-other"}
+            >
+              {displayName}
+            </strong>
+            {d.estimated && <span className="bookmaker-est-badge">est.</span>}
+          </span>
           <span className={isBest ? "bookmaker-odds-best" : "bookmaker-odds-other"}>
-            {formatOdds(d.total_odds, oddsFormat)} {isBest && "BEST"}
+            {d.estimated && "~"}{formatOdds(d.total_odds, oddsFormat)} {isBest && "BEST"}
           </span>
         </div>
         {url && (
@@ -86,12 +89,9 @@ export default function BookmakerComparison({ data, oddsFormat = "decimal", book
           {showAll ? "Show fewer sites" : `Show all ${entries.length} bookmakers`}
         </button>
       )}
-      {bets.some(b => {
-        const d = (b.description || "").toLowerCase();
-        return d.startsWith("btts") || d.startsWith("over") || d.startsWith("under");
-      }) && (
+      {entries.some(([, d]) => d.estimated) && (
         <p className="text-muted mt-8" style={{ fontSize: "0.8rem" }}>
-          Limited bookmaker coverage for BTTS and Over/Under markets.
+          Odds marked with ~ are estimated from your picked odds (3% below). Actual odds may vary.
         </p>
       )}
     </div>
