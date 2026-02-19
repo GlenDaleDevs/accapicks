@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { toastVariants } from "../utils/animations";
 import { subscribe, dismissToast } from "../utils/toast";
 
 export default function ToastContainer() {
@@ -9,22 +11,30 @@ export default function ToastContainer() {
     return unsubscribe;
   }, []);
 
-  if (toasts.length === 0) return null;
-
   return (
     <div className="toast-container">
-      {toasts.map((toast) => (
-        <div key={toast.id} className={`toast toast-${toast.type}`}>
-          <span className="toast-message">{toast.message}</span>
-          <button
-            className="toast-dismiss"
-            onClick={() => dismissToast(toast.id)}
-            aria-label="Dismiss"
+      <AnimatePresence mode="sync">
+        {toasts.map((toast) => (
+          <motion.div
+            key={toast.id}
+            className={`toast toast-${toast.type}`}
+            variants={toastVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            layout
           >
-            ✕
-          </button>
-        </div>
-      ))}
+            <span className="toast-message">{toast.message}</span>
+            <button
+              className="toast-dismiss"
+              onClick={() => dismissToast(toast.id)}
+              aria-label="Dismiss"
+            >
+              &#10005;
+            </button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { staggerContainer, leaderboardRowVariants } from "../utils/animations";
 import Skeleton from "./Skeleton";
 
 export default function Leaderboard({ leaderboard, loading, accas, groupId, accaStats, title = "Group Leaderboard" }) {
@@ -31,7 +33,12 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
           <span className="empty-state-hint">Create an acca and add your picks to get started.</span>
         </p>
       ) : (
-        <div className="league-table">
+        <motion.div
+          className="league-table"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           <div className="league-table-header">
             <div className="league-col league-col-pos">#</div>
             <div className="league-col league-col-name">Name</div>
@@ -44,9 +51,11 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
             const rowRankClass = rank <= 3 ? ` league-table-row-${["first","second","third"][rank - 1]}` : "";
             const posRankClass = rank <= 3 ? ` league-pos-${["first","second","third"][rank - 1]}` : "";
             return (
-              <div
+              <motion.div
                 key={entry.user_id}
                 className={`league-table-row${rowRankClass}`}
+                variants={leaderboardRowVariants}
+                layout
                 onClick={() => navigate(`/groups/${groupId}/members/${entry.user_id}`)}
                 role="button"
                 tabIndex={0}
@@ -65,10 +74,10 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
                     {entry.win_rate}%
                   </span>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
     </div>
   );

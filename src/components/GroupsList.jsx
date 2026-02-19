@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { staggerContainer, staggerItem } from "../utils/animations";
 import Skeleton from "./Skeleton";
 import Leaderboard from "./Leaderboard";
 
@@ -50,7 +52,8 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
 
   return (
     <div className="groups-page">
-      <div className="dashboard-hero">
+      <motion.div variants={staggerContainer} initial="initial" animate="animate">
+      <motion.div variants={staggerItem} className="dashboard-hero">
         <div className="dashboard-header">
           <h2 className="dashboard-title">Your Groups</h2>
           {!showJoinGroup && (
@@ -125,10 +128,10 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
         ) : null}
 
         <p className="dashboard-subtitle">Create accumulators with your mates and climb the leaderboard</p>
-      </div>
+      </motion.div>
 
       {!loading && groups.length === 0 && (
-        <div className="welcome-guide">
+        <motion.div variants={staggerItem} className="welcome-guide">
           <h3 className="welcome-guide-title">How AccaPicks Works</h3>
           <div className="welcome-steps">
             <div className="welcome-step">
@@ -153,10 +156,10 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      <div className="groups-actions">
+      <motion.div variants={staggerItem} className="groups-actions">
         {!showCreateGroup ? (
           <button
             className="btn btn-primary"
@@ -213,7 +216,8 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
           </div>
         )}
 
-      </div>
+      </motion.div>
+      </motion.div>
     </div>
   );
 }

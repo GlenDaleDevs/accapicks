@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from "react-router-dom";
+import { AnimatePresence, MotionConfig } from "framer-motion";
+import PageTransition from "./components/PageTransition";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import * as api from "./api/client";
 import "./App.css";
@@ -292,51 +294,53 @@ function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
-        <ToastContainer />
-        <Routes>
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route
-            path="/*"
-            element={
-              <div className="app-container">
-                {!isLoggedIn ? (
-                  <AuthView
-                    onLogin={handleLogin}
-                    onSignup={handleSignup}
-                    onVerify={handleVerify}
-                    onResendCode={handleResendCode}
-                    onForgotPassword={handleForgotPassword}
-                    onResetPassword={handleResetPassword}
-                    error={error}
-                    pendingVerificationEmail={pendingVerificationEmail}
-                  />
-                ) : (
-                  <AppContent
-                    user={user}
-                    groups={groups}
-                    loadingGroups={loadingGroups}
-                    onLogout={handleLogout}
-                    onCreateGroup={handleCreateGroup}
-                    onJoinGroup={handleJoinGroup}
-                    onRefreshGroups={loadGroups}
-                    error={error}
-                    oddsFormat={oddsFormat}
-                    setOddsFormat={setOddsFormat}
-                    bookmakerLinks={bookmakerLinks}
-                    leaderboards={leaderboards} accaStatsMap={accaStatsMap}
-                  />
-                )}
-                <footer className="responsible-gambling-footer">
-                  18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
-                  <br />
-                  <Link to="/terms">Terms of Service</Link> | <Link to="/privacy">Privacy Policy</Link>
-                </footer>
-              </div>
-            }
-          />
-        </Routes>
-        <CookieConsent />
+        <MotionConfig reducedMotion="user">
+          <ToastContainer />
+          <Routes>
+            <Route path="/terms" element={<PageTransition><TermsOfService /></PageTransition>} />
+            <Route path="/privacy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+            <Route
+              path="/*"
+              element={
+                <div className="app-container">
+                  {!isLoggedIn ? (
+                    <AuthView
+                      onLogin={handleLogin}
+                      onSignup={handleSignup}
+                      onVerify={handleVerify}
+                      onResendCode={handleResendCode}
+                      onForgotPassword={handleForgotPassword}
+                      onResetPassword={handleResetPassword}
+                      error={error}
+                      pendingVerificationEmail={pendingVerificationEmail}
+                    />
+                  ) : (
+                    <AppContent
+                      user={user}
+                      groups={groups}
+                      loadingGroups={loadingGroups}
+                      onLogout={handleLogout}
+                      onCreateGroup={handleCreateGroup}
+                      onJoinGroup={handleJoinGroup}
+                      onRefreshGroups={loadGroups}
+                      error={error}
+                      oddsFormat={oddsFormat}
+                      setOddsFormat={setOddsFormat}
+                      bookmakerLinks={bookmakerLinks}
+                      leaderboards={leaderboards} accaStatsMap={accaStatsMap}
+                    />
+                  )}
+                  <footer className="responsible-gambling-footer">
+                    18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
+                    <br />
+                    <Link to="/terms">Terms of Service</Link> | <Link to="/privacy">Privacy Policy</Link>
+                  </footer>
+                </div>
+              }
+            />
+          </Routes>
+          <CookieConsent />
+        </MotionConfig>
       </ErrorBoundary>
     </BrowserRouter>
   );
@@ -344,6 +348,7 @@ function App() {
 
 function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks, leaderboards, accaStatsMap }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogoutWithNav = () => {
     onLogout();
@@ -352,38 +357,42 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
 
   return (
     <div>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <GroupsList
-              groups={groups}
-              loading={loadingGroups}
-              onCreateGroup={onCreateGroup}
-              onJoinGroup={onJoinGroup}
-              error={error}
-              leaderboards={leaderboards} accaStatsMap={accaStatsMap}
-            />
-          }
-        />
-        <Route
-          path="/groups/:groupId"
-          element={<GroupDetail user={user} onRefreshGroups={onRefreshGroups} />}
-        />
-        <Route
-          path="/groups/:groupId/members/:userId"
-          element={<MemberPickHistory user={user} />}
-        />
-        <Route
-          path="/groups/:groupId/accas/:accaId"
-          element={<AccaDetail user={user} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} />}
-        />
-        <Route
-          path="/settings"
-          element={<UserSettings user={user} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} onLogout={handleLogoutWithNav} />}
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/"
+            element={
+              <PageTransition>
+                <GroupsList
+                  groups={groups}
+                  loading={loadingGroups}
+                  onCreateGroup={onCreateGroup}
+                  onJoinGroup={onJoinGroup}
+                  error={error}
+                  leaderboards={leaderboards} accaStatsMap={accaStatsMap}
+                />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/groups/:groupId"
+            element={<PageTransition><GroupDetail user={user} onRefreshGroups={onRefreshGroups} /></PageTransition>}
+          />
+          <Route
+            path="/groups/:groupId/members/:userId"
+            element={<PageTransition><MemberPickHistory user={user} /></PageTransition>}
+          />
+          <Route
+            path="/groups/:groupId/accas/:accaId"
+            element={<PageTransition><AccaDetail user={user} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} /></PageTransition>}
+          />
+          <Route
+            path="/settings"
+            element={<PageTransition><UserSettings user={user} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} onLogout={handleLogoutWithNav} /></PageTransition>}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
       <div className="page-logout-footer">
         <button className="btn btn-ghost" onClick={() => navigate("/settings")}>Settings</button>
         <button className="btn btn-danger" onClick={handleLogoutWithNav}>Logout</button>
