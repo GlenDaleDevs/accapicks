@@ -345,10 +345,7 @@
 
 /* ---- Leaderboard ---- */
 .leaderboard-container {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 0 16px;
   margin-bottom: 24px;
 }
 
@@ -1351,8 +1348,9 @@
 .page-logout-footer {
   display: flex;
   justify-content: center;
+  gap: 12px;
   margin-top: 32px;
-  padding-top: 24px;
+  padding: 24px 16px 0;
   border-top: 1px solid var(--border-color);
 }
 

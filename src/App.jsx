@@ -343,7 +343,6 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
 
   return (
     <div>
-      <TopBar user={user} />
       <Routes>
         <Route
           path="/"
@@ -377,6 +376,7 @@ function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJo
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <div className="page-logout-footer">
+        <button className="btn btn-ghost" onClick={() => navigate("/settings")}>Settings</button>
         <button className="btn btn-danger" onClick={handleLogoutWithNav}>Logout</button>
       </div>
     </div>
