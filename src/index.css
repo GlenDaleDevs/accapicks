@@ -4,33 +4,33 @@
    ============================================ */
 
 :root {
-  /* Background shades */
-  --bg-primary: #0f1923;
-  --bg-surface: #1a2c38;
-  --bg-surface-hover: #1f3444;
-  --bg-elevated: #243b4a;
+  /* Background shades (Deep Space Blue #0B3246) */
+  --bg-primary: #0B3246;
+  --bg-surface: #103D56;
+  --bg-surface-hover: #164761;
+  --bg-elevated: #1D526D;
 
   /* Accent colours */
-  --accent-primary: #00d4aa;
-  --accent-primary-hover: #00e8bb;
-  --accent-secondary: #3b82f6;
-  --accent-secondary-hover: #5b9aff;
+  --accent-primary: #4EEBD3;
+  --accent-primary-hover: #72F0DD;
+  --accent-secondary: #129B42;
+  --accent-secondary-hover: #17B54E;
 
   /* Text */
-  --text-primary: #e8eaed;
-  --text-secondary: #8b9caa;
-  --text-muted: #5a6b7a;
-  --text-inverse: #0f1923;
+  --text-primary: #FEFFFE;
+  --text-secondary: #8AACBE;
+  --text-muted: #5D8292;
+  --text-inverse: #0B3246;
 
   /* Status */
-  --color-success: #22c55e;
+  --color-success: #51D218;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
-  --color-info: #3b82f6;
+  --color-info: #4EEBD3;
 
-  /* Borders */
-  --border-color: #2a3a48;
-  --border-color-light: #344b5c;
+  /* Borders (derived from DSB) */
+  --border-color: #153E53;
+  --border-color-light: #1D5068;
 
   /* Misc */
   --radius-sm: 4px;
