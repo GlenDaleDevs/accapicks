@@ -25,6 +25,9 @@ function SplashScreen({ onDone }) {
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
+    // Remove the inline HTML splash now that React has mounted
+    document.getElementById("initial-splash")?.remove();
+
     const fadeTimer = setTimeout(() => setFading(true), 1400);
     const doneTimer = setTimeout(onDone, 1900);
     return () => { clearTimeout(fadeTimer); clearTimeout(doneTimer); };
@@ -33,6 +36,10 @@ function SplashScreen({ onDone }) {
   return (
     <div className={`splash-screen ${fading ? "splash-fade-out" : ""}`}>
       <img src="/logo.png" alt="AccaPicks" className="splash-logo" />
+      <div className="splash-text">
+        <span className="splash-title">AccaPicks</span>
+        <span className="splash-tagline">The acca tracker for your group chat</span>
+      </div>
     </div>
   );
 }
@@ -82,6 +89,11 @@ function App() {
       window.location.reload();
     }, { once: true });
   }, [needRefresh]);
+
+  // Remove inline HTML splash once React has mounted (covers non-PWA case)
+  useEffect(() => {
+    document.getElementById("initial-splash")?.remove();
+  }, []);
 
   useEffect(() => {
     const token = api.getStoredToken();
