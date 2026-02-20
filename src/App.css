@@ -2056,6 +2056,7 @@
 /* ---- Groups Page Background ---- */
 .groups-page {
   position: relative;
+  isolation: isolate;
   min-height: 100vh;
   min-height: 100dvh;
 }
@@ -2085,6 +2086,7 @@
 /* ---- Group Detail Page Background ---- */
 .group-detail-page {
   position: relative;
+  isolation: isolate;
   min-height: 100vh;
   min-height: 100dvh;
 }
