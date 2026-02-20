@@ -62,12 +62,12 @@ function App() {
     }, { once: true });
   }, [needRefresh]);
 
-  // Hold splash for 1s then fade out and remove
+  // Hold splash for 1.6s then fade out and remove
   useEffect(() => {
     const splash = document.getElementById("splash");
     if (!splash) return;
-    const fade = setTimeout(() => { splash.style.opacity = "0"; }, 1000);
-    const remove = setTimeout(() => splash.remove(), 1400);
+    const fade = setTimeout(() => { splash.style.opacity = "0"; }, 1600);
+    const remove = setTimeout(() => splash.remove(), 2100);
     return () => { clearTimeout(fade); clearTimeout(remove); };
   }, []);
 
