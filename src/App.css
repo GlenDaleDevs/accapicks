@@ -1390,17 +1390,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   width: 100%;
   padding: 12px 16px;
   margin-bottom: 4px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: opacity var(--transition-fast);
-}
-
-.home-group-header:hover {
-  opacity: 0.8;
 }
 
 .home-group-name {
@@ -1412,15 +1405,23 @@
   white-space: nowrap;
 }
 
-.home-group-chevron {
-  font-size: 24px;
-  color: var(--accent-primary);
+.home-group-cta {
   flex-shrink: 0;
-  transition: color var(--transition-fast);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background: rgba(78, 235, 211, 0.1);
+  border: 1px solid rgba(78, 235, 211, 0.25);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
 }
 
-.home-group-header:hover .home-group-chevron {
-  color: var(--text-primary);
+.home-group-cta:hover {
+  background: rgba(78, 235, 211, 0.18);
+  border-color: rgba(78, 235, 211, 0.4);
 }
 
 /* ---- Groups Actions (centered buttons) ---- */
