@@ -62,22 +62,6 @@ function App() {
     }, { once: true });
   }, [needRefresh]);
 
-  // Fade out and remove the inline HTML splash
-  useEffect(() => {
-    const splash = document.getElementById("initial-splash");
-    if (!splash) return;
-    const isPWA = window.matchMedia("(display-mode: standalone)").matches
-      || window.navigator.standalone === true;
-    if (isPWA) {
-      // Hold splash for 1.4s then fade out
-      const fadeTimer = setTimeout(() => { splash.style.opacity = "0"; }, 1400);
-      const removeTimer = setTimeout(() => splash.remove(), 1900);
-      return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
-    } else {
-      splash.remove();
-    }
-  }, []);
-
   useEffect(() => {
     const token = api.getStoredToken();
     if (token) {
