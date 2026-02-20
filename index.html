@@ -28,7 +28,16 @@
     <title>AccaPicks — The acca tracker for your group chat</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Inline splash: visible instantly, removed when React mounts -->
+      <div id="initial-splash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0B3246;">
+        <img src="/logo.png" alt="" width="180" height="180" style="margin-bottom:16px;" />
+        <div style="color:#ffffff;font-family:Inter,system-ui,sans-serif;text-align:center;">
+          <div style="font-size:20px;font-weight:700;letter-spacing:-0.5px;">AccaPicks</div>
+          <div style="font-size:13px;font-weight:400;opacity:0.6;margin-top:4px;">The acca tracker for your group chat</div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
