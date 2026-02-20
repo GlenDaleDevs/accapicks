@@ -108,13 +108,15 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
           <div className="home-groups-list">
             {groups.map((group) => (
               <div key={group.id} className="home-group-section">
-                <button
-                  className="home-group-header"
-                  onClick={() => navigate(`/groups/${group.id}`)}
-                >
+                <div className="home-group-header">
                   <span className="home-group-name">{group.name}</span>
-                  <span className="home-group-chevron">›</span>
-                </button>
+                  <button
+                    className="home-group-cta"
+                    onClick={() => navigate(`/groups/${group.id}`)}
+                  >
+                    View & Pick →
+                  </button>
+                </div>
                 <Leaderboard
                   leaderboard={leaderboards?.[group.id] || []}
                   loading={false}
