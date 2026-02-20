@@ -52,7 +52,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #4EEBD3, #72F0DD);
+  background: linear-gradient(135deg, #00d4aa, #00e8bb);
   color: #0B3246;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -60,8 +60,8 @@
   border-radius: 10px;
 }
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #72F0DD, #90F5E6);
-  box-shadow: 0 8px 20px rgba(78, 235, 211, 0.4);
+  background: linear-gradient(135deg, #00e8bb, #33f0cc);
+  box-shadow: 0 8px 20px rgba(0, 212, 170, 0.4);
   transform: translateY(-2px);
 }
 .btn-primary:disabled {
