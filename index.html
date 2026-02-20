@@ -28,16 +28,15 @@
     <title>AccaPicks — The acca tracker for your group chat</title>
   </head>
   <body>
-    <div id="root">
-      <div id="initial-splash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0B3246;transition:opacity 0.5s ease-out;">
-        <img src="/logo.png" alt="" width="180" height="180" style="margin-bottom:16px;animation:splash-pulse 1.6s ease-in-out infinite;" />
-        <div style="color:#ffffff;font-family:Inter,system-ui,sans-serif;text-align:center;">
-          <div style="font-size:20px;font-weight:700;letter-spacing:-0.5px;">AccaPicks</div>
-          <div style="font-size:13px;font-weight:400;opacity:0.6;margin-top:4px;">The acca tracker for your group chat</div>
-        </div>
+    <div id="initial-splash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0B3246;transition:opacity 0.5s ease-out;">
+      <img src="/logo.png" alt="" width="180" height="180" style="margin-bottom:16px;animation:splash-pulse 1.6s ease-in-out infinite;" />
+      <div style="color:#ffffff;font-family:Inter,system-ui,sans-serif;text-align:center;">
+        <div style="font-size:20px;font-weight:700;letter-spacing:-0.5px;">AccaPicks</div>
+        <div style="font-size:13px;font-weight:400;opacity:0.6;margin-top:4px;">The acca tracker for your group chat</div>
       </div>
     </div>
     <style>@keyframes splash-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.05);opacity:1}}</style>
+    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
