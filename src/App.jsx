@@ -21,35 +21,7 @@ import CookieConsent from "./components/CookieConsent";
 import ToastContainer from "./components/ToastContainer";
 import { showToast } from "./utils/toast";
 
-function SplashScreen({ onDone }) {
-  const [fading, setFading] = useState(false);
-
-  useEffect(() => {
-    // Remove the inline HTML splash now that React has mounted
-    document.getElementById("initial-splash")?.remove();
-
-    const fadeTimer = setTimeout(() => setFading(true), 1400);
-    const doneTimer = setTimeout(onDone, 1900);
-    return () => { clearTimeout(fadeTimer); clearTimeout(doneTimer); };
-  }, [onDone]);
-
-  return (
-    <div className={`splash-screen ${fading ? "splash-fade-out" : ""}`}>
-      <img src="/logo.png" alt="AccaPicks" className="splash-logo" />
-      <div className="splash-text">
-        <span className="splash-title">AccaPicks</span>
-        <span className="splash-tagline">The acca tracker for your group chat</span>
-      </div>
-    </div>
-  );
-}
-
 function App() {
-  const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash on PWA standalone launch, not in-browser navigation
-    return window.matchMedia("(display-mode: standalone)").matches
-      || window.navigator.standalone === true;
-  });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [groups, setGroups] = useState([]);
@@ -90,9 +62,20 @@ function App() {
     }, { once: true });
   }, [needRefresh]);
 
-  // Remove inline HTML splash once React has mounted (covers non-PWA case)
+  // Fade out and remove the inline HTML splash
   useEffect(() => {
-    document.getElementById("initial-splash")?.remove();
+    const splash = document.getElementById("initial-splash");
+    if (!splash) return;
+    const isPWA = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    if (isPWA) {
+      // Hold splash for 1.4s then fade out
+      const fadeTimer = setTimeout(() => { splash.style.opacity = "0"; }, 1400);
+      const removeTimer = setTimeout(() => splash.remove(), 1900);
+      return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
+    } else {
+      splash.remove();
+    }
   }, []);
 
   useEffect(() => {
@@ -323,10 +306,6 @@ function App() {
       );
     }
   };
-
-  if (showSplash) {
-    return <SplashScreen onDone={() => setShowSplash(false)} />;
-  }
 
   return (
     <BrowserRouter>
