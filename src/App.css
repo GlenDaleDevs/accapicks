@@ -2560,6 +2560,14 @@
   color: var(--text-secondary);
 }
 
+.settings-version {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 32px;
+  padding-bottom: 16px;
+}
+
 /* ---- Acca Detail Header ---- */
 .acca-detail-header {
   text-align: center;
