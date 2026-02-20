@@ -1,5 +1,6 @@
 import { precacheAndRoute } from 'workbox-precaching'
 
+// v2.1 — bust cache after splash screen removal
 // Precache app shell (injected by vite-plugin-pwa at build time)
 precacheAndRoute(self.__WB_MANIFEST)
 
