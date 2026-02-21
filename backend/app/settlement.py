@@ -15,7 +15,7 @@ def settle_locked_accas(db: Session):
     Process:
     1. Find all locked accas
     2. For each acca, get unsettled bets with event_id
-    3. Fetch scores for those events (only if match finished 3+ hours ago)
+    3. Fetch scores for those events (only if match kicked off 2+ hours ago)
     4. Compare actual result with bet pick_type
     5. Update bet results (won/lost)
     6. Check if all acca bets are settled, then update acca status
@@ -83,11 +83,11 @@ def settle_locked_accas(db: Session):
                     db.commit()
                 continue
 
-            # Filter to only bets whose matches should be finished (3+ hours past kickoff)
+            # Filter to only bets whose matches should be finished (2+ hours past kickoff)
             ready_bets = []
             for bet in unsettled_bets:
                 time_since_kickoff = now - bet.commence_time
-                if time_since_kickoff >= timedelta(hours=3):
+                if time_since_kickoff >= timedelta(hours=2):
                     ready_bets.append(bet)
 
             if not ready_bets:
