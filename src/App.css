@@ -360,7 +360,7 @@
 
 .league-table-header {
   display: grid;
-  grid-template-columns: 48px 1fr 48px 48px 72px;
+  grid-template-columns: 48px 1fr 56px 48px 48px 72px;
   padding: 12px 16px;
   background-color: var(--bg-elevated);
   border-bottom: 2px solid var(--border-color);
@@ -373,7 +373,7 @@
 
 .league-table-row {
   display: grid;
-  grid-template-columns: 48px 1fr 48px 48px 72px;
+  grid-template-columns: 48px 1fr 56px 48px 48px 72px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border-color);
   align-items: center;
@@ -431,6 +431,27 @@
 
 .league-col-winrate {
   text-align: right;
+}
+
+.league-col-streak {
+  text-align: center;
+}
+
+.league-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.league-streak-win {
+  color: #ff8c00;
+}
+
+.league-streak-loss {
+  color: #60a5fa;
 }
 
 .league-pos {
