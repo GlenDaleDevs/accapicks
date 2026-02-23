@@ -447,11 +447,110 @@
 }
 
 .league-streak-win {
-  color: #ff8c00;
+  color: #ffaa44;
+  text-shadow: 0 0 8px rgba(255, 140, 0, 0.6);
 }
 
 .league-streak-loss {
-  color: #60a5fa;
+  color: #7dd3fc;
+  text-shadow: 0 0 8px rgba(125, 211, 252, 0.6);
+}
+
+/* ---- Streak row glow effects ---- */
+
+@keyframes streakFirePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes streakIcePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.league-table-row-streak {
+  position: relative;
+  overflow: hidden;
+}
+
+.league-table-row-streak::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 55% 100% at 0% 50%,
+    var(--streak-glow-color) 0%,
+    transparent 100%
+  );
+  opacity: var(--streak-glow-opacity, 1);
+}
+
+/* Fire variant */
+.league-table-row-streak-fire {
+  border-left: var(--streak-border-width, 3px) solid var(--streak-border-color, #ff8c00);
+  padding-left: 13px;
+  --streak-glow-color: rgba(255, 120, 20, 0.18);
+  --streak-glow-opacity: 0.85;
+}
+
+/* Ice variant */
+.league-table-row-streak-ice {
+  border-left: var(--streak-border-width, 3px) solid var(--streak-border-color, #60a5fa);
+  padding-left: 13px;
+  --streak-glow-color: rgba(100, 200, 255, 0.15);
+  --streak-glow-opacity: 0.85;
+}
+
+/* Intensity: streak 3 */
+.streak-intensity-3.league-table-row-streak-fire {
+  --streak-glow-color: rgba(255, 120, 20, 0.22);
+  --streak-glow-opacity: 1;
+}
+.streak-intensity-3.league-table-row-streak-ice {
+  --streak-glow-color: rgba(100, 200, 255, 0.18);
+  --streak-glow-opacity: 1;
+}
+
+/* Intensity: streak 4 — wider border, pulse starts */
+.streak-intensity-4.league-table-row-streak-fire {
+  --streak-border-width: 4px;
+  --streak-glow-color: rgba(255, 100, 10, 0.28);
+}
+.streak-intensity-4.league-table-row-streak-fire::before {
+  animation: streakFirePulse 3s ease-in-out infinite;
+}
+.streak-intensity-4.league-table-row-streak-ice {
+  --streak-border-width: 4px;
+  --streak-glow-color: rgba(80, 190, 255, 0.24);
+}
+.streak-intensity-4.league-table-row-streak-ice::before {
+  animation: streakIcePulse 4s ease-in-out infinite;
+}
+
+/* Intensity: streak 5+ — max glow */
+.streak-intensity-5.league-table-row-streak-fire {
+  --streak-border-width: 4px;
+  --streak-border-color: #ff6a00;
+  --streak-glow-color: rgba(255, 80, 0, 0.34);
+}
+.streak-intensity-5.league-table-row-streak-fire::before {
+  animation: streakFirePulse 2.5s ease-in-out infinite;
+}
+.streak-intensity-5.league-table-row-streak-ice {
+  --streak-border-width: 4px;
+  --streak-border-color: #38bdf8;
+  --streak-glow-color: rgba(60, 180, 255, 0.30);
+}
+.streak-intensity-5.league-table-row-streak-ice::before {
+  animation: streakIcePulse 3.5s ease-in-out infinite;
+}
+
+/* Rank border takes precedence over streak border */
+.league-table-row-first.league-table-row-streak,
+.league-table-row-second.league-table-row-streak,
+.league-table-row-third.league-table-row-streak {
+  border-left-color: inherit;
 }
 
 .league-pos {
