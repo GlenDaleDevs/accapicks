@@ -51,25 +51,21 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
             const rank = entry.rank ?? index + 1;
             const rowRankClass = rank <= 3 ? ` league-table-row-${["first","second","third"][rank - 1]}` : "";
             const posRankClass = rank <= 3 ? ` league-pos-${["first","second","third"][rank - 1]}` : "";
+            const streakCount = entry.streak_count || 0;
+            const streakType = entry.streak_type;
+            const streakClass = streakCount >= 2 && streakType !== "none"
+              ? ` league-table-row-streak league-table-row-streak-${streakType === "win" ? "fire" : "ice"} streak-intensity-${Math.min(streakCount, 5)}`
+              : "";
             return (
               <motion.div
                 key={entry.user_id}
-                className={`league-table-row${rowRankClass}`}
+                className={`league-table-row${rowRankClass}${streakClass}`}
                 variants={leaderboardRowVariants}
                 layout
                 onClick={() => navigate(`/groups/${groupId}/members/${entry.user_id}`)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/groups/${groupId}/members/${entry.user_id}`); } }}
-                style={(() => {
-                  const count = entry.streak_count || 0;
-                  const type = entry.streak_type;
-                  if (count < 2 || type === "none") return undefined;
-                  const alpha = Math.min(0.07 + (count - 2) * 0.04, 0.19);
-                  if (type === "win") return { background: `linear-gradient(90deg, rgba(255, 140, 0, ${alpha}), transparent)` };
-                  if (type === "loss") return { background: `linear-gradient(90deg, rgba(96, 165, 250, ${alpha}), transparent)` };
-                  return undefined;
-                })()}
               >
                 <div className="league-col league-col-pos">
                   <span className={`league-pos${posRankClass}`}>
