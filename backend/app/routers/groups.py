@@ -541,6 +541,24 @@ def get_member_picks(
 
     summary["best_odds_won"] = round(summary["best_odds_won"], 2)
 
+    # Calculate longest winning streak
+    settled_picks = [
+        (bet.commence_time, bet.result)
+        for bet in bets
+        if bet.result in ("won", "lost") and bet.commence_time is not None
+    ]
+    settled_picks.sort(key=lambda x: x[0])  # chronological order
+    longest_win_streak = 0
+    current_win_streak = 0
+    for _ct, result in settled_picks:
+        if result == "won":
+            current_win_streak += 1
+            if current_win_streak > longest_win_streak:
+                longest_win_streak = current_win_streak
+        else:
+            current_win_streak = 0
+    summary["longest_win_streak"] = longest_win_streak
+
     return {
         "user_id": target_user.id,
         "username": target_user.username,

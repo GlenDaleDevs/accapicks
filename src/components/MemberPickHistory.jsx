@@ -104,6 +104,12 @@ export default function MemberPickHistory({ user }) {
             <span className="summary-stat-label">Best Odds</span>
           </div>
         )}
+        {summary.longest_win_streak > 0 && (
+          <div className="summary-stat">
+            <span className="summary-stat-value">🔥{summary.longest_win_streak}</span>
+            <span className="summary-stat-label">Best Streak</span>
+          </div>
+        )}
       </div>
 
       {picks.length === 0 ? (
