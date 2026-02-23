@@ -332,6 +332,33 @@ def get_group_leaderboard(
             else:
                 user_stats[bet.user_id]["pending"] += 1
 
+    # Calculate streaks per user
+    # Build pick_history: user_id -> [(commence_time, result)] for settled bets only
+    pick_history = {uid: [] for uid in member_user_ids}
+    if acca_ids:
+        for bet in bets:
+            if (bet.user_id in pick_history
+                    and bet.result in ("won", "lost")
+                    and bet.commence_time is not None):
+                pick_history[bet.user_id].append((bet.commence_time, bet.result))
+
+    streaks = {}
+    for uid, history in pick_history.items():
+        if not history:
+            streaks[uid] = {"streak_count": 0, "streak_type": "none"}
+            continue
+        # Sort descending by commence_time (most recent first)
+        history.sort(key=lambda x: x[0], reverse=True)
+        streak_type = "win" if history[0][1] == "won" else "loss"
+        count = 0
+        for _commence_time, result in history:
+            entry_type = "win" if result == "won" else "loss"
+            if entry_type == streak_type:
+                count += 1
+            else:
+                break
+        streaks[uid] = {"streak_count": count, "streak_type": streak_type}
+
     # Build leaderboard
     leaderboard = []
     for uid, stats in user_stats.items():
@@ -361,7 +388,9 @@ def get_group_leaderboard(
                 "void": stats["void"],
                 "pending": stats["pending"],
                 "win_rate": round(win_rate, 1),
-                "best_odds_won": round(best_odds_won, 2)
+                "best_odds_won": round(best_odds_won, 2),
+                "streak_count": streaks.get(uid, {}).get("streak_count", 0),
+                "streak_type": streaks.get(uid, {}).get("streak_type", "none")
             })
 
     # Sort by win_rate, won, -lost, best_odds_won (all descending)

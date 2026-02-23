@@ -42,6 +42,7 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
           <div className="league-table-header">
             <div className="league-col league-col-pos">#</div>
             <div className="league-col league-col-name">Name</div>
+            <div className="league-col league-col-streak" title="Current streak">🔥</div>
             <div className="league-col league-col-stat">W</div>
             <div className="league-col league-col-stat">L</div>
             <div className="league-col league-col-winrate">Win %</div>
@@ -60,6 +61,15 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/groups/${groupId}/members/${entry.user_id}`); } }}
+                style={(() => {
+                  const count = entry.streak_count || 0;
+                  const type = entry.streak_type;
+                  if (count < 2 || type === "none") return undefined;
+                  const alpha = Math.min(0.07 + (count - 2) * 0.04, 0.19);
+                  if (type === "win") return { background: `linear-gradient(90deg, rgba(255, 140, 0, ${alpha}), transparent)` };
+                  if (type === "loss") return { background: `linear-gradient(90deg, rgba(96, 165, 250, ${alpha}), transparent)` };
+                  return undefined;
+                })()}
               >
                 <div className="league-col league-col-pos">
                   <span className={`league-pos${posRankClass}`}>
@@ -67,6 +77,13 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
                   </span>
                 </div>
                 <div className="league-col league-col-name">{entry.username}</div>
+                <div className="league-col league-col-streak">
+                  {entry.streak_count > 0 && entry.streak_type !== "none" && (
+                    <span className={`league-streak league-streak-${entry.streak_type}`}>
+                      {entry.streak_type === "win" ? "🔥" : "🧊"}{entry.streak_count}
+                    </span>
+                  )}
+                </div>
                 <div className="league-col league-col-stat">{entry.won}</div>
                 <div className="league-col league-col-stat">{entry.lost}</div>
                 <div className="league-col league-col-winrate">
