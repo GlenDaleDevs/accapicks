@@ -1,4 +1,5 @@
 import os
+import math
 import asyncio
 import logging
 from pathlib import Path
@@ -135,10 +136,30 @@ async def auto_lock_accas():
                 models.Acca.locks_at.isnot(None),
             ).all()
             locked_count = 0
+            deleted_low_participation = 0
             for acca in open_accas:
                 if acca.locks_at and acca.locks_at <= now:
-                    acca.status = "locked"
-                    locked_count += 1
+                    # Check participation before locking
+                    member_count = db.query(models.GroupMember).filter(
+                        models.GroupMember.group_id == acca.group_id
+                    ).count()
+                    bet_count = db.query(models.Bet).filter(
+                        models.Bet.acca_id == acca.id
+                    ).count()
+                    threshold = math.ceil(member_count / 2)
+
+                    if bet_count < threshold:
+                        # Delete bets and acca — not enough participation
+                        db.query(models.Bet).filter(models.Bet.acca_id == acca.id).delete()
+                        db.delete(acca)
+                        deleted_low_participation += 1
+                        logger.info(
+                            f"Deleted acca {acca.name} (group {acca.group_id}): "
+                            f"{bet_count}/{member_count} members picked (<50%)"
+                        )
+                    else:
+                        acca.status = "locked"
+                        locked_count += 1
 
             # Cleanup: delete locked/settled accas that have 0 bets (orphaned by member removal)
             locked_accas = db.query(models.Acca).filter(
@@ -156,6 +177,8 @@ async def auto_lock_accas():
                 logger.info(f"Auto-locked {locked_count} acca(s)")
             if deleted_count > 0:
                 logger.info(f"Deleted {deleted_count} empty locked acca(s)")
+            if deleted_low_participation > 0:
+                logger.info(f"Deleted {deleted_low_participation} acca(s) with <50% participation")
         except Exception as e:
             logger.error(f"Auto-lock error: {e}")
             db.rollback()
