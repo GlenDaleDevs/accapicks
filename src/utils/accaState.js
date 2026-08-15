@@ -5,6 +5,7 @@ export const ACCA_STATE = {
   COMPLETE: "complete",
   IN_PLAY: "in_play",
   SETTLED: "settled",
+  EXPIRED: "expired",
 };
 
 const SETTLED_STATUSES = ["won", "lost", "settled"];
@@ -26,8 +27,28 @@ export function pickedCount(acca, members = []) {
   return picked.size;
 }
 
+export function lastMatchDate(acca) {
+  const dates = acca?.match_dates || [];
+  if (dates.length === 0) return null;
+  return [...dates].sort()[dates.length - 1];
+}
+
 /**
- * Four visually distinct states. `status` alone can't express them: it flips
+ * An acca nobody ever picked in never locks: auto_lock_accas only considers
+ * accas with a non-null locks_at, and locks_at stays null until the first
+ * pick. So it sits at status "open" forever, long after its fixtures have
+ * been played — and the odds API has nothing left to offer for those dates.
+ * Treating it as live is what put "Add your pick" on a dead week.
+ */
+export function isExpired(acca) {
+  if (!acca || acca.status !== "open") return false;
+  const last = lastMatchDate(acca);
+  if (!last) return false;
+  return new Date(`${last}T23:59:59`).getTime() < Date.now();
+}
+
+/**
+ * Visually distinct states. `status` alone can't express them: it flips
  * open -> locked at first kickoff, so "locked" already means in-play, while
  * "all picks in, nothing kicked off" is still "open".
  */
@@ -35,6 +56,7 @@ export function getAccaState(acca, members = []) {
   if (!acca) return ACCA_STATE.OPEN;
   if (SETTLED_STATUSES.includes(acca.status)) return ACCA_STATE.SETTLED;
   if (acca.status === "locked") return ACCA_STATE.IN_PLAY;
+  if (isExpired(acca)) return ACCA_STATE.EXPIRED;
 
   const total = members.length;
   const picked = pickedCount(acca, members);
