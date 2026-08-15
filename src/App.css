@@ -360,7 +360,6 @@
 
 .league-table-header {
   display: grid;
-  grid-template-columns: 48px 1fr 56px 48px 48px 72px;
   padding: 12px 16px;
   background-color: var(--bg-elevated);
   border-bottom: 2px solid var(--border-color);
@@ -373,7 +372,6 @@
 
 .league-table-row {
   display: grid;
-  grid-template-columns: 48px 1fr 56px 48px 48px 72px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border-color);
   align-items: center;
@@ -416,11 +414,51 @@
 }
 
 .league-col-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
   font-weight: 600;
+  padding-right: 8px;
+}
+
+.league-name-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding-right: 8px;
+}
+
+/* Column tracks. 36+56+52 = 144px of fixed width, down from 272px, so the
+   name gets roughly twice the room it had. */
+.league-table-grid {
+  grid-template-columns: 36px 1fr 56px 52px;
+}
+
+.league-table-grid-move {
+  grid-template-columns: 36px 18px 1fr 56px 52px;
+}
+
+.league-col-move {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.league-move { font-size: 11px; line-height: 1; }
+.league-move-up { color: var(--color-success); }
+.league-move-down { color: var(--color-danger); }
+.league-move-level { color: var(--text-muted); }
+
+.league-col-record {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: center;
+}
+
+.league-record-sep {
+  color: var(--text-muted);
+  margin: 0 1px;
 }
 
 .league-col-stat {
@@ -2747,3 +2785,18 @@
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
+
+/* ---- Member profile: acca outcome strip ----
+   Muted by design. The bright badge belongs on the person's own pick; the
+   acca's result is context explaining why a won pick sat under a lost acca. */
+.member-acca-outcome {
+  padding: 6px 14px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.member-acca-outcome-won { color: var(--text-secondary); }
+.member-acca-outcome-lost { color: var(--text-muted); }

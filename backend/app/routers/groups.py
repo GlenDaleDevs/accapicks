@@ -4,7 +4,7 @@ import string
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import func
+from sqlalchemy import func, case
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
@@ -264,6 +264,60 @@ def get_group_members(
     return member_details
 
 
+def _ranked(member_user_ids, bets):
+    """Rank members over a subset of bets, using the same sort key and tie
+    handling as the leaderboard itself.
+
+    Returns (rank_by_user, settled_count_by_user). The settled count is what
+    lets the caller suppress meaningless movement: someone with no settled
+    picks in a window sits in the big 0/0 tie block, and their position there
+    is an artefact of dict ordering, not form.
+    """
+    stats = {uid: {"won": 0, "lost": 0, "best": 0.0} for uid in member_user_ids}
+    for bet in bets:
+        s = stats.get(bet.user_id)
+        if s is None:
+            continue
+        if bet.result == "won":
+            s["won"] += 1
+            try:
+                odds_value = float(bet.odds)
+                if odds_value > s["best"]:
+                    s["best"] = odds_value
+            except (ValueError, TypeError):
+                pass
+        elif bet.result == "lost":
+            s["lost"] += 1
+
+    rows = []
+    for uid, s in stats.items():
+        settled = s["won"] + s["lost"]
+        win_rate = (s["won"] / settled * 100) if settled > 0 else 0
+        rows.append({
+            "user_id": uid,
+            "win_rate": round(win_rate, 1),
+            "won": s["won"],
+            "lost": s["lost"],
+            "best_odds_won": round(s["best"], 2),
+            "settled": settled,
+        })
+
+    rows.sort(key=lambda x: (x["win_rate"], x["won"], -x["lost"], x["best_odds_won"]), reverse=True)
+
+    ranks, settled_counts = {}, {}
+    for i, row in enumerate(rows):
+        if i == 0:
+            row["rank"] = 1
+        else:
+            prev = rows[i - 1]
+            tied = (row["win_rate"] == prev["win_rate"] and row["won"] == prev["won"]
+                    and row["lost"] == prev["lost"] and row["best_odds_won"] == prev["best_odds_won"])
+            row["rank"] = prev["rank"] if tied else i + 1
+        ranks[row["user_id"]] = row["rank"]
+        settled_counts[row["user_id"]] = row["settled"]
+    return ranks, settled_counts
+
+
 # Get group leaderboard
 @router.get("/groups/{group_id}/leaderboard")
 @limiter.limit("30/minute")
@@ -314,6 +368,7 @@ def get_group_leaderboard(
     acca_ids = [a.id for a in accas]
 
     # Accumulate bet stats
+    bets = []
     if acca_ids:
         bets = db.query(models.Bet).filter(models.Bet.acca_id.in_(acca_ids)).all()
 
@@ -412,6 +467,47 @@ def get_group_leaderboard(
             else:
                 entry["rank"] = i + 1
 
+    # ---- Position movement ----
+    # Baseline is the most recent round for which *every* earlier round has
+    # also settled. Accas settle when their last match resolves, so with
+    # concurrent weeks round N can settle before N-1; taking max(settled)
+    # would compare against a window containing an unsettled week.
+    round_by_acca = {a.id: a.round_number for a in accas}
+    settled_rounds = {
+        a.round_number for a in accas
+        if a.round_number is not None and a.status in ("won", "lost", "settled")
+    }
+    fully_settled_prefix = []
+    for rn in sorted(rn for rn in round_by_acca.values() if rn is not None):
+        if rn in settled_rounds:
+            fully_settled_prefix.append(rn)
+        else:
+            break
+
+    rank_change = {}
+    # Fewer than two settled rounds means there is nothing to move *from*.
+    if len(fully_settled_prefix) >= 2:
+        now_cut = fully_settled_prefix[-1]
+        prev_cut = fully_settled_prefix[-2]
+
+        def window(cutoff):
+            return [b for b in bets
+                    if round_by_acca.get(b.acca_id) is not None
+                    and round_by_acca[b.acca_id] <= cutoff]
+
+        now_ranks, now_settled = _ranked(member_user_ids, window(now_cut))
+        prev_ranks, prev_settled = _ranked(member_user_ids, window(prev_cut))
+
+        for uid in member_user_ids:
+            # Needs settled picks in BOTH windows. Otherwise a mid-season
+            # joiner winning their first pick jumps 0% -> 100% and flashes a
+            # full-table climb that means nothing.
+            if now_settled.get(uid, 0) > 0 and prev_settled.get(uid, 0) > 0:
+                rank_change[uid] = prev_ranks[uid] - now_ranks[uid]
+
+    for entry in leaderboard:
+        entry["rank_change"] = rank_change.get(entry["user_id"])
+
     return leaderboard
 
 
@@ -482,6 +578,20 @@ def get_member_picks(
     # Build acca map for efficient lookup
     acca_map = {a.id: a for a in accas}
 
+    # Leg counts per acca, so the profile can explain *why* an acca lost when
+    # this member's own pick won — "Acca lost — 4 of 5 landed".
+    acca_legs = {}
+    acca_landed = {}
+    if acca_ids:
+        leg_rows = db.query(
+            models.Bet.acca_id,
+            func.count(models.Bet.id),
+            func.sum(case((models.Bet.result == "won", 1), else_=0)),
+        ).filter(models.Bet.acca_id.in_(acca_ids)).group_by(models.Bet.acca_id).all()
+        for acca_id, total, won in leg_rows:
+            acca_legs[acca_id] = total or 0
+            acca_landed[acca_id] = int(won or 0)
+
     # Initialize summary stats
     summary = {
         "total_bets": len(bets),
@@ -516,6 +626,8 @@ def get_member_picks(
             "acca_name": acca.name if acca else None,
             "acca_round_number": acca.round_number if acca else None,
             "acca_status": acca.status if acca else None,
+            "acca_legs": acca_legs.get(bet.acca_id, 0),
+            "acca_landed": acca_landed.get(bet.acca_id, 0),
             "description": bet.description,
             "odds": bet.odds,
             "result": bet.result,
