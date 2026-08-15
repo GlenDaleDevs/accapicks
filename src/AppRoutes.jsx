@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import AppShell from "./components/shell/AppShell";
-import GroupDetail from "./components/GroupDetail";
-import AccaDetail from "./components/AccaDetail";
+import AccaTab from "./components/AccaTab";
 import MemberPickHistory from "./components/MemberPickHistory";
 import FixturesTab from "./components/FixturesTab";
 import TableTab from "./components/TableTab";
@@ -10,6 +10,8 @@ import UserSettings from "./components/UserSettings";
 import PageTransition from "./components/PageTransition";
 import Skeleton from "./components/Skeleton";
 import { useApp } from "./context/AppContext";
+import * as api from "./api/client";
+import { showToast } from "./utils/toast";
 import { accaDetail, groupAcca, memberPicks, readLastGroupId } from "./utils/routes";
 
 // Resolves "/" to a group the user is actually still a member of. Validating
@@ -51,6 +53,38 @@ function LegacyAccaRedirect() {
   return <Navigate to={accaDetail(groupId, accaId)} replace />;
 }
 
+// Resolves an acca id to its week. Settlement push notifications carry acca
+// ids, and an acca can be deleted at lock time for low participation — so a
+// missing or forbidden acca lands on the current week rather than a dead screen.
+function AccaIdRedirect() {
+  const { groupId, accaId } = useParams();
+  const [target, setTarget] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.getAccaById(accaId)
+      .then((acca) => {
+        if (cancelled) return;
+        setTarget(acca.round_number ? `/g/${groupId}/acca/${acca.round_number}` : groupAcca(groupId));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        showToast("That acca is no longer available", "info");
+        setTarget(groupAcca(groupId));
+      });
+    return () => { cancelled = true; };
+  }, [groupId, accaId]);
+
+  if (!target) {
+    return (
+      <div className="page-content">
+        <Skeleton width="100%" height="80px" count={2} />
+      </div>
+    );
+  }
+  return <Navigate to={target} replace />;
+}
+
 function SettingsRoute() {
   const { user, oddsFormat, setOddsFormat, onLogout } = useApp();
   const navigate = useNavigate();
@@ -73,7 +107,7 @@ function SettingsRoute() {
 }
 
 export default function AppRoutes() {
-  const { user, oddsFormat, bookmakerLinks, onRefreshGroups } = useApp();
+  const { user, oddsFormat } = useApp();
 
   return (
     <Routes>
@@ -81,11 +115,9 @@ export default function AppRoutes() {
 
       <Route path="/g/:groupId" element={<AppShell />}>
         <Route index element={<Navigate to="acca" replace />} />
-        <Route path="acca" element={<GroupDetail onRefreshGroups={onRefreshGroups} />} />
-        <Route
-          path="accas/:accaId"
-          element={<AccaDetail user={user} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} />}
-        />
+        <Route path="acca" element={<AccaTab user={user} oddsFormat={oddsFormat} />} />
+        <Route path="acca/:roundNumber" element={<AccaTab user={user} oddsFormat={oddsFormat} />} />
+        <Route path="accas/:accaId" element={<AccaIdRedirect />} />
         <Route path="fixtures" element={<FixturesTab />} />
         <Route path="table" element={<TableTab />} />
         <Route path="more" element={<MoreTab />} />

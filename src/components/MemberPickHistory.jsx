@@ -59,6 +59,7 @@ export default function MemberPickHistory({ user }) {
     if (!picksByAcca[pick.acca_id]) {
       picksByAcca[pick.acca_id] = {
         acca_name: pick.acca_name,
+        acca_round_number: pick.acca_round_number,
         acca_status: pick.acca_status,
         acca_id: pick.acca_id,
         picks: [],
@@ -125,7 +126,9 @@ export default function MemberPickHistory({ user }) {
               className="member-acca-header"
               onClick={() => navigate(accaDetail(groupId, accaGroup.acca_id))}
             >
-              <span className="member-acca-name">{accaGroup.acca_name}</span>
+              <span className="member-acca-name">
+                {accaGroup.acca_round_number ? `Week ${accaGroup.acca_round_number}` : accaGroup.acca_name}
+              </span>
               <span className={`badge badge-${accaGroup.acca_status}`}>
                 {accaGroup.acca_status.toUpperCase()}
               </span>
