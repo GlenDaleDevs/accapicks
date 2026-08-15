@@ -4,7 +4,7 @@ import * as api from "../api/client";
 import { accaDetail, groupTable } from "../utils/routes";
 import Skeleton from "./Skeleton";
 
-export default function MemberPickHistory({ user }) {
+export default function MemberPickHistory() {
   const { groupId, userId } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -68,6 +68,16 @@ export default function MemberPickHistory({ user }) {
     picksByAcca[pick.acca_id].picks.push(pick);
   }
 
+  const accaOutcomeText = (accaGroup) => {
+    const { acca_status: status, acca_legs: legs, acca_landed: landed } = accaGroup;
+    const tally = legs ? ` — ${landed} of ${legs} landed` : "";
+    if (status === "won") return `Acca won${tally}`;
+    if (status === "lost") return `Acca lost${tally}`;
+    if (status === "settled") return `Acca settled${tally}`;
+    if (status === "locked") return "Acca in play";
+    return "Acca still open";
+  };
+
   const resultBadgeClass = (result) => {
     if (result === "won") return "pick-result-badge pick-result-won";
     if (result === "lost") return "pick-result-badge pick-result-lost";
@@ -129,9 +139,13 @@ export default function MemberPickHistory({ user }) {
               <span className="member-acca-name">
                 {accaGroup.acca_round_number ? `Week ${accaGroup.acca_round_number}` : accaGroup.acca_name}
               </span>
-              <span className={`badge badge-${accaGroup.acca_status}`}>
-                {accaGroup.acca_status.toUpperCase()}
-              </span>
+            </div>
+
+            {/* On a personal profile the person's own pick is the headline.
+                The acca's own result is a muted strip that explains itself —
+                a bare LOST above a WON pick reads as a bug. */}
+            <div className={`member-acca-outcome member-acca-outcome-${accaGroup.acca_status}`}>
+              {accaOutcomeText(accaGroup)}
             </div>
             {accaGroup.picks.map((pick) => (
               <div key={pick.bet_id} className="member-pick-item">

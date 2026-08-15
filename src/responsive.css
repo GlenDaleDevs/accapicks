@@ -105,11 +105,21 @@
     gap: 8px;
   }
 
-  /* League table responsive adjustments */
+  /* League table responsive adjustments.
+     Fixed tracks total 128px (or 146px with movement) instead of the old
+     232px, so the name column keeps roughly double the width on a 360px
+     phone — which is what was producing "Brewi…". */
   .league-table-header,
   .league-table-row {
-    grid-template-columns: 40px 1fr 48px 40px 40px 64px;
     padding: 10px 12px;
+  }
+
+  .league-table-grid {
+    grid-template-columns: 32px 1fr 52px 44px;
+  }
+
+  .league-table-grid-move {
+    grid-template-columns: 32px 16px 1fr 52px 44px;
   }
 
   .league-table-row-first {

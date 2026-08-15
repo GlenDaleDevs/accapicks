@@ -121,7 +121,7 @@ export default function AppRoutes() {
         <Route path="fixtures" element={<FixturesTab />} />
         <Route path="table" element={<TableTab />} />
         <Route path="more" element={<MoreTab />} />
-        <Route path="more/members/:userId" element={<MemberPickHistory user={user} />} />
+        <Route path="more/members/:userId" element={<MemberPickHistory />} />
       </Route>
 
       <Route path="/settings" element={<SettingsRoute />} />
