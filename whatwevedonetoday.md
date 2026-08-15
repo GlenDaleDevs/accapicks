@@ -39,6 +39,16 @@ Updated as tasks are completed during the session.
 - [x] Arrows suppressed unless settled picks exist in both windows; column omitted when nothing to compare
 - [x] Profile: own pick is the headline, muted strip reads "Acca lost — 4 of 5 landed"
 
+### Shipped to production
+- [x] All of the above pushed and deployed (accapicks.com)
+- [x] **Lapsed weeks fix** — an acca nobody picked in never locks (auto_lock_accas ignores null locks_at), so it
+      sat at "open" months past its fixtures. The tab landed on one and offered picks that could never be made.
+      Added an EXPIRED state; "Start week N" becomes prominent when no live week exists
+- [x] **Favourable Matchups wired to the real model** — vendored PredictionModel into
+      `backend/app/predictionmodel`, refreshed on a 6h background task, served from
+      `GET /api/odds/favourable`. Records only, no probabilities, 0.75 differential threshold,
+      "Based on 2025/26 home and away form" stated on the card
+
 ## Bugs found and fixed along the way
 - [x] **Silent password-reset failure** — `send_password_reset_email` returned `None` on failure while `forgot_password` only converted *exceptions* to errors, so the API reported "code sent" when nothing was sent
 - [x] **Naive/aware datetime crash on SQLite** — 15 sites. Verify email returned a 500 the UI showed as "Verification Failed"; also broke adding/removing picks, the 60s auto-lock task and the 300s settlement task. Added `timeutils.as_utc`
