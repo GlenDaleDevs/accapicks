@@ -1,8 +1,28 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, PlainSerializer
 from datetime import datetime, timezone, date
-from typing import Optional
+from typing import Optional, Annotated
 import re
 import math
+
+
+def _serialize_utc(dt: Optional[datetime]) -> Optional[str]:
+    """Always emit an explicit UTC offset.
+
+    Postgres returns tz-aware datetimes, but SQLite has no timezone storage and
+    returns naive ones, which Pydantic then serialises as "2026-08-15T14:00:00".
+    An ISO datetime with no offset is ambiguous, and JavaScript parses that form
+    as *local* time — so a 14:00 UTC kickoff displayed as 14:00 instead of 15:00
+    in BST. Values are always stored as UTC, so stamping UTC is correct.
+    """
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).isoformat()
+
+
+# Use for every datetime that crosses the API boundary.
+UtcDatetime = Annotated[datetime, PlainSerializer(_serialize_utc, return_type=Optional[str])]
 
 
 def validate_password_strength(v):
@@ -47,7 +67,7 @@ class UserResponse(BaseModel):
     username: str
     is_active: bool
     email_verified: bool = False
-    created_at: datetime
+    created_at: UtcDatetime
 
     class Config:
         from_attributes = True  # Allows SQLAlchemy models to work with Pydantic
@@ -131,7 +151,7 @@ class GroupResponse(BaseModel):
     description: Optional[str]
     created_by: int
     invite_code: str  # ADD THIS LINE
-    created_at: datetime
+    created_at: UtcDatetime
     
     class Config:
         from_attributes = True
@@ -191,13 +211,13 @@ class BetResponse(BaseModel):
     username: str  # Add username so we can display who made the bet!
     odds: str
     result: Optional[str]
-    created_at: datetime
+    created_at: UtcDatetime
     event_id: Optional[str] = None
     home_team: Optional[str] = None
     away_team: Optional[str] = None
     pick_type: Optional[str] = None
     sport_key: Optional[str] = None
-    commence_time: Optional[datetime] = None
+    commence_time: Optional[UtcDatetime] = None
 
     class Config:
         from_attributes = True
@@ -291,9 +311,9 @@ class AccaResponse(BaseModel):
     match_dates: Optional[list[str]] = None
     leagues: Optional[list[str]] = None
     bet_type: Optional[str] = None
-    locks_at: Optional[datetime] = None
+    locks_at: Optional[UtcDatetime] = None
     created_by: Optional[int] = None
-    created_at: datetime
+    created_at: UtcDatetime
 
     class Config:
         from_attributes = True
@@ -309,9 +329,9 @@ class AccaWithBets(BaseModel):
     match_dates: Optional[list[str]] = None
     leagues: Optional[list[str]] = None
     bet_type: Optional[str] = None
-    locks_at: Optional[datetime] = None
+    locks_at: Optional[UtcDatetime] = None
     created_by: Optional[int] = None
-    created_at: datetime
+    created_at: UtcDatetime
     bets: list[BetResponse] = []
 
     class Config:

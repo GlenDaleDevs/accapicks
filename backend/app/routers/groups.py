@@ -9,6 +9,7 @@ from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
+from ..timeutils import as_utc
 
 logger = logging.getLogger(__name__)
 
@@ -522,8 +523,10 @@ def get_member_picks(
             "away_team": bet.away_team,
             "pick_type": bet.pick_type,
             "sport_key": bet.sport_key,
-            "commence_time": bet.commence_time.isoformat() if bet.commence_time else None,
-            "created_at": bet.created_at.isoformat() if bet.created_at else None
+            # as_utc first: a naive value from SQLite would serialise without an
+            # offset, which JavaScript reads as local time.
+            "commence_time": as_utc(bet.commence_time).isoformat() if bet.commence_time else None,
+            "created_at": as_utc(bet.created_at).isoformat() if bet.created_at else None
         })
 
     # Calculate win_rate
