@@ -24,19 +24,26 @@ def upgrade() -> None:
     op.add_column('users', sa.Column('failed_login_attempts', sa.Integer(), nullable=False, server_default='0'))
     op.add_column('users', sa.Column('locked_until', sa.DateTime(timezone=True), nullable=True))
 
-    # Add unique constraints to bets table
-    op.create_unique_constraint('uq_bet_acca_user', 'bets', ['acca_id', 'user_id'])
-    op.create_unique_constraint('uq_bet_acca_description', 'bets', ['acca_id', 'description'])
+    # batch_alter_table so this works on SQLite too. SQLite has no ALTER for
+    # constraints, so a plain create_unique_constraint makes a from-scratch
+    # local rebuild impossible. On Postgres batch mode emits the same plain
+    # ALTER it would have anyway.
+    with op.batch_alter_table('bets') as batch_op:
+        batch_op.create_unique_constraint('uq_bet_acca_user', ['acca_id', 'user_id'])
+        batch_op.create_unique_constraint('uq_bet_acca_description', ['acca_id', 'description'])
 
-    # Add unique constraint to group_members table
-    op.create_unique_constraint('uq_groupmember_group_user', 'group_members', ['group_id', 'user_id'])
+    with op.batch_alter_table('group_members') as batch_op:
+        batch_op.create_unique_constraint('uq_groupmember_group_user', ['group_id', 'user_id'])
 
 
 def downgrade() -> None:
     # Drop unique constraints
-    op.drop_constraint('uq_groupmember_group_user', 'group_members', type_='unique')
-    op.drop_constraint('uq_bet_acca_description', 'bets', type_='unique')
-    op.drop_constraint('uq_bet_acca_user', 'bets', type_='unique')
+    with op.batch_alter_table('group_members') as batch_op:
+        batch_op.drop_constraint('uq_groupmember_group_user', type_='unique')
+
+    with op.batch_alter_table('bets') as batch_op:
+        batch_op.drop_constraint('uq_bet_acca_description', type_='unique')
+        batch_op.drop_constraint('uq_bet_acca_user', type_='unique')
 
     # Drop security columns from users table
     op.drop_column('users', 'locked_until')

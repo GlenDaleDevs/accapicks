@@ -17,19 +17,31 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute("""
-        CREATE TABLE IF NOT EXISTS push_subscriptions (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            endpoint_hash VARCHAR NOT NULL,
-            subscription_json TEXT NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT NOW(),
-            last_used_at TIMESTAMPTZ,
-            CONSTRAINT uq_push_sub_user_endpoint UNIQUE (user_id, endpoint_hash)
+    # Was raw SQL using SERIAL / TIMESTAMPTZ / NOW(), which are Postgres-only
+    # and made a from-scratch SQLite rebuild impossible. op.create_table renders
+    # correctly for both dialects; the inspector guard keeps the original
+    # IF NOT EXISTS behaviour.
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
+    if "push_subscriptions" not in inspector.get_table_names():
+        op.create_table(
+            "push_subscriptions",
+            sa.Column("id", sa.Integer(), primary_key=True),
+            sa.Column("user_id", sa.Integer(),
+                      sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+            sa.Column("endpoint_hash", sa.String(), nullable=False),
+            sa.Column("subscription_json", sa.String(), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+            sa.Column("last_used_at", sa.DateTime(timezone=True), nullable=True),
+            sa.UniqueConstraint("user_id", "endpoint_hash", name="uq_push_sub_user_endpoint"),
         )
-    """)
-    op.execute("CREATE INDEX IF NOT EXISTS ix_push_subscriptions_id ON push_subscriptions (id)")
-    op.execute("CREATE INDEX IF NOT EXISTS ix_push_subscriptions_user_id ON push_subscriptions (user_id)")
+
+    existing_indexes = {i["name"] for i in sa.inspect(bind).get_indexes("push_subscriptions")}
+    if "ix_push_subscriptions_id" not in existing_indexes:
+        op.create_index("ix_push_subscriptions_id", "push_subscriptions", ["id"])
+    if "ix_push_subscriptions_user_id" not in existing_indexes:
+        op.create_index("ix_push_subscriptions_user_id", "push_subscriptions", ["user_id"])
 
 
 def downgrade() -> None:
