@@ -357,3 +357,30 @@
   .modal-backdrop { align-items: center; padding: 24px; }
   .modal-panel { border-radius: var(--radius-xl); max-height: 84dvh; }
 }
+
+.week-context-expired { color: var(--text-muted); }
+
+/* Prominent when there's no week to pick for — starting one is the task. */
+.new-week-card {
+  margin: 0 16px 16px;
+  padding: 22px 18px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.new-week-title {
+  margin: 0 0 6px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.new-week-text {
+  margin: 0 auto 16px;
+  max-width: 38ch;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
-import { ACCA_STATE, getAccaState } from "../utils/accaState";
+import { ACCA_STATE, getAccaState, isExpired } from "../utils/accaState";
 import { buildPick, buildStructuredData } from "../utils/pickDescription";
 import { groupAcca } from "../utils/routes";
 import WeekStrip from "./acca/WeekStrip";
@@ -19,11 +19,15 @@ import "./acca/acca.css";
 // several open weeks would share a null lock time.
 function resolveCurrent(accas) {
   if (accas.length === 0) return null;
-  // Earliest open, not latest: that's the one with the deadline approaching.
-  const open = accas.find((a) => a.status === "open");
-  if (open) return open;
+  // Earliest open week that hasn't expired: that's the deadline approaching.
+  // Expired ones must be skipped — an acca nobody picked in stays "open"
+  // forever, and landing on one offers picks that can never be made.
+  const live = accas.find((a) => a.status === "open" && !isExpired(a));
+  if (live) return live;
   const locked = accas.filter((a) => a.status === "locked");
   if (locked.length) return locked[locked.length - 1];
+  const settled = accas.filter((a) => ["won", "lost", "settled"].includes(a.status));
+  if (settled.length) return settled[settled.length - 1];
   return accas[accas.length - 1];
 }
 
@@ -211,8 +215,10 @@ export default function AccaTab({ user, oddsFormat }) {
 
   // Settled weeks are the read-only ones. A *later* open week is still
   // pickable, so "not current" alone must not lock the UI.
-  const readOnly = state === ACCA_STATE.SETTLED;
+  const readOnly = state === ACCA_STATE.SETTLED || state === ACCA_STATE.EXPIRED;
   const currentIndex = current ? accas.findIndex((a) => a.id === current.id) : -1;
+  const hasLiveWeek = accas.some((a) => a.status === "open" && !isExpired(a));
+  const nextWeekNumber = accas.reduce((max, a) => Math.max(max, a.round_number || 0), 0) + 1;
 
   return (
     <div className="acca-tab">
@@ -227,7 +233,29 @@ export default function AccaTab({ user, oddsFormat }) {
         onBackToCurrent={() => navigate(groupAcca(groupId))}
       />
 
-      {readOnly && <div className="week-readonly-note">Settled — read only</div>}
+      {readOnly && (
+        <div className="week-readonly-note">
+          {state === ACCA_STATE.EXPIRED ? "Lapsed — no picks were made" : "Settled — read only"}
+        </div>
+      )}
+
+      {/* When there's no week left to pick for, starting one IS the task —
+          it shouldn't be a small ghost button under everything else. */}
+      {!hasLiveWeek && (
+        <div className="new-week-card">
+          <h3 className="new-week-title">
+            {state === ACCA_STATE.EXPIRED ? "This week never got going" : "No week open"}
+          </h3>
+          <p className="new-week-text">
+            {state === ACCA_STATE.EXPIRED
+              ? "Nobody picked, so it lapsed. Start the next one to get going."
+              : "Start the next week and your mates can add their picks."}
+          </p>
+          <button className="btn btn-primary" onClick={() => setShowWizard(true)}>
+            Start week {nextWeekNumber}
+          </button>
+        </div>
+      )}
 
       {detail ? (
         <AccaBody
@@ -244,7 +272,7 @@ export default function AccaTab({ user, oddsFormat }) {
         <div className="page-content"><Skeleton width="100%" height="120px" count={1} /></div>
       )}
 
-      {isCurrent && (
+      {isCurrent && hasLiveWeek && (
         <div className="acca-tab-actions">
           <button className="btn btn-ghost" onClick={() => setShowWizard(true)}>
             + New week

@@ -23,6 +23,7 @@ function contextLine(acca, state) {
     }
     return `In play — ${landed} of ${total} landed`;
   }
+  if (state === ACCA_STATE.EXPIRED) return "Lapsed — nobody picked in time";
   if (!acca?.locks_at) return "No picks yet — locks at the first kickoff picked";
   return `Locks ${formatLockTime(acca.locks_at)}`;
 }
