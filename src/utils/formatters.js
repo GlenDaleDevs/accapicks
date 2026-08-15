@@ -135,7 +135,9 @@ export const formatBetSlipText = (acca, oddsFormat, bestBookmakerName) => {
   if (!acca || !acca.bets || acca.bets.length === 0) return "";
 
   const lines = [];
-  lines.push(`PickOneBet Acca: ${acca.name}`);
+  // Lead with the week; the custom name is secondary and often machine-generated.
+  const label = acca.round_number ? `Week ${acca.round_number}` : acca.name;
+  lines.push(`AccaPicks — ${label}`);
   lines.push("---");
 
   acca.bets.forEach((bet, index) => {

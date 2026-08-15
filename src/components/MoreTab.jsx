@@ -1,10 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import GroupsList from "./GroupsList";
+import GroupSettings from "./GroupSettings";
 import { useApp } from "../context/AppContext";
 import { SETTINGS } from "../utils/routes";
 
 export default function MoreTab() {
   const { groups, loadingGroups, error, onCreateGroup, onJoinGroup, onLogout } = useApp();
+  const { groupId } = useParams();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -14,6 +16,8 @@ export default function MoreTab() {
 
   return (
     <div className="groups-page">
+      {groupId && <GroupSettings />}
+
       <GroupsList
         groups={groups}
         loading={loadingGroups}
