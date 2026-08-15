@@ -11,6 +11,7 @@ from .. import models, schemas, auth
 from ..database import get_db
 from ..limiter import limiter
 from ..email import send_verification_email, send_password_reset_email
+from ..timeutils import as_utc
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +188,7 @@ def login(request: Request, credentials: schemas.UserLogin, db: Session = Depend
 
     # Check account lockout (reset counter if lockout has expired)
     if user.locked_until:
-        if datetime.now(timezone.utc) < user.locked_until:
+        if datetime.now(timezone.utc) < as_utc(user.locked_until):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Account temporarily locked. Try again later."
@@ -297,7 +298,7 @@ def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session
         )
 
     # Check account lockout
-    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+    if user.locked_until and datetime.now(timezone.utc) < as_utc(user.locked_until):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account temporarily locked. Try again later."
@@ -316,7 +317,7 @@ def verify_email(request: Request, data: schemas.VerifyEmailRequest, db: Session
         )
 
     # Check expiry BEFORE code comparison
-    if user.verification_code_expires and datetime.now(timezone.utc) > user.verification_code_expires:
+    if user.verification_code_expires and datetime.now(timezone.utc) > as_utc(user.verification_code_expires):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Verification code expired. Please request a new one."
@@ -372,7 +373,7 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
         )
 
     # Check account lockout
-    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+    if user.locked_until and datetime.now(timezone.utc) < as_utc(user.locked_until):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account temporarily locked. Try again later."
@@ -453,7 +454,7 @@ def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Ses
         )
 
     # Check account lockout
-    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+    if user.locked_until and datetime.now(timezone.utc) < as_utc(user.locked_until):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account temporarily locked. Try again later."
@@ -471,7 +472,7 @@ def reset_password(request: Request, data: schemas.ResetPasswordRequest, db: Ses
         )
 
     # Check expiry BEFORE code comparison
-    if not user.verification_code_expires or datetime.now(timezone.utc) > user.verification_code_expires:
+    if not user.verification_code_expires or datetime.now(timezone.utc) > as_utc(user.verification_code_expires):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Reset code expired. Please request a new one."
@@ -518,7 +519,7 @@ def change_password(
         )
 
     # Check account lockout
-    if user.locked_until and datetime.now(timezone.utc) < user.locked_until:
+    if user.locked_until and datetime.now(timezone.utc) < as_utc(user.locked_until):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account temporarily locked. Try again later."
