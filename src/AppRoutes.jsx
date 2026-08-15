@@ -3,6 +3,7 @@ import AppShell from "./components/shell/AppShell";
 import GroupDetail from "./components/GroupDetail";
 import AccaDetail from "./components/AccaDetail";
 import MemberPickHistory from "./components/MemberPickHistory";
+import FixturesTab from "./components/FixturesTab";
 import TableTab from "./components/TableTab";
 import MoreTab from "./components/MoreTab";
 import UserSettings from "./components/UserSettings";
@@ -85,6 +86,7 @@ export default function AppRoutes() {
           path="accas/:accaId"
           element={<AccaDetail user={user} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} />}
         />
+        <Route path="fixtures" element={<FixturesTab />} />
         <Route path="table" element={<TableTab />} />
         <Route path="more" element={<MoreTab />} />
         <Route path="more/members/:userId" element={<MemberPickHistory user={user} />} />
