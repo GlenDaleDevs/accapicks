@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "../utils/animations";
 import Skeleton from "./Skeleton";
-import Leaderboard from "./Leaderboard";
+import { groupAcca, writeLastGroupId } from "../utils/routes";
 
-export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError, loading, leaderboards, accaStatsMap }) {
+export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: externalError, loading }) {
   const navigate = useNavigate();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
@@ -50,8 +50,12 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
     }
   };
 
+  const openGroup = (id) => {
+    writeLastGroupId(id);
+    navigate(groupAcca(id));
+  };
+
   return (
-    <div className="groups-page">
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
       <motion.div variants={staggerItem} className="dashboard-hero">
         <div className="dashboard-header">
@@ -103,28 +107,18 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
         )}
 
         {loading ? (
-          <Skeleton width="100%" height="80px" count={2} />
+          <Skeleton width="100%" height="64px" count={2} />
         ) : groups.length > 0 ? (
           <div className="home-groups-list">
             {groups.map((group) => (
-              <div key={group.id} className="home-group-section">
-                <div className="home-group-header">
-                  <span className="home-group-name">{group.name}</span>
-                  <button
-                    className="home-group-cta"
-                    onClick={() => navigate(`/groups/${group.id}`)}
-                  >
-                    View & Pick →
-                  </button>
-                </div>
-                <Leaderboard
-                  leaderboard={leaderboards?.[group.id] || []}
-                  loading={false}
-                  groupId={group.id}
-                  accaStats={accaStatsMap?.[group.id]}
-                  title={null}
-                />
-              </div>
+              <button
+                key={group.id}
+                className="home-group-row"
+                onClick={() => openGroup(group.id)}
+              >
+                <span className="group-row-name">{group.name}</span>
+                <span className="group-row-arrow" aria-hidden="true">→</span>
+              </button>
             ))}
           </div>
         ) : null}
@@ -220,6 +214,5 @@ export default function GroupsList({ groups, onCreateGroup, onJoinGroup, error: 
 
       </motion.div>
       </motion.div>
-    </div>
   );
 }

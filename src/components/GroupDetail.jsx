@@ -4,14 +4,14 @@ import { motion } from "framer-motion";
 import { staggerContainer, staggerItem, CARD_HOVER, CARD_TAP } from "../utils/animations";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatCountdown } from "../utils/formatters";
+import { accaDetail } from "../utils/routes";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
 import { isPushSupported, getPushPermission, subscribeToPush } from "../utils/pushNotifications";
 import AccaWizard from "./AccaWizard";
-import Leaderboard from "./Leaderboard";
 import Skeleton from "./Skeleton";
 
-export default function GroupDetail({ user, onRefreshGroups }) {
+export default function GroupDetail({ onRefreshGroups }) {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
@@ -19,16 +19,11 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const [showAccaWizard, setShowAccaWizard] = useState(false);
   const [showSettled, setShowSettled] = useState(false);
   const [showActive, setShowActive] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
-  const [accaStats, setAccaStats] = useState(null);
   const [loadingGroup, setLoadingGroup] = useState(true);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [error, setError] = useState("");
   const [accaCountdowns, setAccaCountdowns] = useState({});
-  const [members, setMembers] = useState([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [showPushPrompt, setShowPushPrompt] = useState(false);
 
@@ -66,18 +61,12 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   const loadGroupData = async () => {
     setLoadingGroup(true);
     try {
-      const [groupData, accasData, leaderboardData, membersData, accaStatsData] = await Promise.all([
+      const [groupData, accasData] = await Promise.all([
         api.getGroup(groupId),
-        api.getAccasByGroup(groupId),
-        api.getGroupLeaderboard(groupId),
-        api.getGroupMembers(groupId),
-        api.getGroupAccaStats(groupId)
+        api.getAccasByGroup(groupId)
       ]);
       setGroup(groupData);
       setAccas(accasData);
-      setLeaderboard(leaderboardData);
-      setMembers(membersData);
-      setAccaStats(accaStatsData);
     } catch (err) {
       console.error("Error loading group data:", err);
       setError(err.response?.data?.detail || "Failed to load group");
@@ -95,17 +84,6 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     }
   };
 
-  const loadLeaderboard = async () => {
-    setLoadingLeaderboard(true);
-    try {
-      const data = await api.getGroupLeaderboard(groupId);
-      setLeaderboard(data);
-    } catch (err) {
-      console.error("Error loading leaderboard:", err);
-    } finally {
-      setLoadingLeaderboard(false);
-    }
-  };
 
   const getInviteLink = () => `${window.location.origin}?invite=${group.invite_code}`;
   const getInviteMessage = () => `Join my AccaPicks group "${group.name}"! ${getInviteLink()}`;
@@ -168,7 +146,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
       );
       await loadAccas();
       setShowAccaWizard(false);
-      navigate(`/groups/${groupId}/accas/${data.id}`);
+      navigate(accaDetail(groupId, data.id));
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to create acca");
     }
@@ -192,28 +170,6 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     }
   };
 
-  const handleRemoveMember = async (memberId, memberUsername) => {
-    if (!window.confirm(`Remove ${memberUsername} from this group?`)) {
-      return;
-    }
-
-    setLoadingMembers(true);
-    try {
-      await api.removeMember(groupId, memberId);
-      showToast(`${memberUsername} has been removed from the group`, "success");
-      const [membersData, leaderboardData] = await Promise.all([
-        api.getGroupMembers(groupId),
-        api.getGroupLeaderboard(groupId)
-      ]);
-      setMembers(membersData);
-      setLeaderboard(leaderboardData);
-    } catch (err) {
-      showToast(err.response?.data?.detail || "Failed to remove member", "error");
-    } finally {
-      setLoadingMembers(false);
-    }
-  };
-
   const handleEnableNotifications = async () => {
     try {
       await subscribeToPush();
@@ -232,15 +188,9 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     setShowPushPrompt(false);
   };
 
-  // Determine if current user is admin
-  const isCurrentUserAdmin = members.find(m => m.user_id === user?.id)?.role === "admin";
-
   if (loadingGroup) {
     return (
       <div className="group-detail-page page-content">
-        <button className="btn btn-ghost mb-20" disabled>
-          &larr; Back to Groups
-        </button>
         <Skeleton width="200px" height="24px" count={1} />
         <div className="skeleton-spacer">
           <Skeleton width="100%" height="80px" count={1} />
@@ -260,9 +210,6 @@ export default function GroupDetail({ user, onRefreshGroups }) {
   if (error && !group) {
     return (
       <div className="group-detail-page page-content">
-        <button className="btn btn-ghost mb-20" onClick={() => navigate("/")}>
-          &larr; Back to Groups
-        </button>
         <div className="alert-error">{error}</div>
       </div>
     );
@@ -276,12 +223,6 @@ export default function GroupDetail({ user, onRefreshGroups }) {
     <div className="group-detail-page">
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
       <motion.div variants={staggerItem} className="group-detail-header">
-        <button
-          className="btn btn-ghost"
-          onClick={() => navigate("/")}
-        >
-          &larr; Back to Groups
-        </button>
         {!showInvite ? (
           <button className="btn btn-secondary btn-sm" onClick={() => setShowInvite(true)}>
             Invite Friends
@@ -310,19 +251,6 @@ export default function GroupDetail({ user, onRefreshGroups }) {
             </div>
           </div>
         )}
-      </motion.div>
-
-      <motion.h2 variants={staggerItem} className="section-title">{group.name}</motion.h2>
-
-      {/* Leaderboard Display */}
-      <motion.div variants={staggerItem}>
-      <Leaderboard
-        leaderboard={leaderboard}
-        loading={loadingLeaderboard}
-        accas={accas}
-        groupId={groupId}
-        accaStats={accaStats}
-      />
       </motion.div>
 
       {/* Push Notification Prompt */}
@@ -381,7 +309,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                 {openAccas.map((acca) => (
                   <motion.div
                     key={acca.id}
-                    onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
+                    onClick={() => navigate(accaDetail(groupId, acca.id))}
                     className="open-acca-row"
                     whileTap={{ scale: 0.98 }}
                   >
@@ -424,7 +352,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                     {activeAccas.map((acca) => (
                       <motion.div
                         key={acca.id}
-                        onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
+                        onClick={() => navigate(accaDetail(groupId, acca.id))}
                         className="card card-clickable"
                         whileHover={CARD_HOVER}
                         whileTap={CARD_TAP}
@@ -484,7 +412,7 @@ export default function GroupDetail({ user, onRefreshGroups }) {
                     {settledAccas.map((acca) => (
                       <motion.div
                         key={acca.id}
-                        onClick={() => navigate(`/groups/${groupId}/accas/${acca.id}`)}
+                        onClick={() => navigate(accaDetail(groupId, acca.id))}
                         className="card card-clickable"
                         whileHover={CARD_HOVER}
                         whileTap={CARD_TAP}
