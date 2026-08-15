@@ -1,11 +1,20 @@
 import { Link, useLocation, useParams } from "react-router-dom";
-import { groupAcca, groupTable, groupMore } from "../../utils/routes";
+import { groupAcca, groupFixtures, groupTable, groupMore } from "../../utils/routes";
 
 function IconAcca() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 3h14a1 1 0 0 1 1 1v17l-3.5-2.2L13 21l-3.5-2.2L6 21V4a1 1 0 0 1 1-1Z" />
       <path d="M9 8h6M9 12h6" />
+    </svg>
+  );
+}
+
+function IconFixtures() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
     </svg>
   );
 }
@@ -40,6 +49,7 @@ export default function TabBar() {
     // `/acca` prefix also covers the acca detail route at `/accas/:accaId`,
     // so the Acca tab stays lit while you're inside a single acca.
     { to: groupAcca(groupId), match: `/g/${groupId}/acca`, label: "Acca", icon: <IconAcca /> },
+    { to: groupFixtures(groupId), match: `/g/${groupId}/fixtures`, label: "Fixtures", icon: <IconFixtures /> },
     { to: groupTable(groupId), match: `/g/${groupId}/table`, label: "Table", icon: <IconTable /> },
     { to: groupMore(groupId), match: `/g/${groupId}/more`, label: "More", icon: <IconMore /> },
   ];
