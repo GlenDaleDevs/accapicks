@@ -14,6 +14,7 @@ from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from .database import engine, Base, SessionLocal
+from .timeutils import as_utc
 from . import models
 from .routers import auth, groups, accas, bets, odds, users, affiliate, notifications
 from .limiter import limiter
@@ -138,7 +139,7 @@ async def auto_lock_accas():
             locked_count = 0
             deleted_low_participation = 0
             for acca in open_accas:
-                if acca.locks_at and acca.locks_at <= now:
+                if acca.locks_at and as_utc(acca.locks_at) <= now:
                     # Check participation before locking
                     member_count = db.query(models.GroupMember).filter(
                         models.GroupMember.group_id == acca.group_id

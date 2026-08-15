@@ -6,6 +6,7 @@ from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
+from ..timeutils import as_utc
 
 router = APIRouter()
 
@@ -51,7 +52,7 @@ def create_bet(
         )
 
     # Also check locks_at time directly (background task runs every 60s)
-    if acca.locks_at and datetime.now(timezone.utc) >= acca.locks_at:
+    if acca.locks_at and datetime.now(timezone.utc) >= as_utc(acca.locks_at):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This acca is locked and no longer accepting picks"
@@ -258,7 +259,7 @@ def delete_bet(
         )
 
     # Block deletion if the bet's match has already started
-    if bet.commence_time and bet.commence_time <= datetime.now(timezone.utc):
+    if bet.commence_time and as_utc(bet.commence_time) <= datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot remove a pick after its match has started"
