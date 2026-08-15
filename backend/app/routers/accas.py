@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from sqlalchemy import func, nulls_last
 from sqlalchemy.orm import Session
 from .. import models, schemas, odds_api
 from ..database import get_db
@@ -21,6 +22,8 @@ def _acca_to_dict(acca):
         "id": acca.id,
         "group_id": acca.group_id,
         "name": acca.name,
+        "round_number": acca.round_number,
+        "first_match_date": acca.first_match_date,
         "status": acca.status,
         "match_dates": acca.match_dates,
         "leagues": acca.leagues,
@@ -82,10 +85,43 @@ def create_acca(
                     detail=f"An active acca already covers these date(s): {', '.join(sorted_overlap)}. Delete or settle the existing acca first."
                 )
 
+    first_match_date = date.fromisoformat(min(acca.match_dates))
+
+    # Weeks must be created in date order. Without this, "Week 7" could start
+    # before "Week 6" — the arrows would page through time in the wrong
+    # direction and Phase 3's rank windows would cover the wrong bets.
+    latest = db.query(func.max(models.Acca.first_match_date)).filter(
+        models.Acca.group_id == acca.group_id
+    ).scalar()
+    if latest is not None and first_match_date < latest:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"You've already got a week starting {latest.day} {latest.strftime('%b')}. "
+                "Create weeks in date order."
+            )
+        )
+
+    # Allocate from the group's high-water mark so a number is never reused
+    # after an acca is deleted. Row lock is a no-op on SQLite, which is fine —
+    # local dev is single-writer.
+    group = db.query(models.Group).filter(
+        models.Group.id == acca.group_id
+    ).with_for_update().first()
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Group not found"
+        )
+    round_number = group.next_round_number or 1
+    group.next_round_number = round_number + 1
+
     # locks_at is calculated dynamically from picked matches, not upfront
     new_acca = models.Acca(
         group_id=acca.group_id,
         name=acca.name,
+        round_number=round_number,
+        first_match_date=first_match_date,
         status="open",
         match_dates=acca.match_dates,
         leagues=acca.leagues,
@@ -121,7 +157,13 @@ def get_group_accas(
             detail="You are not a member of this group"
         )
 
-    accas = db.query(models.Acca).filter(models.Acca.group_id == group_id).all()
+    # Chronological. Previously unordered, which week paging cannot tolerate.
+    accas = db.query(models.Acca).filter(
+        models.Acca.group_id == group_id
+    ).order_by(
+        nulls_last(models.Acca.first_match_date.asc()),
+        nulls_last(models.Acca.round_number.asc()),
+    ).all()
     return [_acca_to_dict(a) for a in accas]
 
 

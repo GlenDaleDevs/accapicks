@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Optional
 import re
 import math
@@ -285,6 +285,8 @@ class AccaResponse(BaseModel):
     id: int
     group_id: int
     name: str
+    round_number: Optional[int] = None
+    first_match_date: Optional[date] = None
     status: str
     match_dates: Optional[list[str]] = None
     leagues: Optional[list[str]] = None
@@ -301,6 +303,8 @@ class AccaWithBets(BaseModel):
     id: int
     group_id: int
     name: str
+    round_number: Optional[int] = None
+    first_match_date: Optional[date] = None
     status: str
     match_dates: Optional[list[str]] = None
     leagues: Optional[list[str]] = None
