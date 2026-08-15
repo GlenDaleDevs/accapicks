@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from "react-router-dom";
-import { AnimatePresence, MotionConfig } from "framer-motion";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 import PageTransition from "./components/PageTransition";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import * as api from "./api/client";
@@ -9,16 +9,13 @@ import "./responsive.css";
 
 import AuthView from "./components/AuthView";
 import ErrorBoundary from "./components/ErrorBoundary";
-import TopBar from "./components/TopBar";
-import GroupsList from "./components/GroupsList";
-import GroupDetail from "./components/GroupDetail";
-import AccaDetail from "./components/AccaDetail";
-import MemberPickHistory from "./components/MemberPickHistory";
-import UserSettings from "./components/UserSettings";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import CookieConsent from "./components/CookieConsent";
 import ToastContainer from "./components/ToastContainer";
+import AppRoutes from "./AppRoutes";
+import { AppContext } from "./context/AppContext";
+import { clearLastGroupId } from "./utils/routes";
 import { showToast } from "./utils/toast";
 
 function App() {
@@ -33,8 +30,6 @@ function App() {
     return ["decimal", "fractional"].includes(stored) ? stored : "decimal";
   });
   const [bookmakerLinks, setBookmakerLinks] = useState({});
-  const [leaderboards, setLeaderboards] = useState({});
-  const [accaStatsMap, setAccaStatsMap] = useState({});
 
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -91,7 +86,7 @@ function App() {
         setUser(null);
         setIsLoggedIn(false);
         setGroups([]);
-        setLeaderboards({}); setAccaStatsMap({});
+        clearLastGroupId();
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -163,33 +158,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem("oddsFormat", oddsFormat);
   }, [oddsFormat]);
-
-  useEffect(() => {
-    if (groups.length === 0) return;
-    const fetchLeaderboardData = async () => {
-      try {
-        const results = await Promise.all(
-          groups.map(g =>
-            Promise.all([
-              api.getGroupLeaderboard(g.id).catch(() => []),
-              api.getGroupAccaStats(g.id).catch(() => null),
-            ]).then(([lb, stats]) => [g.id, lb, stats])
-          )
-        );
-        const lbMap = {};
-        const statsMap = {};
-        for (const [groupId, leaderboard, stats] of results) {
-          lbMap[groupId] = leaderboard;
-          statsMap[groupId] = stats;
-        }
-        setLeaderboards(lbMap);
-        setAccaStatsMap(statsMap);
-      } catch (err) {
-        console.error("Failed to fetch leaderboard data:", err);
-      }
-    };
-    fetchLeaderboardData();
-  }, [groups]);
 
   const loadGroups = async () => {
     setLoadingGroups(true);
@@ -273,7 +241,8 @@ function App() {
     setUser(null);
     setIsLoggedIn(false);
     setGroups([]);
-    setLeaderboards({}); setAccaStatsMap({});
+    // Otherwise the next user on this device gets redirected into this user's group
+    clearLastGroupId();
     window.history.replaceState({}, "", "/");
   };
 
@@ -300,6 +269,20 @@ function App() {
     }
   };
 
+  const appValue = {
+    user,
+    groups,
+    loadingGroups,
+    error,
+    oddsFormat,
+    setOddsFormat,
+    bookmakerLinks,
+    onCreateGroup: handleCreateGroup,
+    onJoinGroup: handleJoinGroup,
+    onRefreshGroups: loadGroups,
+    onLogout: handleLogout,
+  };
+
   return (
     <BrowserRouter>
       <ErrorBoundary>
@@ -311,8 +294,12 @@ function App() {
             <Route
               path="/*"
               element={
-                <div className="app-container">
-                  {!isLoggedIn ? (
+                isLoggedIn ? (
+                  <AppContext.Provider value={appValue}>
+                    <AppRoutes />
+                  </AppContext.Provider>
+                ) : (
+                  <div className="app-container">
                     <AuthView
                       onLogin={handleLogin}
                       onSignup={handleSignup}
@@ -323,28 +310,13 @@ function App() {
                       error={error}
                       pendingVerificationEmail={pendingVerificationEmail}
                     />
-                  ) : (
-                    <AppContent
-                      user={user}
-                      groups={groups}
-                      loadingGroups={loadingGroups}
-                      onLogout={handleLogout}
-                      onCreateGroup={handleCreateGroup}
-                      onJoinGroup={handleJoinGroup}
-                      onRefreshGroups={loadGroups}
-                      error={error}
-                      oddsFormat={oddsFormat}
-                      setOddsFormat={setOddsFormat}
-                      bookmakerLinks={bookmakerLinks}
-                      leaderboards={leaderboards} accaStatsMap={accaStatsMap}
-                    />
-                  )}
-                  <footer className="responsible-gambling-footer">
-                    18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
-                    <br />
-                    <Link to="/terms">Terms of Service</Link> | <Link to="/privacy">Privacy Policy</Link>
-                  </footer>
-                </div>
+                    <footer className="responsible-gambling-footer">
+                      18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
+                      <br />
+                      <Link to="/terms">Terms of Service</Link> | <Link to="/privacy">Privacy Policy</Link>
+                    </footer>
+                  </div>
+                )
               }
             />
           </Routes>
@@ -352,61 +324,6 @@ function App() {
         </MotionConfig>
       </ErrorBoundary>
     </BrowserRouter>
-  );
-}
-
-function AppContent({ user, groups, loadingGroups, onLogout, onCreateGroup, onJoinGroup, onRefreshGroups, error, oddsFormat, setOddsFormat, bookmakerLinks, leaderboards, accaStatsMap }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleLogoutWithNav = () => {
-    onLogout();
-    navigate("/");
-  };
-
-  return (
-    <div>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route
-            path="/"
-            element={
-              <PageTransition>
-                <GroupsList
-                  groups={groups}
-                  loading={loadingGroups}
-                  onCreateGroup={onCreateGroup}
-                  onJoinGroup={onJoinGroup}
-                  error={error}
-                  leaderboards={leaderboards} accaStatsMap={accaStatsMap}
-                />
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/groups/:groupId"
-            element={<PageTransition><GroupDetail user={user} onRefreshGroups={onRefreshGroups} /></PageTransition>}
-          />
-          <Route
-            path="/groups/:groupId/members/:userId"
-            element={<PageTransition><MemberPickHistory user={user} /></PageTransition>}
-          />
-          <Route
-            path="/groups/:groupId/accas/:accaId"
-            element={<PageTransition><AccaDetail user={user} oddsFormat={oddsFormat} bookmakerLinks={bookmakerLinks} /></PageTransition>}
-          />
-          <Route
-            path="/settings"
-            element={<PageTransition><UserSettings user={user} oddsFormat={oddsFormat} setOddsFormat={setOddsFormat} onLogout={handleLogoutWithNav} /></PageTransition>}
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AnimatePresence>
-      <div className="page-logout-footer">
-        <button className="btn btn-ghost" onClick={() => navigate("/settings")}>Settings</button>
-        <button className="btn btn-danger" onClick={handleLogoutWithNav}>Logout</button>
-      </div>
-    </div>
   );
 }
 

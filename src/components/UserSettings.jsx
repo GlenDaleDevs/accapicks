@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
+import { groupMore, readLastGroupId } from "../utils/routes";
 import { isPushSupported, getPushPermission, subscribeToPush, unsubscribeFromPush, isSubscribedToPush } from "../utils/pushNotifications";
 
 export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout }) {
@@ -118,9 +119,12 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
     <div className="settings-container">
       <button
         className="settings-back-link"
-        onClick={() => navigate("/")}
+        onClick={() => {
+          const lastGroupId = readLastGroupId();
+          navigate(lastGroupId ? groupMore(lastGroupId) : "/");
+        }}
       >
-        ← Back to Groups
+        ← Back
       </button>
 
       <h2 className="section-title" style={{ marginTop: "24px" }}>Settings</h2>

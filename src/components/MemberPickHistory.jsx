@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import * as api from "../api/client";
+import { accaDetail, groupTable } from "../utils/routes";
 import Skeleton from "./Skeleton";
 
 export default function MemberPickHistory({ user }) {
@@ -40,7 +41,7 @@ export default function MemberPickHistory({ user }) {
   if (error) {
     return (
       <div>
-        <button className="btn btn-ghost mb-20" onClick={() => navigate(`/groups/${groupId}`)}>
+        <button className="btn btn-ghost mb-20" onClick={() => navigate(groupTable(groupId))}>
           &larr; Back to Group
         </button>
         <div className="alert-error">{error}</div>
@@ -75,7 +76,7 @@ export default function MemberPickHistory({ user }) {
 
   return (
     <div className="page-content">
-      <button className="btn btn-ghost mb-20" onClick={() => navigate(`/groups/${groupId}`)}>
+      <button className="btn btn-ghost mb-20" onClick={() => navigate(groupTable(groupId))}>
         &larr; Back to Group
       </button>
 
@@ -122,7 +123,7 @@ export default function MemberPickHistory({ user }) {
           <div key={accaGroup.acca_id} className="member-acca-group">
             <div
               className="member-acca-header"
-              onClick={() => navigate(`/groups/${groupId}/accas/${accaGroup.acca_id}`)}
+              onClick={() => navigate(accaDetail(groupId, accaGroup.acca_id))}
             >
               <span className="member-acca-name">{accaGroup.acca_name}</span>
               <span className={`badge badge-${accaGroup.acca_status}`}>

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { LEAGUE_NAME_MAP } from "../utils/constants";
 import { formatCountdown, formatDisplayDate, formatOdds } from "../utils/formatters";
 import { showToast } from "../utils/toast";
+import { groupAcca } from "../utils/routes";
 import * as api from "../api/client";
 import FixtureGrid from "./FixtureGrid";
 import BookmakerComparison from "./BookmakerComparison";
@@ -158,7 +159,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       <div>
         <button
           className="btn btn-ghost mb-20"
-          onClick={() => navigate(`/groups/${groupId}`)}
+          onClick={() => navigate(groupAcca(groupId))}
         >
           &larr; Back to Accas
         </button>
@@ -179,7 +180,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       <div>
         <button
           className="btn btn-ghost mb-20"
-          onClick={() => navigate(`/groups/${groupId}`)}
+          onClick={() => navigate(groupAcca(groupId))}
         >
           &larr; Back to Accas
         </button>
@@ -193,7 +194,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
       <div>
         <button
           className="btn btn-ghost mb-20"
-          onClick={() => navigate(`/groups/${groupId}`)}
+          onClick={() => navigate(groupAcca(groupId))}
         >
           &larr; Back to Accas
         </button>
@@ -277,7 +278,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     try {
       await api.deleteAcca(accaId);
       showToast("Acca deleted successfully", "success");
-      navigate(`/groups/${groupId}`);
+      navigate(groupAcca(groupId));
     } catch (err) {
       showToast(err.response?.data?.detail || "Failed to delete acca", "error");
       setIsSubmitting(false);
@@ -349,7 +350,7 @@ export default function AccaDetail({ user, oddsFormat = "decimal", bookmakerLink
     <>
       <button
         className="btn btn-ghost mb-20"
-        onClick={() => navigate(`/groups/${groupId}`)}
+        onClick={() => navigate(groupAcca(groupId))}
       >
         &larr; Back to Accas
       </button>

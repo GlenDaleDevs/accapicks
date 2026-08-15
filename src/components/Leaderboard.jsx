@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { staggerContainer, leaderboardRowVariants } from "../utils/animations";
+import { memberPicks } from "../utils/routes";
 import Skeleton from "./Skeleton";
 
 export default function Leaderboard({ leaderboard, loading, accas, groupId, accaStats, title = "Group Leaderboard" }) {
@@ -62,10 +63,10 @@ export default function Leaderboard({ leaderboard, loading, accas, groupId, acca
                 className={`league-table-row${rowRankClass}${streakClass}`}
                 variants={leaderboardRowVariants}
                 layout
-                onClick={() => navigate(`/groups/${groupId}/members/${entry.user_id}`)}
+                onClick={() => navigate(memberPicks(groupId, entry.user_id))}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/groups/${groupId}/members/${entry.user_id}`); } }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(memberPicks(groupId, entry.user_id)); } }}
               >
                 <div className="league-col league-col-pos">
                   <span className={`league-pos${posRankClass}`}>
