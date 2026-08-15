@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -38,6 +38,9 @@ class Group(Base):
     description = Column(String, nullable=True)  # Optional
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)  # User ID of creator
     invite_code = Column(String, unique=True, nullable=False) #Invite code
+    # Monotonic high-water mark for acca round numbers. Never decremented, so a
+    # deleted week leaves an honest gap instead of its number being reissued.
+    next_round_number = Column(Integer, nullable=False, default=1, server_default="1")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
@@ -54,6 +57,12 @@ class Acca(Base):
     id = Column(Integer, primary_key=True, index=True)
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False, index=True)  # Which group this acca belongs to
     name = Column(String, nullable=False)  # e.g., "Saturday 1st Feb Acca"
+    # Display identity ("Week 3") and stable URL key. Allocated from
+    # Group.next_round_number, so it is never reused after a delete.
+    round_number = Column(Integer, nullable=True, index=True)
+    # min(match_dates). Chronological sort key — created_at is NOT chronological,
+    # since a later-dated acca can be created first.
+    first_match_date = Column(Date, nullable=True, index=True)
     status = Column(String, default="open")  # open, locked, settled
     match_dates = Column(JSON, nullable=True)  # Array of date strings
     leagues = Column(JSON, nullable=True)  # Array of sport keys

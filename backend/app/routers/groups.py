@@ -513,6 +513,7 @@ def get_member_picks(
             "bet_id": bet.id,
             "acca_id": bet.acca_id,
             "acca_name": acca.name if acca else None,
+            "acca_round_number": acca.round_number if acca else None,
             "acca_status": acca.status if acca else None,
             "description": bet.description,
             "odds": bet.odds,
