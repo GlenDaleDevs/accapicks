@@ -34,6 +34,20 @@ Late development — deployed to production on Railway, security hardening compl
       `create_all()` and stamped
 - [ ] Verify the overhaul on a real phone (iOS PWA safe areas, tab bar, modal, 360px column widths)
 
+### Next season (PL kicks off w/c 2026-08-22) — natural clean-slate moment
+- [ ] **Auto-create weeks anchored to the first Premier League fixture of each week.**
+      User's idea, 2026-08-15. Removes the wizard for the common case and gives the group a predictable
+      rhythm. This is exactly the "date-range rounds" option that `gameweek-pivot-idea.txt` recommended over
+      official gameweek numbers — it sidesteps the FA/EFL mapping problem entirely, and the round_number +
+      first_match_date columns added in the UI overhaul are already the right foundation.
+      Open questions: what happens during international breaks and the off-season; whether manual week
+      creation stays available alongside it; whether other leagues anchor to the PL week or their own.
+- [ ] **Fresh league table for the new season.** Needs a season boundary concept — today the leaderboard
+      counts every bet ever. Cheapest version: only count accas with round_number >= a per-group
+      season_start_round.
+- [ ] Decide what to do with the lapsed pre-season weeks (open accas nobody picked in, now shown as
+      "Lapsed"). Options: mark settled, delete, or leave. Any week nobody picks will lapse the same way.
+
 ### Quick wins (1 session each)
 - [ ] Install `eslint-plugin-react` so JSX-only identifiers stop reading as unused (13 pre-existing lint errors)
 - [ ] Join-a-group flow: the invite link already works end-to-end; what's missing is invite context on the
