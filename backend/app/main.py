@@ -15,6 +15,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from .database import engine, Base, SessionLocal
 from .timeutils import as_utc
+from .favourable import refresh_favourable_matchups
 from . import models
 from .routers import auth, groups, accas, bets, odds, users, affiliate, notifications
 from .limiter import limiter
@@ -36,12 +37,14 @@ async def lifespan(app):
     settle_task = asyncio.create_task(auto_settle_bets())
     cleanup_task = asyncio.create_task(cleanup_verification_codes())
     blacklist_task = asyncio.create_task(cleanup_blacklisted_tokens())
+    favourable_task = asyncio.create_task(refresh_favourable_matchups())
     yield
     logger.info("Shutting down background tasks")
     lock_task.cancel()
     settle_task.cancel()
     cleanup_task.cancel()
     blacklist_task.cancel()
+    favourable_task.cancel()
 
 # Custom rate limit handler
 def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):

@@ -200,7 +200,12 @@ export const getFilteredMatches = async (leagues, dateFrom, dateTo) => {
   return response.data;
 };
 
-export const getBttsOdds = async (eventId, sportKey) => {
+export const getFavourableMatchups = async () => {
+  const response = await axios.get(`${API_URL}/odds/favourable`);
+  return response.data;
+};
+
+export const getBttsOdds =async (eventId, sportKey) => {
   const response = await axios.get(`${API_URL}/odds/matches/${eventId}/btts`, {
     params: { sport_key: sportKey },
   });

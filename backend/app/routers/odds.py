@@ -1,6 +1,6 @@
 import re
 from fastapi import APIRouter, Depends, Request, HTTPException
-from .. import odds_api
+from .. import odds_api, favourable
 from .auth import get_current_user
 from ..limiter import limiter
 
@@ -77,6 +77,17 @@ def get_filtered_matches(
     formatted_matches.sort(key=lambda m: m["commence_time"])
 
     return formatted_matches
+
+
+@router.get("/odds/favourable")
+@limiter.limit("30/minute")
+def get_favourable_matchups(request: Request, user_id: int = Depends(get_current_user)):
+    """Lopsided upcoming fixtures, served from the background-refreshed cache.
+
+    An empty list is a valid answer, not a failure — a round with no strong
+    mismatch is more credible than one that always finds something.
+    """
+    return favourable.get_cached()
 
 
 @router.get("/odds/matches/{event_id}/btts")

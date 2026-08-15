@@ -390,3 +390,122 @@
     font-size: 15px;
   }
 }
+
+/* ---- Favourable matchups ---- */
+
+.matchup-list { padding: 0 16px; }
+
+.matchup-basis {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.matchup-how {
+  margin-left: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.matchup-how-panel {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.matchup-how-panel p {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.matchup-how-panel p:last-child { margin-bottom: 0; }
+
+.matchup-how-caveat { color: var(--text-muted) !important; }
+
+.matchup-card {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 14px 16px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.matchup-card:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--border-color-light);
+}
+
+.matchup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.matchup-league {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.matchup-kickoff {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.matchup-sides {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.matchup-side { min-width: 0; }
+.matchup-side-away { text-align: right; }
+
+.matchup-team {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The mismatch is the signal — emphasis, never a recommendation. */
+.matchup-side-strong .matchup-team { color: var(--text-primary); }
+.matchup-side-strong .matchup-form { color: var(--accent-primary); }
+
+.matchup-form {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.matchup-v {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
