@@ -221,7 +221,9 @@ export default function AccaTab({ user, oddsFormat }) {
   const readOnly = state === ACCA_STATE.SETTLED || state === ACCA_STATE.EXPIRED;
   const currentIndex = current ? accas.findIndex((a) => a.id === current.id) : -1;
   const hasLiveWeek = accas.some((a) => a.status === "open" && !isExpired(a));
-  const nextWeekNumber = accas.reduce((max, a) => Math.max(max, a.round_number || 0), 0) + 1;
+  // Season-relative, matching the label the week will actually get. Counting
+  // round_number here would offer "Start week 34" in a group's third season.
+  const nextWeekNumber = accas.reduce((max, a) => Math.max(max, a.week_number || 0), 0) + 1;
 
   return (
     <div className="acca-tab">

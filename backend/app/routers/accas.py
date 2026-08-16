@@ -5,7 +5,7 @@ from datetime import datetime, timezone, date
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import nulls_last
 from sqlalchemy.orm import Session
-from .. import models, schemas, odds_api
+from .. import models, schemas, odds_api, season
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
@@ -17,12 +17,16 @@ router = APIRouter()
 
 
 # Helper to build acca response dict with parsed JSON fields
-def _acca_to_dict(acca):
+def _acca_to_dict(acca, week_number=None):
     return {
         "id": acca.id,
         "group_id": acca.group_id,
         "name": acca.name,
         "round_number": acca.round_number,
+        # Position within the current season — what "Week 3" actually means to
+        # a reader. Null for accas from a previous season, which keep showing
+        # the round_number they were given at the time.
+        "week_number": week_number,
         "first_match_date": acca.first_match_date,
         "status": acca.status,
         "match_dates": acca.match_dates,
@@ -125,7 +129,8 @@ def create_acca(
     db.commit()
     db.refresh(new_acca)
 
-    return _acca_to_dict(new_acca)
+    week_numbers = season.week_numbers(season.season_accas(db, group))
+    return _acca_to_dict(new_acca, week_numbers.get(new_acca.id))
 
 
 # Get all accas for a group
@@ -156,7 +161,11 @@ def get_group_accas(
         nulls_last(models.Acca.first_match_date.asc()),
         nulls_last(models.Acca.round_number.asc()),
     ).all()
-    return [_acca_to_dict(a) for a in accas]
+
+    # Every acca is listed — last season's stay browsable — but only this
+    # season's carry a week number.
+    week_numbers, _ = season.week_numbers_for_group(db, group_id)
+    return [_acca_to_dict(a, week_numbers.get(a.id)) for a in accas]
 
 
 # Get a specific acca with all its bets (including usernames!)
@@ -217,7 +226,8 @@ def get_acca(
         bet_responses.append(bet_dict)
 
     # Convert to response format
-    acca_dict = _acca_to_dict(acca)
+    week_numbers, _ = season.week_numbers_for_group(db, acca.group_id)
+    acca_dict = _acca_to_dict(acca, week_numbers.get(acca.id))
     acca_dict["bets"] = bet_responses
 
     return acca_dict

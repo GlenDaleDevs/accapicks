@@ -110,12 +110,13 @@ def _create(db, group, block):
 def _notify(db, acca, block):
     try:
         from .push import send_push_to_group
+        from .season import label
         anchor = block["anchor"]
         send_push_to_group(
             db,
             acca.group_id,
             {
-                "title": f"Week {acca.round_number} is open",
+                "title": f"{label(db, acca)} is open",
                 "body": f"{anchor.strftime('%a')} {anchor.day} {anchor.strftime('%b')} — get your pick in",
                 "tag": f"week-{acca.id}",
                 "url": f"/g/{acca.group_id}/acca/{acca.round_number}",

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, case
-from .. import models, schemas
+from .. import models, schemas, season
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
@@ -260,26 +260,6 @@ def update_group(
     return group
 
 
-def _season_accas(db, group):
-    """The group's accas that count toward the current season.
-
-    The table, the acca-stats bar and member profiles all read the same bet
-    pool, so they scope together or they contradict each other. A null
-    season_start_date counts everything ever, which is what every group starts
-    with — the migration must not wipe standings on its own.
-
-    Accas with no first_match_date are pre-numbering legacy rows and always
-    predate a season start.
-    """
-    query = db.query(models.Acca).filter(models.Acca.group_id == group.id)
-    if group.season_start_date:
-        query = query.filter(
-            models.Acca.first_match_date.isnot(None),
-            models.Acca.first_match_date >= group.season_start_date,
-        )
-    return query.all()
-
-
 def _group_or_404(db, group_id, user_id):
     """Fetch a group and confirm the caller is a member."""
     group = db.query(models.Group).filter(models.Group.id == group_id).first()
@@ -437,7 +417,7 @@ def get_group_leaderboard(
     # Season-scoped: everything downstream — stats, streaks and the movement
     # window — derives from these accas, so this is the only place the boundary
     # has to be applied.
-    accas = _season_accas(db, group)
+    accas = season.season_accas(db, group)
     acca_ids = [a.id for a in accas]
 
     # Accumulate bet stats
@@ -548,10 +528,7 @@ def get_group_leaderboard(
     # Position, not round_number: accas can now be created out of date order (a
     # midweek one-off slotted in before an already-open Saturday week), so the
     # number no longer implies chronology. first_match_date does.
-    ordered = sorted(
-        (a for a in accas if a.first_match_date is not None),
-        key=lambda a: (a.first_match_date, a.round_number or 0),
-    )
+    ordered = season.chronological(a for a in accas if a.first_match_date is not None)
     position_by_acca = {a.id: i for i, a in enumerate(ordered)}
     settled_positions = {
         position_by_acca[a.id] for a in ordered
@@ -613,7 +590,7 @@ def get_member_picks(
 
     # Season-scoped, so tapping a row that reads 3–1 shows three wins and a loss
     # rather than a career history that looks like a different person.
-    accas = _season_accas(db, group)
+    accas = season.season_accas(db, group)
     acca_ids = [a.id for a in accas] if accas else []
 
     # Check if target user has bets in this group
@@ -648,6 +625,7 @@ def get_member_picks(
 
     # Build acca map for efficient lookup
     acca_map = {a.id: a for a in accas}
+    week_numbers = season.week_numbers(accas)
 
     # Leg counts per acca, so the profile can explain *why* an acca lost when
     # this member's own pick won — "Acca lost — 4 of 5 landed".
@@ -696,6 +674,7 @@ def get_member_picks(
             "acca_id": bet.acca_id,
             "acca_name": acca.name if acca else None,
             "acca_round_number": acca.round_number if acca else None,
+            "acca_week_number": week_numbers.get(bet.acca_id),
             "acca_status": acca.status if acca else None,
             "acca_legs": acca_legs.get(bet.acca_id, 0),
             "acca_landed": acca_landed.get(bet.acca_id, 0),
@@ -769,7 +748,7 @@ def get_acca_stats(
 
     # Same scope as the leaderboard — this bar sits on the same card, so the
     # two must not disagree about how many accas there have been.
-    accas = _season_accas(db, group)
+    accas = season.season_accas(db, group)
 
     # Count accas by status
     total_accas = len(accas)
