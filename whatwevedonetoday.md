@@ -177,6 +177,22 @@ acca deleted and leaves a `round_number` gap, but the next week still reads as t
 season — which is what you want now that lapsed weeks are auto-deleted, otherwise the numbers would
 drift upward past the number of weeks actually played.
 
+## Restored the delete-a-week button
+
+Reported by the user: an open acca couldn't be removed. **A regression from the UI overhaul** —
+`api.deleteAcca` survived but every caller went with `GroupDetail`/`AccaDetail`, so the endpoint had
+been unreachable from the app since 15 Aug.
+
+- [x] "Delete this week" in `acca-tab-actions`, styled as a link rather than a button competing with
+      "+ New week"
+- [x] Shown only while the week is open (the backend refuses anything else) and to the group admin or
+      the acca's creator. Auto-created weeks have no creator, so for those it's admin or nobody
+- [x] Confirm names the week and the number of picks that go with it
+
+Verified against the real endpoint: manual acca deleted by its creator → 200; auto-created acca
+(`created_by` NULL) deleted by the admin → 200; locked acca → 400 "Can only delete accas with 'open'
+status".
+
 ### Verified
 
 Five accas seeded across April–May, boundary set to 21 Aug, then two new weeks created through the

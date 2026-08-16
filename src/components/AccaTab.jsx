@@ -49,6 +49,7 @@ export default function AccaTab({ user, oddsFormat }) {
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const detailIdRef = useRef(null);
 
   const loadIndex = useCallback(async () => {
@@ -173,6 +174,27 @@ export default function AccaTab({ user, oddsFormat }) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!detail) return;
+    const label = detail.week_number ? `Week ${detail.week_number}` : "this week";
+    const picks = (detail.bets || []).length;
+    const warning = picks
+      ? `Delete ${label}? ${picks} pick${picks === 1 ? "" : "s"} will go with it.`
+      : `Delete ${label}?`;
+    if (!window.confirm(warning)) return;
+    setDeleting(true);
+    try {
+      await api.deleteAcca(detail.id);
+      showToast("Week deleted", "success");
+      navigate(groupAcca(groupId), { replace: true });
+      await loadIndex();
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Failed to delete week", "error");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleCreate = async ({ name, matchDates, leagues, betType }) => {
     try {
       const created = await api.createAcca(groupId, name, matchDates, leagues, betType);
@@ -221,6 +243,12 @@ export default function AccaTab({ user, oddsFormat }) {
   const readOnly = state === ACCA_STATE.SETTLED || state === ACCA_STATE.EXPIRED;
   const currentIndex = current ? accas.findIndex((a) => a.id === current.id) : -1;
   const hasLiveWeek = accas.some((a) => a.status === "open" && !isExpired(a));
+
+  // Deleting is only possible while a week is still open — once it locks, the
+  // backend refuses. Auto-created weeks have no creator, so for those it's the
+  // group admin or nobody.
+  const isGroupAdmin = members.some((m) => m.user_id === user?.id && m.role === "admin");
+  const canDelete = detail?.status === "open" && (isGroupAdmin || detail?.created_by === user?.id);
   // Season-relative, matching the label the week will actually get. Counting
   // round_number here would offer "Start week 34" in a group's third season.
   const nextWeekNumber = accas.reduce((max, a) => Math.max(max, a.week_number || 0), 0) + 1;
@@ -286,11 +314,18 @@ export default function AccaTab({ user, oddsFormat }) {
         <div className="page-content"><Skeleton width="100%" height="120px" count={1} /></div>
       )}
 
-      {isCurrent && hasLiveWeek && (
+      {(canDelete || (isCurrent && hasLiveWeek)) && (
         <div className="acca-tab-actions">
-          <button className="btn btn-ghost" onClick={() => setShowWizard(true)}>
-            + New week
-          </button>
+          {isCurrent && hasLiveWeek && (
+            <button className="btn btn-ghost" onClick={() => setShowWizard(true)}>
+              + New week
+            </button>
+          )}
+          {canDelete && (
+            <button className="acca-delete-link" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting…" : "Delete this week"}
+            </button>
+          )}
         </div>
       )}
 
