@@ -62,3 +62,59 @@ Updated as tasks are completed during the session.
 
 ## Not verified
 - Anything visual: browser extension wasn't connected. Tab bar on iOS PWA safe areas, the four state treatments, modal focus trap, column widths at 360px, movement arrows (need two settled weeks)
+
+---
+
+# Done — 2026-08-16
+
+## Auto-created weeks
+
+Weeks now open by themselves, anchored to the fixture list. Plan:
+`C:\Users\glend\.claude\plans\soft-knitting-blanket.md`
+
+- [x] `odds_api.get_events()` — the `/events` endpoint, **zero API credits**, 1h cache, serves stale
+      on error so an API blip can't look like an international break
+- [x] `weekblocks.py` — pure block detection, no DB or network. A Saturday block spreads into Fri/Sun/Mon
+      only where fixtures exist; a midweek block needs ≥4 PL fixtures on a contiguous Tue/Wed/Thu run,
+      so the EFL's constant midweek games don't trigger a week on their own
+- [x] International breaks need no calendar: no fixtures, no blocks
+- [x] `autoweek.py` — creation, extension and lapsed-week cleanup on a 30-min background task
+- [x] Auto-created accas are marked by `created_by IS NULL`, which is also what keeps the extension
+      pass off manually created ones where the dates were a deliberate choice
+- [x] Extension widens a week whose Sunday/Monday fixtures weren't published when it was created,
+      and moves `first_match_date` if a Friday appears. Add-only — never strands a pick
+- [x] Empty lapsed weeks are deleted once their last fixture has passed. Clears the pre-season ones too
+- [x] Push on open: "Week N is open — Sat 22 Aug", via the existing `send_push_to_group`
+- [x] `groups.auto_weeks` (migration `add_auto_weeks`), `PATCH /groups/{id}` (admin only), toggle in
+      Group Settings, and the no-week card reworded when it's on
+
+## Week ordering relaxed
+
+- [x] **Dropped the create-in-date-order 409.** Auto-creation means a Saturday week is usually already
+      open, so slotting a midweek Champions League acca in before it would have been impossible
+- [x] Leaderboard movement windows now key off chronological position (`first_match_date`) instead of
+      `round_number`, which no longer implies chronology
+- [x] Champions League added to the league lists
+
+## Fixed along the way
+
+- [x] **`VALID_SPORT_KEYS` existed twice** — `schemas.py` and `routers/odds.py` — and had drifted.
+      Adding Champions League to one still 422'd on the other. `odds.py` now imports from `schemas.py`
+- [x] Friday fixtures were excluded from the weekend block on a defensive argument that didn't hold.
+      Caught it because the season opener is Friday 21 Aug and would have been unpickable
+
+## Verified
+
+- Block detection against the live fixture list: opening weekend resolves to
+  Fri 21 – Mon 24 Aug, one block, no spurious midweek from the lone Thursday EFL game
+- Creation / idempotency / extension / out-of-order manual acca / lapsed cleanup, against a throwaway DB
+- Endpoints end-to-end: `auto_weeks` defaults on, PATCH toggles it, out-of-order acca returns 201 and
+  the list comes back chronological (Week 2 on 19 Aug ahead of Week 1 on 22 Aug)
+- Full Alembic chain from an empty database, including `add_auto_weeks`
+- `npm run build` clean; `npm run lint` still 13 errors, all pre-existing, none in touched files
+
+## Not verified
+
+- **Nothing visual.** The Group Settings toggle and the reworded no-week card have not been looked at
+  in a browser — no local account to log in with. Worth an eye before Saturday
+- The push notification itself (VAPID keys still unverified in production — pre-existing)

@@ -41,6 +41,9 @@ class Group(Base):
     # Monotonic high-water mark for acca round numbers. Never decremented, so a
     # deleted week leaves an honest gap instead of its number being reissued.
     next_round_number = Column(Integer, nullable=False, default=1, server_default="1")
+    # Open the next Saturday (or full midweek round) without anyone running the
+    # wizard. See autoweek.py.
+    auto_weeks = Column(Boolean, nullable=False, default=True, server_default="1")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

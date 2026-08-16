@@ -21,6 +21,9 @@ ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h,totals')
 _btts_cache = {}  # { event_id: { "data": [...bookmakers], "timestamp": float } }
 BTTS_CACHE_TTL_SECONDS = 86400  # 24 hours
 
+_events_cache = {}  # { sport_key: { "data": [...events], "timestamp": float } }
+EVENTS_CACHE_TTL_SECONDS = 3600  # fixture lists move slowly
+
 COMPARISON_ESTIMATE_HAIRCUT = 0.97  # 3% reduction on estimated odds
 
 def get_football_matches(sport='soccer_epl'):
@@ -60,6 +63,37 @@ def get_football_matches(sport='soccer_epl'):
     except Exception as e:
         logger.error(f"Error fetching odds for {sport}: {e}")
         return []
+
+def get_events(sport='soccer_epl'):
+    """
+    Get upcoming fixtures for a sport, without odds.
+
+    The /events endpoint returns the same fixture list as /odds but costs zero
+    API credits. Used by week auto-creation, which needs kickoff times only.
+
+    Returns a list of {id, home_team, away_team, commence_time}.
+    """
+    if sport in _events_cache:
+        age = time.time() - _events_cache[sport]["timestamp"]
+        if age < EVENTS_CACHE_TTL_SECONDS:
+            return _events_cache[sport]["data"]
+
+    url = f'{ODDS_API_BASE_URL}/sports/{sport}/events'
+
+    try:
+        response = requests.get(url, params={'apiKey': ODDS_API_KEY}, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        _events_cache[sport] = {"data": data, "timestamp": time.time()}
+        return data
+    except Exception as e:
+        logger.error(f"Error fetching events for {sport}: {e}")
+        # Serve stale rather than nothing: a transient API blip must not read as
+        # "no fixtures this week", which is how an international break looks.
+        if sport in _events_cache:
+            return _events_cache[sport]["data"]
+        return []
+
 
 def format_match_for_display(match, league=None):
     """Format a match into a readable structure"""

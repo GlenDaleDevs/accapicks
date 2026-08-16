@@ -3,7 +3,7 @@ import logging
 import os
 from datetime import datetime, timezone, date
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy import func, nulls_last
+from sqlalchemy import nulls_last
 from sqlalchemy.orm import Session
 from .. import models, schemas, odds_api
 from ..database import get_db
@@ -87,20 +87,12 @@ def create_acca(
 
     first_match_date = date.fromisoformat(min(acca.match_dates))
 
-    # Weeks must be created in date order. Without this, "Week 7" could start
-    # before "Week 6" — the arrows would page through time in the wrong
-    # direction and Phase 3's rank windows would cover the wrong bets.
-    latest = db.query(func.max(models.Acca.first_match_date)).filter(
-        models.Acca.group_id == acca.group_id
-    ).scalar()
-    if latest is not None and first_match_date < latest:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                f"You've already got a week starting {latest.day} {latest.strftime('%b')}. "
-                "Create weeks in date order."
-            )
-        )
+    # Weeks used to have to be created in date order, so that round order was
+    # chronological by construction. Auto-creation breaks that: a Saturday week
+    # is usually already open, and slotting a midweek Champions League acca in
+    # before it is exactly what manual creation is now for. Ordering comes from
+    # first_match_date everywhere instead — see get_group_accas and the
+    # leaderboard's movement window.
 
     # Allocate from the group's high-water mark so a number is never reused
     # after an acca is deleted. Row lock is a no-op on SQLite, which is fine —

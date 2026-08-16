@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
+import { useApp } from "../context/AppContext";
 import { ACCA_STATE, getAccaState, isExpired } from "../utils/accaState";
 import { buildPick, buildStructuredData } from "../utils/pickDescription";
 import { groupAcca } from "../utils/routes";
@@ -34,6 +35,8 @@ function resolveCurrent(accas) {
 export default function AccaTab({ user, oddsFormat }) {
   const { groupId, roundNumber } = useParams();
   const navigate = useNavigate();
+  const { groups } = useApp();
+  const autoWeeks = groups.find((g) => String(g.id) === String(groupId))?.auto_weeks;
 
   const [accas, setAccas] = useState([]);
   const [members, setMembers] = useState([]);
@@ -240,18 +243,27 @@ export default function AccaTab({ user, oddsFormat }) {
       )}
 
       {/* When there's no week left to pick for, starting one IS the task —
-          it shouldn't be a small ghost button under everything else. */}
+          it shouldn't be a small ghost button under everything else. Unless
+          weeks open by themselves, in which case waiting is the right move and
+          the manual route steps back to being the exception. */}
       {!hasLiveWeek && (
         <div className="new-week-card">
           <h3 className="new-week-title">
-            {state === ACCA_STATE.EXPIRED ? "This week never got going" : "No week open"}
+            {autoWeeks
+              ? "Next week isn't open yet"
+              : state === ACCA_STATE.EXPIRED ? "This week never got going" : "No week open"}
           </h3>
           <p className="new-week-text">
-            {state === ACCA_STATE.EXPIRED
-              ? "Nobody picked, so it lapsed. Start the next one to get going."
-              : "Start the next week and your mates can add their picks."}
+            {autoWeeks
+              ? "It opens a few days before the next Saturday's fixtures. Start one yourself if you can't wait."
+              : state === ACCA_STATE.EXPIRED
+                ? "Nobody picked, so it lapsed. Start the next one to get going."
+                : "Start the next week and your mates can add their picks."}
           </p>
-          <button className="btn btn-primary" onClick={() => setShowWizard(true)}>
+          <button
+            className={`btn ${autoWeeks ? "btn-ghost" : "btn-primary"}`}
+            onClick={() => setShowWizard(true)}
+          >
             Start week {nextWeekNumber}
           </button>
         </div>
