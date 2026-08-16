@@ -25,7 +25,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.predictionmodel.config import DIVISIONS, TARGET_DIVISIONS  # noqa: E402
+from app.predictionmodel.config import (  # noqa: E402
+    DIVISIONS, TARGET_DIVISIONS, TOP_N_PER_LEAGUE,
+)
 from app.predictionmodel.footballdata import fetch_results  # noqa: E402
 from app.predictionmodel.ladder import build_ladders_from_rows  # noqa: E402
 from app.predictionmodel.matchups import _gap  # noqa: E402
@@ -140,6 +142,10 @@ def evaluate_season(season, mode, metric):
                 "season": season,
                 "div": code,
                 "round": rounds[id(row)],
+                # (year, ISO week) — the unit the tab actually presents. The
+                # real window is a rolling 8 days, but a calendar week is the
+                # same shape and far easier to reason about.
+                "week": row["played_on"].isocalendar()[:2],
                 "home": row["home"],
                 "away": row["away"],
                 "differential": differential,
@@ -150,6 +156,26 @@ def evaluate_season(season, mode, metric):
             })
 
     return results, unresolved
+
+
+def top_per_league_week(rows, top_n):
+    """What the tab actually surfaces.
+
+    matchups.top_per_league takes the widest `top_n` differentials in each
+    division and favourable._flatten only then drops anything under the
+    threshold — so a league-week with six qualifying fixtures shows three, and
+    the ones it drops are the narrower ones. Measuring every fixture above the
+    threshold measures a different, larger population.
+    """
+    grouped = {}
+    for row in rows:
+        grouped.setdefault((row["season"], row["div"], row["week"]), []).append(row)
+
+    selected = []
+    for bucket in grouped.values():
+        bucket.sort(key=lambda r: -abs(r["differential"]))
+        selected.extend(bucket[:top_n])
+    return selected
 
 
 def run(seasons, modes, metrics):
@@ -167,18 +193,52 @@ def run(seasons, modes, metrics):
     return everything
 
 
+def compare_selection(rows, metric, threshold, top_n):
+    """Every fixture above the threshold, against only the ones the tab shows."""
+    import backtest_report as rep
+
+    shown = top_per_league_week(rows, top_n)
+    print(f"\n{'=' * 78}\n  SELECTION: all above threshold vs top-{top_n} per league-week\n{'=' * 78}")
+    out = []
+    for label, population in (("all above threshold", rows), (f"top {top_n} per league-week", shown)):
+        band = [r for r in population if abs(r["differential"]) >= threshold]
+        n, hit, roi = rep.settle(band, rep.MODEL)
+        _, _, roi_max = rep.settle(band, rep.MODEL, best=True)
+        _, mhit, mroi = rep.settle(band, rep.market)
+        agree = sum(1 for r in band if rep.market(r) and rep.market(r) == r["favours"])
+        out.append([
+            label, n, rep._pct(hit), rep._pct(rep.win_or_draw(band, rep.MODEL)),
+            rep._roi(roi), rep._roi(roi_max), rep._pct(mhit), rep._roi(mroi),
+            rep._pct(100 * agree / len(band)) if band else "—",
+        ])
+    rep._table("", ["population", "bets", "won", "won/drew", "ROI avg", "ROI best",
+                    "market won", "market ROI", "agrees"], out)
+
+    band = [r for r in shown if abs(r["differential"]) >= threshold]
+    rep.by_bucket(band, metric)
+    rep.by_season(band, metric, threshold, sorted({r["season"] for r in band}))
+    rep.by_division(band, metric, threshold)
+    rep.disagreements(band, metric, threshold)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seasons", nargs="+", default=SEASONS)
     parser.add_argument("--modes", nargs="+", default=["prior", "todate"])
     parser.add_argument("--metrics", nargs="+", default=["adjusted", "rank"])
     parser.add_argument("--json", type=Path, help="also dump raw rows here")
+    parser.add_argument("--top-n", type=int, default=TOP_N_PER_LEAGUE)
     args = parser.parse_args()
 
     print("Loading and evaluating...", file=sys.stderr)
     everything = run(args.seasons, args.modes, args.metrics)
 
     report.print_report(everything, args.seasons)
+
+    # The shipping selection rule, measured on the shipping configuration.
+    shipped = everything.get(("prior", "adjusted"))
+    if shipped:
+        compare_selection(shipped[0], "adjusted", 0.75, args.top_n)
 
     if args.json:
         payload = {
