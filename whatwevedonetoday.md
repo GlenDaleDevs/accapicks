@@ -118,3 +118,38 @@ Weeks now open by themselves, anchored to the fixture list. Plan:
 - **Nothing visual.** The Group Settings toggle and the reworded no-week card have not been looked at
   in a browser — no local account to log in with. Worth an eye before Saturday
 - The push notification itself (VAPID keys still unverified in production — pre-existing)
+
+## Fresh league table for the new season
+
+- [x] `groups.season_start_date` (migration `add_season_start`), nullable. **Left null on every existing
+      group** — a migration must not wipe standings on its own, so nothing changes until an admin sets it
+- [x] One helper, `_season_accas()`, applied in all three places that read the same bet pool:
+      the leaderboard, the acca-stats bar and the member profile. Scoping one and not the others would
+      have had a row reading 3–1 open onto a career history
+- [x] Filtering the accas is the only change the leaderboard needed — stats, streaks and the movement
+      window all derive from them
+- [x] `GroupUpdate` is now a genuine partial update (`exclude_unset`), so `season_start_date: null`
+      clears the boundary instead of reading as "field omitted", and setting one field keeps the other
+- [x] Date input in Group Settings, admin only, with a Clear button
+- [x] "Counting from 21 Aug 2026" on the table and the profile — an empty table is alarming until you
+      know why it's empty
+- [x] Also extracted `_group_or_404()`, replacing four copies of the same fetch-and-check-membership block
+
+## Verified (season boundary)
+
+Three settled accas seeded — two in May, one on 22 Aug — then read back through the real endpoints:
+
+| | table | accas | profile |
+|---|---|---|---|
+| No boundary | 2–1 (66.7%) | 3 | 2–1, 3 picks |
+| Boundary 1 Aug | 0–1 (0.0%) | 1 | 0–1, 1 pick |
+| Cleared | 2–1 (66.7%) | 3 | 2–1, 3 picks |
+
+All three agree at every setting. Partial PATCH confirmed both ways: setting `auto_weeks` alone keeps
+`season_start_date` and vice versa. Full Alembic chain from empty. Build clean, lint still 13
+pre-existing errors.
+
+## Known gap
+
+The **week strip still pages back through last season** — only the table, stats bar and profiles are
+season-scoped. Browsing old weeks is arguably right, but if it reads oddly the same helper would do it.

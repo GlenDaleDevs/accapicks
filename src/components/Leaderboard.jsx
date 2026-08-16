@@ -14,8 +14,14 @@ function Movement({ change }) {
   return <span className="league-move league-move-level" title="No change">–</span>;
 }
 
-export default function Leaderboard({ leaderboard, loading, groupId, accaStats, title = "Group Leaderboard" }) {
+export default function Leaderboard({ leaderboard, loading, groupId, accaStats, seasonStart, title = "Group Leaderboard" }) {
   const navigate = useNavigate();
+
+  // An empty table is alarming without saying why. Naming the boundary turns
+  // "everyone's on zero" into "the season just started".
+  const seasonLabel = seasonStart
+    ? new Date(`${seasonStart}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    : null;
 
   // Only reserve the movement column once there's real movement to show.
   const hasMovement = leaderboard.some(
@@ -43,6 +49,10 @@ export default function Leaderboard({ leaderboard, loading, groupId, accaStats, 
             <span className="group-stats-locked">{accaStats.locked_accas} active</span>
           )}
         </div>
+      )}
+
+      {seasonLabel && (
+        <p className="league-season-note">Counting from {seasonLabel}</p>
       )}
 
       {loading ? (

@@ -44,6 +44,9 @@ class Group(Base):
     # Open the next Saturday (or full midweek round) without anyone running the
     # wizard. See autoweek.py.
     auto_weeks = Column(Boolean, nullable=False, default=True, server_default="1")
+    # Accas whose first_match_date falls before this drop out of the table, the
+    # acca-stats bar and member profiles. Null means count everything ever.
+    season_start_date = Column(Date, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

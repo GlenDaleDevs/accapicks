@@ -12,6 +12,7 @@ export default function GroupSettings() {
   const [group, setGroup] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [savingAutoWeeks, setSavingAutoWeeks] = useState(false);
+  const [savingSeason, setSavingSeason] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [copied, setCopied] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -33,18 +34,27 @@ export default function GroupSettings() {
     return () => { cancelled = true; };
   }, [groupId, user?.id]);
 
-  const toggleAutoWeeks = async () => {
-    if (savingAutoWeeks || !group) return;
-    const next = !group.auto_weeks;
-    setSavingAutoWeeks(true);
+  const save = async (settings, setSaving) => {
+    if (!group) return;
+    setSaving(true);
     try {
-      const updated = await api.updateGroup(groupId, { auto_weeks: next });
+      const updated = await api.updateGroup(groupId, settings);
       setGroup(updated);
     } catch (err) {
       showToast(err.response?.data?.detail || "Couldn't save that setting", "error");
     } finally {
-      setSavingAutoWeeks(false);
+      setSaving(false);
     }
+  };
+
+  const toggleAutoWeeks = () => {
+    if (savingAutoWeeks) return;
+    save({ auto_weeks: !group.auto_weeks }, setSavingAutoWeeks);
+  };
+
+  const setSeasonStart = (value) => {
+    if (savingSeason) return;
+    save({ season_start_date: value || null }, setSavingSeason);
   };
 
   const name = group?.name || known?.name || "This group";
@@ -156,6 +166,37 @@ export default function GroupSettings() {
             disabled={savingAutoWeeks}
           />
         </label>
+      )}
+
+      {isAdmin && group && (
+        <div className="group-setting-row group-setting-row-stacked">
+          <span className="group-setting-text">
+            <span className="group-setting-title">Season starts</span>
+            <span className="group-setting-hint">
+              The table, the accas-won record and everyone's profile count from this date.
+              Leave it blank to count every acca ever.
+            </span>
+          </span>
+          <div className="group-setting-controls">
+            <input
+              type="date"
+              className="group-setting-date"
+              value={group.season_start_date || ""}
+              onChange={(e) => setSeasonStart(e.target.value)}
+              disabled={savingSeason}
+            />
+            {group.season_start_date && (
+              <button
+                type="button"
+                className="group-setting-clear"
+                onClick={() => setSeasonStart(null)}
+                disabled={savingSeason}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       <button className="group-leave-link" onClick={handleLeave} disabled={leaving}>

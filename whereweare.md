@@ -40,9 +40,11 @@ Late development — deployed to production on Railway, security hardening compl
       Still to do: **verify in a browser before Saturday** (nothing visual was checked), and decide
       whether Friday-only weeks or a shorter `LEAD_DAYS` are wanted — a week currently opens 4 days out,
       so the opening weekend appears on Tue 18 Aug.
-- [ ] **Fresh league table for the new season.** Needs a season boundary concept — today the leaderboard
-      counts every bet ever. Cheapest version: only count accas with round_number >= a per-group
-      season_start_round.
+- [x] ~~**Fresh league table for the new season.**~~ — done 2026-08-16. `groups.season_start_date`, set
+      by an admin in Group Settings, scopes the leaderboard, the accas-won bar and member profiles
+      together. Keyed on `first_match_date`, not `round_number`, which is no longer chronological.
+      Null on every existing group, so **you have to set it** (21 Aug 2026) or the table keeps counting
+      last season. Week strip is deliberately not scoped — old weeks stay browsable.
 - [x] ~~Decide what to do with the lapsed pre-season weeks~~ — deleted automatically once their last
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 

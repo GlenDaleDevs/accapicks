@@ -250,9 +250,51 @@ def update_group(
             detail="Only a group admin can change these settings"
         )
 
-    group.auto_weeks = update.auto_weeks
+    # Only what was actually sent, so a null season_start_date clears the
+    # boundary instead of being mistaken for "field omitted".
+    for field, value in update.model_dump(exclude_unset=True).items():
+        setattr(group, field, value)
+
     db.commit()
     db.refresh(group)
+    return group
+
+
+def _season_accas(db, group):
+    """The group's accas that count toward the current season.
+
+    The table, the acca-stats bar and member profiles all read the same bet
+    pool, so they scope together or they contradict each other. A null
+    season_start_date counts everything ever, which is what every group starts
+    with — the migration must not wipe standings on its own.
+
+    Accas with no first_match_date are pre-numbering legacy rows and always
+    predate a season start.
+    """
+    query = db.query(models.Acca).filter(models.Acca.group_id == group.id)
+    if group.season_start_date:
+        query = query.filter(
+            models.Acca.first_match_date.isnot(None),
+            models.Acca.first_match_date >= group.season_start_date,
+        )
+    return query.all()
+
+
+def _group_or_404(db, group_id, user_id):
+    """Fetch a group and confirm the caller is a member."""
+    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this group"
+        )
     return group
 
 
@@ -368,17 +410,7 @@ def get_group_leaderboard(
 ):
     """Get leaderboard for a group showing user stats"""
 
-    # Verify user is a member
-    membership = db.query(models.GroupMember).filter(
-        models.GroupMember.group_id == group_id,
-        models.GroupMember.user_id == user_id
-    ).first()
-
-    if not membership:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this group"
-        )
+    group = _group_or_404(db, group_id, user_id)
 
     # Start from all group members so everyone appears
     members = db.query(models.GroupMember).filter(
@@ -402,8 +434,10 @@ def get_group_leaderboard(
             "won_bets": []
         }
 
-    # Get all accas in this group
-    accas = db.query(models.Acca).filter(models.Acca.group_id == group_id).all()
+    # Season-scoped: everything downstream — stats, streaks and the movement
+    # window — derives from these accas, so this is the only place the boundary
+    # has to be applied.
+    accas = _season_accas(db, group)
     acca_ids = [a.id for a in accas]
 
     # Accumulate bet stats
@@ -567,19 +601,9 @@ def get_member_picks(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
 ):
-    """Get all picks for a specific member in a group"""
+    """Get a member's picks for the current season in this group"""
 
-    # Verify requesting user is a member
-    membership = db.query(models.GroupMember).filter(
-        models.GroupMember.group_id == group_id,
-        models.GroupMember.user_id == user_id
-    ).first()
-
-    if not membership:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this group"
-        )
+    group = _group_or_404(db, group_id, user_id)
 
     # Verify target member exists as current member OR has bets in group accas
     target_membership = db.query(models.GroupMember).filter(
@@ -587,8 +611,9 @@ def get_member_picks(
         models.GroupMember.user_id == member_id
     ).first()
 
-    # Get all accas in this group
-    accas = db.query(models.Acca).filter(models.Acca.group_id == group_id).all()
+    # Season-scoped, so tapping a row that reads 3–1 shows three wins and a loss
+    # rather than a career history that looks like a different person.
+    accas = _season_accas(db, group)
     acca_ids = [a.id for a in accas] if accas else []
 
     # Check if target user has bets in this group
@@ -738,22 +763,13 @@ def get_acca_stats(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
 ):
-    """Get statistics about accas in a group"""
+    """Get statistics about this season's accas in a group"""
 
-    # Verify requesting user is a member
-    membership = db.query(models.GroupMember).filter(
-        models.GroupMember.group_id == group_id,
-        models.GroupMember.user_id == user_id
-    ).first()
+    group = _group_or_404(db, group_id, user_id)
 
-    if not membership:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this group"
-        )
-
-    # Get all accas in this group
-    accas = db.query(models.Acca).filter(models.Acca.group_id == group_id).all()
+    # Same scope as the leaderboard — this bar sits on the same card, so the
+    # two must not disagree about how many accas there have been.
+    accas = _season_accas(db, group)
 
     # Count accas by status
     total_accas = len(accas)

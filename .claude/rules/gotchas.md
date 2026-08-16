@@ -11,6 +11,12 @@ Accas can be created out of date order (a midweek one-off slotted in before an a
 week), so `round_number` is an identity and URL key only. Anything that needs "which week came first"
 must sort on `first_match_date` — see the leaderboard's movement window in `routers/groups.py`.
 
+## The season boundary must be applied to all three stats endpoints
+`get_group_leaderboard`, `get_acca_stats` and `get_member_picks` read the same bet pool. Scoping one
+and not the others makes them contradict each other — a table row reading 3–1 opening onto a career
+history looks like a bug. They all go through `_season_accas()` in `routers/groups.py`; use it for any
+new endpoint that aggregates bets.
+
 ## Auto-created accas are marked by created_by IS NULL
 There is no `is_auto` column. `autoweek.py` uses a null creator as the marker, which is also what stops
 its extension pass from widening a manually created acca whose dates were a deliberate choice. Side
