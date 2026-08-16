@@ -110,6 +110,11 @@ export const getGroup = async (groupId) => {
   return response.data;
 };
 
+export const updateGroup = async (groupId, settings) => {
+  const response = await axios.patch(`${API_URL}/groups/${groupId}`, settings);
+  return response.data;
+};
+
 export const createGroup = async (name, description) => {
   const response = await axios.post(`${API_URL}/groups`, { name, description });
   return response.data;

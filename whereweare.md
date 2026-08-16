@@ -27,26 +27,24 @@ Late development — deployed to production on Railway, security hardening compl
 
 ## What's Left
 ### Blocking / do first
-- [ ] **Decide whether to push the 8 UI-overhaul commits** — `main` auto-deploys to accapicks.com. The
-      `add_round_numbers` migration will run on production Postgres and rename every acca to "Week N"
-- [ ] **Fix the migration chain** — `1129e7a0814d` duplicates `op.create_table('users')` from the initial
-      migration, so a fresh database cannot migrate. Only survives because production was built by
-      `create_all()` and stamped
+- [x] ~~Push the UI-overhaul commits~~ — shipped and deployed to accapicks.com (through `e5f687e`)
+- [x] ~~Fix the migration chain~~ — done in `b6a2f2c`, runnable from an empty database
 - [ ] Verify the overhaul on a real phone (iOS PWA safe areas, tab bar, modal, 360px column widths)
 
 ### Next season (PL kicks off w/c 2026-08-22) — natural clean-slate moment
-- [ ] **Auto-create weeks anchored to the first Premier League fixture of each week.**
-      User's idea, 2026-08-15. Removes the wizard for the common case and gives the group a predictable
-      rhythm. This is exactly the "date-range rounds" option that `gameweek-pivot-idea.txt` recommended over
-      official gameweek numbers — it sidesteps the FA/EFL mapping problem entirely, and the round_number +
-      first_match_date columns added in the UI overhaul are already the right foundation.
-      Open questions: what happens during international breaks and the off-season; whether manual week
-      creation stays available alongside it; whether other leagues anchor to the PL week or their own.
+- [x] ~~**Auto-create weeks**~~ — done 2026-08-16. Anchored on the Saturday, spreading into Fri/Sun/Mon
+      where fixtures exist; a full PL midweek round (≥4 fixtures) also gets a week. Four English leagues.
+      International breaks resolve themselves — no fixtures, no week. On by default, toggle in Group
+      Settings, push when a week opens, empty lapsed weeks deleted. Manual creation stays for one-offs,
+      which is why the create-in-date-order 409 had to go.
+      Still to do: **verify in a browser before Saturday** (nothing visual was checked), and decide
+      whether Friday-only weeks or a shorter `LEAD_DAYS` are wanted — a week currently opens 4 days out,
+      so the opening weekend appears on Tue 18 Aug.
 - [ ] **Fresh league table for the new season.** Needs a season boundary concept — today the leaderboard
       counts every bet ever. Cheapest version: only count accas with round_number >= a per-group
       season_start_round.
-- [ ] Decide what to do with the lapsed pre-season weeks (open accas nobody picked in, now shown as
-      "Lapsed"). Options: mark settled, delete, or leave. Any week nobody picks will lapse the same way.
+- [x] ~~Decide what to do with the lapsed pre-season weeks~~ — deleted automatically once their last
+      fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
 ### Quick wins (1 session each)
 - [ ] Install `eslint-plugin-react` so JSX-only identifiers stop reading as unused (13 pre-existing lint errors)
@@ -80,4 +78,4 @@ Late development — deployed to production on Railway, security hardening compl
 - Last Man Standing: fully independent, no blockers — just needs dedicated sessions
 
 ## Last Updated
-2026-08-15
+2026-08-16

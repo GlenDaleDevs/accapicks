@@ -1,6 +1,7 @@
 import re
 from fastapi import APIRouter, Depends, Request, HTTPException
 from .. import odds_api, favourable
+from ..schemas import VALID_SPORT_KEYS
 from .auth import get_current_user
 from ..limiter import limiter
 
@@ -8,13 +9,6 @@ DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 EVENT_ID_PATTERN = re.compile(r"^[a-f0-9]{1,64}$")
 
 router = APIRouter()
-
-VALID_SPORT_KEYS = {
-    "soccer_epl", "soccer_efl_champ", "soccer_england_league1",
-    "soccer_england_league2", "soccer_spain_la_liga",
-    "soccer_germany_bundesliga", "soccer_italy_serie_a",
-    "soccer_france_ligue_one",
-}
 
 
 # Get available football matches with odds

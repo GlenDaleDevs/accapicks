@@ -7,9 +7,11 @@ import { useApp } from "../context/AppContext";
 export default function GroupSettings() {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const { groups, onRefreshGroups } = useApp();
+  const { user, groups, onRefreshGroups } = useApp();
 
   const [group, setGroup] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [savingAutoWeeks, setSavingAutoWeeks] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [copied, setCopied] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -21,8 +23,29 @@ export default function GroupSettings() {
     api.getGroup(groupId)
       .then((data) => { if (!cancelled) setGroup(data); })
       .catch(() => { /* the list still gives us a name */ });
+    api.getGroupMembers(groupId)
+      .then((members) => {
+        if (cancelled) return;
+        const me = members.find((m) => m.user_id === user?.id);
+        setIsAdmin(me?.role === "admin");
+      })
+      .catch(() => { /* stays non-admin, which only hides a setting */ });
     return () => { cancelled = true; };
-  }, [groupId]);
+  }, [groupId, user?.id]);
+
+  const toggleAutoWeeks = async () => {
+    if (savingAutoWeeks || !group) return;
+    const next = !group.auto_weeks;
+    setSavingAutoWeeks(true);
+    try {
+      const updated = await api.updateGroup(groupId, { auto_weeks: next });
+      setGroup(updated);
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Couldn't save that setting", "error");
+    } finally {
+      setSavingAutoWeeks(false);
+    }
+  };
 
   const name = group?.name || known?.name || "This group";
   const inviteCode = group?.invite_code;
@@ -116,6 +139,23 @@ export default function GroupSettings() {
             )}
           </div>
         </div>
+      )}
+
+      {isAdmin && group && (
+        <label className="group-setting-row">
+          <span className="group-setting-text">
+            <span className="group-setting-title">Open weeks automatically</span>
+            <span className="group-setting-hint">
+              A new week opens for each Saturday's fixtures, and for full midweek rounds.
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={!!group.auto_weeks}
+            onChange={toggleAutoWeeks}
+            disabled={savingAutoWeeks}
+          />
+        </label>
       )}
 
       <button className="group-leave-link" onClick={handleLeave} disabled={leaving}>

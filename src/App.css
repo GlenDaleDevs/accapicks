@@ -2657,6 +2657,46 @@
   font-weight: 500;
 }
 
+/* ---- Group Settings Toggle ---- */
+.group-setting-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  background-color: var(--surface-raised, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.group-setting-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.group-setting-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.group-setting-hint {
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.4;
+}
+
+.group-setting-row input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--color-success, #4ade80);
+  cursor: pointer;
+}
+
 /* ---- Group Leave Section ---- */
 .group-leave-section {
   margin-top: 40px;

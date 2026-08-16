@@ -145,14 +145,19 @@ class GroupCreate(BaseModel):
         return v
 
 # Schema for group response (what we send back)
+class GroupUpdate(BaseModel):
+    auto_weeks: bool
+
+
 class GroupResponse(BaseModel):
     id: int
     name: str
     description: Optional[str]
     created_by: int
     invite_code: str  # ADD THIS LINE
+    auto_weeks: bool = True
     created_at: UtcDatetime
-    
+
     class Config:
         from_attributes = True
 
@@ -222,11 +227,13 @@ class BetResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Single source of truth — routers/odds.py imports this. It used to keep its
+# own copy and the two drifted.
 VALID_SPORT_KEYS = {
     "soccer_epl", "soccer_efl_champ", "soccer_england_league1",
     "soccer_england_league2", "soccer_spain_la_liga",
     "soccer_germany_bundesliga", "soccer_italy_serie_a",
-    "soccer_france_ligue_one",
+    "soccer_france_ligue_one", "soccer_uefa_champs_league",
 }
 
 # Schema for creating an acca (what we receive)

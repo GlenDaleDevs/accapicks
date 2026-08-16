@@ -217,6 +217,45 @@ def get_group(
     return group
 
 
+# Update group settings
+@router.patch("/groups/{group_id}", response_model=schemas.GroupResponse)
+@limiter.limit("10/minute")
+def update_group(
+    request: Request,
+    group_id: int,
+    update: schemas.GroupUpdate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Update a group's settings. Admin only."""
+
+    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    membership = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this group"
+        )
+
+    if membership.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only a group admin can change these settings"
+        )
+
+    group.auto_weeks = update.auto_weeks
+    db.commit()
+    db.refresh(group)
+    return group
+
+
 # Get members of a group
 @router.get("/groups/{group_id}/members")
 @limiter.limit("30/minute")
@@ -472,15 +511,22 @@ def get_group_leaderboard(
     # also settled. Accas settle when their last match resolves, so with
     # concurrent weeks round N can settle before N-1; taking max(settled)
     # would compare against a window containing an unsettled week.
-    round_by_acca = {a.id: a.round_number for a in accas}
-    settled_rounds = {
-        a.round_number for a in accas
-        if a.round_number is not None and a.status in ("won", "lost", "settled")
+    # Position, not round_number: accas can now be created out of date order (a
+    # midweek one-off slotted in before an already-open Saturday week), so the
+    # number no longer implies chronology. first_match_date does.
+    ordered = sorted(
+        (a for a in accas if a.first_match_date is not None),
+        key=lambda a: (a.first_match_date, a.round_number or 0),
+    )
+    position_by_acca = {a.id: i for i, a in enumerate(ordered)}
+    settled_positions = {
+        position_by_acca[a.id] for a in ordered
+        if a.status in ("won", "lost", "settled")
     }
     fully_settled_prefix = []
-    for rn in sorted(rn for rn in round_by_acca.values() if rn is not None):
-        if rn in settled_rounds:
-            fully_settled_prefix.append(rn)
+    for position in range(len(ordered)):
+        if position in settled_positions:
+            fully_settled_prefix.append(position)
         else:
             break
 
@@ -492,8 +538,8 @@ def get_group_leaderboard(
 
         def window(cutoff):
             return [b for b in bets
-                    if round_by_acca.get(b.acca_id) is not None
-                    and round_by_acca[b.acca_id] <= cutoff]
+                    if position_by_acca.get(b.acca_id) is not None
+                    and position_by_acca[b.acca_id] <= cutoff]
 
         now_ranks, now_settled = _ranked(member_user_ids, window(now_cut))
         prev_ranks, prev_settled = _ranked(member_user_ids, window(prev_cut))
