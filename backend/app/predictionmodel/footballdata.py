@@ -8,6 +8,7 @@ import csv
 import io
 import logging
 import time
+from datetime import datetime
 
 import requests
 
@@ -74,6 +75,44 @@ def fetch_results(season, div_code):
     return parse_results(text, div_code, season)
 
 
+# Closing odds where available, pre-match otherwise. Carried through so the
+# backtest can price the model's picks — a hit rate means nothing without the
+# odds that were on offer. The ladder ignores these entirely.
+_ODDS_COLUMNS = {
+    "avg_h": ("AvgCH", "AvgH"),
+    "avg_d": ("AvgCD", "AvgD"),
+    "avg_a": ("AvgCA", "AvgA"),
+    "max_h": ("MaxCH", "MaxH"),
+    "max_d": ("MaxCD", "MaxD"),
+    "max_a": ("MaxCA", "MaxA"),
+}
+
+
+def _price(raw, names):
+    """First populated column of `names`, as a float. None when unpriced."""
+    for name in names:
+        value = (raw.get(name) or "").strip()
+        if value:
+            try:
+                price = float(value)
+            except ValueError:
+                continue
+            if price > 1:
+                return price
+    return None
+
+
+def parse_date(value):
+    """football-data dates are dd/mm/yy in older files and dd/mm/yyyy in newer."""
+    value = (value or "").strip()
+    for fmt in ("%d/%m/%Y", "%d/%m/%y"):
+        try:
+            return datetime.strptime(value, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
 def parse_results(text, div_code, season="?"):
     """Parse a football-data.co.uk results CSV, refusing anything suspicious.
 
@@ -107,15 +146,19 @@ def parse_results(text, div_code, season="?"):
         if not home or not away or not fthg or not ftag:
             continue
         try:
-            rows.append({
+            row = {
                 "div": div_code,
                 "date": (raw.get("Date") or "").strip(),
+                "played_on": parse_date(raw.get("Date")),
                 "home": home,
                 "away": away,
                 "home_goals": int(fthg),
                 "away_goals": int(ftag),
-            })
+            }
         except ValueError:
             continue
+        for key, names in _ODDS_COLUMNS.items():
+            row[key] = _price(raw, names)
+        rows.append(row)
 
     return rows

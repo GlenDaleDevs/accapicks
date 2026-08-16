@@ -86,24 +86,37 @@ def _rank(table):
 
 def build_ladders(season=LADDER_SEASON):
     """Return {"home": {team: entry}, "away": {team: entry}, "size": int}."""
-    home_ladder, away_ladder = {}, {}
-    offset = 0
-
+    rows_by_div = {}
     for division in DIVISIONS:
         code = division["code"]
         try:
-            rows = fetch_results(season, code)
+            rows_by_div[code] = fetch_results(season, code)
         except Exception as exc:
             raise RuntimeError(
                 f"cannot build the ladder: {division['name']} ({code}) is "
                 f"unavailable for season {season} -- {exc}"
             ) from exc
+    return build_ladders_from_rows(rows_by_div)
+
+
+def build_ladders_from_rows(rows_by_div):
+    """Ladders from already-loaded results, keyed by division code.
+
+    Split out from build_ladders so the backtest can build a ladder from a
+    partial season (results up to a given date) without refetching anything.
+    """
+    home_ladder, away_ladder = {}, {}
+    offset = 0
+
+    for division in DIVISIONS:
+        code = division["code"]
+        rows = rows_by_div.get(code) or []
 
         if not rows:
             raise RuntimeError(
-                f"cannot build the ladder: {division['name']} ({code}) returned "
-                f"no results for season {season}. Dropping a tier would shift "
-                f"every ladder offset below it."
+                f"cannot build the ladder: {division['name']} ({code}) has "
+                f"no results. Dropping a tier would shift every ladder offset "
+                f"below it."
             )
 
         home_table, away_table = build_division_tables(rows)
