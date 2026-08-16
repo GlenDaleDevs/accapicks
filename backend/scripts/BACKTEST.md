@@ -17,16 +17,39 @@ model that ships, not a copy of it.
 **The differential is a real signal, but it is not an edge. Above the current 0.75 threshold it agrees
 with the betting market 88–98% of the time — it is mostly restating the price.**
 
-At `MIN_DIFFERENTIAL = 0.75`, over four seasons:
+At `MIN_DIFFERENTIAL = 0.75`, over four seasons, using **the selection the tab actually makes**
+(`top_per_league(..., top_n=3)` then the threshold filter):
 
 | | model | market favourite, same fixtures |
 |---|---|---|
-| bets | 1,779 | 1,779 |
-| won | 54.5% | 54.9% |
-| ROI at average price | **−5.1%** | −6.4% |
-| ROI at best price | **−1.6%** | — |
+| bets | 1,318 | 1,318 |
+| won | 55.5% | 55.8% |
+| won or drew | 78.9% | — |
+| ROI at average price | **−5.3%** | −6.3% |
+| ROI at best price | **−1.9%** | — |
 
 Level with the market and losing to the margin. It should never be presented as a way to make money.
+
+### The top-3 cap makes almost no difference
+
+Worth stating explicitly, because it is the obvious thing to hope for: taking only the three widest
+differentials per division per week does **not** concentrate the signal.
+
+| population | bets | won | won/drew | ROI avg | ROI best | agrees w/ market |
+|---|---|---|---|---|---|---|
+| every fixture above 0.75 | 1,779 | 54.5% | 78.1% | −5.1% | −1.6% | 91.5% |
+| **top 3 per league-week** | 1,318 | 55.5% | 78.9% | −5.3% | −1.9% | 93.1% |
+
+The cap removes a quarter of the fixtures, buys **one point** of strike rate, and costs 0.2 points of
+return. Agreement with the market goes *up*, which is the expected direction — the widest
+differentials are the ones the market is most certain about too.
+
+Everything below this section reports the **unrestricted** above-threshold population unless it says
+otherwise, because the larger sample gives the calibration more to work with. The two populations
+behave the same way.
+
+*(Approximation: the tab refreshes on a rolling 8-day window, the backtest groups by calendar week.
+Same shape, easier to reason about.)*
 
 **It is genuinely useful as a "this fixture is lopsided" heuristic**, which is what the tab claims. The
 win-or-draw rate climbs cleanly and monotonically with the differential, which is exactly what a
@@ -110,19 +133,21 @@ above-threshold bucket. **Not acted on — it needs its own investigation before
 2. **Delete the post-GW10 plan.** Remove `CURRENT_SEASON` and the misleading comments from `config.py`,
    or replace them with a note pointing here. As written they describe a change that measurably hurts.
 3. **Put the measured number on the card.** The tab already avoids probabilities; it could go further
-   and state the backtested rate — "the favoured side has won 54% of matchups like this since 2022" —
+   and state the backtested rate — "the favoured side has won 55% of matchups like this since 2022" —
    which is honest, specific, and more useful than an unquantified "favourable".
-4. **Consider surfacing win-or-draw instead of the win.** 75% at threshold versus 52% is a far more
-   dependable number, and for an acca leg the double chance is the safer pick.
+4. **Consider surfacing win-or-draw instead of the win.** On the tab's own selection that is **78.9%
+   against 55.5%** for the outright win. For an acca leg the double chance is far more dependable, and
+   the calibration is cleaner (66% → 89% straight up the buckets).
 5. **Investigate the 0–0.25 anomaly** before doing anything else to the model.
 
 ## Reproducing
 
 ```bash
 cd backend
-python scripts/backtest_matchups.py                       # full matrix
+python scripts/backtest_matchups.py                       # full matrix + selection comparison
 python scripts/backtest_matchups.py --seasons 2526 \
     --modes prior --metrics adjusted                      # one cut
+python scripts/backtest_matchups.py --top-n 1             # only the single widest per league-week
 python scripts/backtest_matchups.py --json out.json       # raw rows
 ```
 
