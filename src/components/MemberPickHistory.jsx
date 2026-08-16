@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import * as api from "../api/client";
 import { accaDetail, groupTable } from "../utils/routes";
 import { useApp } from "../context/AppContext";
+import { weekLabelShort } from "../utils/week";
 import Skeleton from "./Skeleton";
 
 export default function MemberPickHistory() {
@@ -63,6 +64,8 @@ export default function MemberPickHistory() {
       picksByAcca[pick.acca_id] = {
         acca_name: pick.acca_name,
         acca_round_number: pick.acca_round_number,
+        week_number: pick.acca_week_number,
+        round_number: pick.acca_round_number,
         acca_status: pick.acca_status,
         acca_id: pick.acca_id,
         picks: [],
@@ -148,7 +151,7 @@ export default function MemberPickHistory() {
               onClick={() => navigate(accaDetail(groupId, accaGroup.acca_id))}
             >
               <span className="member-acca-name">
-                {accaGroup.acca_round_number ? `Week ${accaGroup.acca_round_number}` : accaGroup.acca_name}
+                {accaGroup.acca_round_number ? weekLabelShort(accaGroup) : accaGroup.acca_name}
               </span>
             </div>
 

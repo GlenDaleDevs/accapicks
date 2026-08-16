@@ -1,3 +1,5 @@
+import { weekLabelShort } from "./week";
+
 export const getDaysInMonth = (year, month) => {
   return new Date(year, month + 1, 0).getDate();
 };
@@ -136,8 +138,7 @@ export const formatBetSlipText = (acca, oddsFormat, bestBookmakerName) => {
 
   const lines = [];
   // Lead with the week; the custom name is secondary and often machine-generated.
-  const label = acca.round_number ? `Week ${acca.round_number}` : acca.name;
-  lines.push(`AccaPicks — ${label}`);
+  lines.push(`AccaPicks — ${weekLabelShort(acca)}`);
   lines.push("---");
 
   acca.bets.forEach((bet, index) => {

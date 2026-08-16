@@ -1,5 +1,6 @@
 import { ACCA_STATE, isAwaitingResults, landedCount, potentialReturns, formatMoney } from "../../utils/accaState";
 import { NOTIONAL_STAKE } from "../../utils/constants";
+import { weekLabel } from "../../utils/week";
 
 function formatLockTime(iso) {
   const d = new Date(iso);
@@ -51,7 +52,7 @@ export default function WeekStrip({
           ‹
         </button>
         <span className="week-label">
-          {acca?.round_number ? `Week ${acca.round_number}` : "No week yet"}
+          {weekLabel(acca)}
         </span>
         <button
           type="button"

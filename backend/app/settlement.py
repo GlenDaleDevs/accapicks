@@ -7,12 +7,11 @@ from .normalization import normalize
 from .timeutils import as_utc
 
 
-def _acca_label(acca) -> str:
-    """Human label for notifications. Falls back to the stored name for accas
-    created before round numbering existed."""
-    if acca.round_number:
-        return f"Week {acca.round_number}"
-    return acca.name
+def _acca_label(db, acca) -> str:
+    """Human label for notifications — the season-relative week, matching what
+    the app shows rather than the underlying counter."""
+    from .season import label
+    return label(db, acca)
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +79,7 @@ def settle_locked_accas(db: Session):
                                 acca.group_id,
                                 {
                                     "title": "Acca Won! \U0001f389",
-                                    "body": f"{_acca_label(acca)} — every pick landed!",
+                                    "body": f"{_acca_label(db, acca)} — every pick landed!",
                                     "tag": f"settle-{acca.id}",
                                     "url": f"/groups/{acca.group_id}/accas/{acca.id}",
                                 },
@@ -222,7 +221,7 @@ def settle_locked_accas(db: Session):
                             acca.group_id,
                             {
                                 "title": "Acca Won! \U0001f389",
-                                "body": f"{_acca_label(acca)} — every pick landed!",
+                                "body": f"{_acca_label(db, acca)} — every pick landed!",
                                 "tag": f"settle-{acca.id}",
                                 "url": f"/groups/{acca.group_id}/accas/{acca.id}",
                             },

@@ -317,6 +317,7 @@ class AccaResponse(BaseModel):
     group_id: int
     name: str
     round_number: Optional[int] = None
+    week_number: Optional[int] = None
     first_match_date: Optional[date] = None
     status: str
     match_dates: Optional[list[str]] = None
@@ -335,6 +336,7 @@ class AccaWithBets(BaseModel):
     group_id: int
     name: str
     round_number: Optional[int] = None
+    week_number: Optional[int] = None
     first_match_date: Optional[date] = None
     status: str
     match_dates: Optional[list[str]] = None

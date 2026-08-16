@@ -153,3 +153,40 @@ pre-existing errors.
 
 The **week strip still pages back through last season** — only the table, stats bar and profiles are
 season-scoped. Browsing old weeks is arguably right, but if it reads oddly the same helper would do it.
+
+## Season-relative week numbers
+
+Spotted while answering "will Tuesday's acca say Week 1?" — it wouldn't have. `round_number` is a
+monotonic counter that has never been reset, so the first week of the new season would have been
+numbered mid-season while the table said "counting from 21 Aug".
+
+- [x] `season.py` — one module for season scoping and week numbering. `_season_accas` moved out of
+      `routers/groups.py` so `accas.py`, settlement and autoweek can all use it without a circular import
+- [x] `week_number` = position within the current season, exposed on every acca payload and on member
+      picks. `round_number` stays the URL key, so links and the week strip's paging are untouched and
+      no two accas can collide on it
+- [x] Previous seasons' accas have a null `week_number` and keep their original number, labelled
+      "Week 3 · past season" so it can't be mistaken for this season's Week 3
+- [x] `src/utils/week.js` — `weekLabel` / `weekLabelShort`, used by the week strip, the bet-slip text
+      and the profile. Nothing renders `round_number` directly any more
+- [x] Notifications go through `season.label()`, so a settlement push says the same week the app does
+- [x] "Start week N" counts season weeks, not the raw counter
+
+**Deliberate consequence:** week numbers now compact over deletions. A skipped Saturday gets its empty
+acca deleted and leaves a `round_number` gap, but the next week still reads as the next week of the
+season — which is what you want now that lapsed weeks are auto-deleted, otherwise the numbers would
+drift upward past the number of weeks actually played.
+
+### Verified
+
+Five accas seeded across April–May, boundary set to 21 Aug, then two new weeks created through the
+real endpoint:
+
+| first match | round_number | week_number |
+|---|---|---|
+| 4 Apr – 9 May (×5) | 1–5 | null (past season) |
+| 22 Aug | 6 | **1** |
+| 29 Aug | 7 | **2** |
+
+Single-acca endpoint, profile payload (`round 6 → week 1`) and `season.label()` all agree. Build clean,
+lint unchanged at 13 pre-existing errors.

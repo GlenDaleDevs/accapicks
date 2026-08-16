@@ -11,6 +11,17 @@ Accas can be created out of date order (a midweek one-off slotted in before an a
 week), so `round_number` is an identity and URL key only. Anything that needs "which week came first"
 must sort on `first_match_date` — see the leaderboard's movement window in `routers/groups.py`.
 
+## round_number routes, week_number labels
+`Acca.round_number` is a per-group counter that never resets or reissues — it is the URL key
+(`/g/:groupId/acca/:roundNumber`) and nothing else. What the UI shows is `week_number`, the position
+within the current season, computed in `season.py`. Never render `round_number` directly; use
+`weekLabel`/`weekLabelShort` from `src/utils/week.js`.
+
+Consequence: week numbers compact over deletions. A group that skips a Saturday gets that empty acca
+deleted, leaving a `round_number` gap, but the following week still reads as the next week of the
+season. Accas from a previous season have a null `week_number` and keep their original number,
+labelled "past season".
+
 ## The season boundary must be applied to all three stats endpoints
 `get_group_leaderboard`, `get_acca_stats` and `get_member_picks` read the same bet pool. Scoping one
 and not the others makes them contradict each other — a table row reading 3–1 opening onto a career
