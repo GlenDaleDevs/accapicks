@@ -2501,6 +2501,12 @@
   color: var(--text-secondary);
 }
 
+.league-season-note {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 .group-stats-record {
   color: var(--text-primary);
 }
@@ -2686,6 +2692,47 @@
   font-size: 12px;
   color: var(--text-secondary, #94a3b8);
   line-height: 1.4;
+}
+
+.group-setting-row-stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  cursor: default;
+}
+
+.group-setting-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.group-setting-date {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  background-color: var(--surface, rgba(0, 0, 0, 0.25));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+}
+
+.group-setting-clear {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  background: none;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.group-setting-clear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .group-setting-row input[type="checkbox"] {

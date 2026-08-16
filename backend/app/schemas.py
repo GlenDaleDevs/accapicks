@@ -146,7 +146,10 @@ class GroupCreate(BaseModel):
 
 # Schema for group response (what we send back)
 class GroupUpdate(BaseModel):
-    auto_weeks: bool
+    """Partial update — only the fields actually sent are applied, so passing
+    season_start_date: null clears the boundary rather than being ignored."""
+    auto_weeks: Optional[bool] = None
+    season_start_date: Optional[date] = None
 
 
 class GroupResponse(BaseModel):
@@ -156,6 +159,7 @@ class GroupResponse(BaseModel):
     created_by: int
     invite_code: str  # ADD THIS LINE
     auto_weeks: bool = True
+    season_start_date: Optional[date] = None
     created_at: UtcDatetime
 
     class Config:

@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import * as api from "../api/client";
 import { accaDetail, groupTable } from "../utils/routes";
+import { useApp } from "../context/AppContext";
 import Skeleton from "./Skeleton";
 
 export default function MemberPickHistory() {
   const { groupId, userId } = useParams();
   const navigate = useNavigate();
+  const { groups } = useApp();
+  const seasonStart = groups.find((g) => String(g.id) === String(groupId))?.season_start_date;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -92,6 +95,14 @@ export default function MemberPickHistory() {
       </button>
 
       <h2 className="section-title">{data.username}'s Picks</h2>
+
+      {/* Same scope as the table that linked here — otherwise a row reading
+          3–1 opens onto a career history and looks like a bug. */}
+      {seasonStart && (
+        <p className="league-season-note">
+          Counting from {new Date(`${seasonStart}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+        </p>
+      )}
 
       <div className="member-history-summary">
         <div className="summary-stat">

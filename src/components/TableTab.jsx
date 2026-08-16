@@ -45,6 +45,7 @@ export default function TableTab() {
         loading={loading}
         groupId={groupId}
         accaStats={accaStats}
+        seasonStart={group?.season_start_date}
         title={null}
       />
     </div>
