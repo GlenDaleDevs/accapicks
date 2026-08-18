@@ -9,9 +9,10 @@ fixtures" are the same kind of thing to the client.
 Team names are reconciled to the football-data vocabulary, so a club doesn't
 change name between a result and a fixture — or between here and the tables.
 
-Each division also carries a per-club league position and last-five form,
-computed from the same results, so a row can say where a side sits and how it
-has been going without a second request.
+Each division also carries a per-club league position and last-five trackers —
+results, both teams to score, and over 2.5 goals — computed from the same
+results, so a row can say where a side sits and how it has been going without
+a second request.
 """
 
 import asyncio
@@ -100,22 +101,36 @@ def _outcome(scored, conceded):
 
 
 def _team_stats(rows):
-    """{club: {"pos": int|None, "form": ["W", "D", ...]}} for one division.
+    """Per-club position and last-five trackers for one division.
 
-    Form is oldest to newest, capped at the last five, so the rightmost circle
-    is the most recent result.
+    {club: {"pos": int|None, "results": [...], "btts": [...], "over25": [...]}}
+
+    All three trackers run oldest to newest over the same five matches, so the
+    rightmost circle is the most recent game whichever one is on screen.
     """
     position = {row["team"]: row["pos"] for row in overall_table(rows)} if rows else {}
 
-    form = defaultdict(list)
+    history = defaultdict(list)
     for row in sorted(rows, key=lambda r: r["played_on"] or date.min):
-        form[row["home"]].append(_outcome(row["home_goals"], row["away_goals"]))
-        form[row["away"]].append(_outcome(row["away_goals"], row["home_goals"]))
+        home_goals, away_goals = row["home_goals"], row["away_goals"]
+        # Y/N rather than booleans: the client colours a tracker the same way
+        # whichever one it is showing.
+        btts = "Y" if home_goals > 0 and away_goals > 0 else "N"
+        over25 = "Y" if home_goals + away_goals > 2 else "N"
 
-    return {
-        team: {"pos": position.get(team), "form": form[team][-FORM_LENGTH:]}
-        for team in set(position) | set(form)
-    }
+        history[row["home"]].append((_outcome(home_goals, away_goals), btts, over25))
+        history[row["away"]].append((_outcome(away_goals, home_goals), btts, over25))
+
+    stats = {}
+    for team in set(position) | set(history):
+        recent = history[team][-FORM_LENGTH:]
+        stats[team] = {
+            "pos": position.get(team),
+            "results": [r for r, _, _ in recent],
+            "btts": [b for _, b, _ in recent],
+            "over25": [o for _, _, o in recent],
+        }
+    return stats
 
 
 def _played_matches(rows, div_code, buckets):

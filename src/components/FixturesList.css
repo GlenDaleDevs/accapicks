@@ -77,7 +77,8 @@
   background: var(--text-muted);
 }
 
-.form-w {
+.form-w,
+.form-y {
   background: var(--color-success);
 }
 
@@ -85,7 +86,8 @@
   background: var(--color-warning);
 }
 
-.form-l {
+.form-l,
+.form-n {
   background: var(--color-danger);
 }
 
