@@ -17,10 +17,9 @@ const SPLITS = [
   { key: "away", label: "Away" },
 ];
 
-export default function FormTab() {
+export default function FormTab({ leagueCode, onLeagueChange }) {
   const [season, setSeason] = useState("current");
   const [split, setSplit] = useState("overall");
-  const [leagueCode, setLeagueCode] = useState(null);
   // Stamped with the season it came back for, so switching season shows the
   // skeleton rather than the previous season's table until the fetch lands.
   const [result, setResult] = useState(null);
@@ -43,6 +42,20 @@ export default function FormTab() {
 
   return (
     <div className="standings">
+      <div className="league-chips" role="tablist" aria-label="League">
+        {leagues.map((l) => (
+          <button
+            key={l.code}
+            role="tab"
+            aria-selected={l.code === league?.code}
+            className={`league-chip${l.code === league?.code ? " league-chip-active" : ""}`}
+            onClick={() => onLeagueChange(l.code)}
+          >
+            {l.name}
+          </button>
+        ))}
+      </div>
+
       <div className="league-controls">
         <select
           className="league-select"
@@ -67,20 +80,6 @@ export default function FormTab() {
             </button>
           ))}
         </div>
-      </div>
-
-      <div className="league-chips" role="tablist" aria-label="League">
-        {leagues.map((l) => (
-          <button
-            key={l.code}
-            role="tab"
-            aria-selected={l.code === league?.code}
-            className={`league-chip${l.code === league?.code ? " league-chip-active" : ""}`}
-            onClick={() => setLeagueCode(l.code)}
-          >
-            {l.name}
-          </button>
-        ))}
       </div>
 
       {loading ? (
