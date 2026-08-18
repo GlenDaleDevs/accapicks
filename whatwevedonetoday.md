@@ -206,3 +206,27 @@ real endpoint:
 
 Single-acca endpoint, profile payload (`round 6 → week 1`) and `season.label()` all agree. Build clean,
 lint unchanged at 13 pre-existing errors.
+
+---
+
+# Done — 2026-08-18
+
+## Pick rows rebuilt as a stack
+
+Reported: a pick read as one cramped line — "G Glenuth R. Sat 22 Aug 15:00 1.95 Remove" — with the
+fixture itself truncated away. The row was a single horizontal flex line and `.pick-desc` carried
+`text-overflow: ellipsis`, so the pick was the first thing to be cut.
+
+- [x] `.pick-row` is now `flex-direction: column`. Three parts: who / the pick / kickoff + odds
+- [x] `.pick-desc` wraps instead of ellipsising — 15px, the largest text in the row, since it is what
+      the row exists to show
+- [x] Removed the `.pick-avatar` initial. It carried no information the name beside it didn't
+- [x] Added a small "You" chip in its place, which the initial never conveyed and the
+      current-user-first ordering left invisible
+- [x] Remove and the result mark share the right of the name line — they are mutually exclusive
+      (Remove needs an open acca, a mark needs a settled one), so this costs no extra line
+- [x] Empty rows stay one line: name + "Waiting"
+- [x] Names no longer truncate at all — the 90px cap that produced "Brewi…" is gone
+
+Verified against the real stylesheet in a standalone preview at 360px. Build clean, lint unchanged at
+13 pre-existing errors. **Not seen in the running app** — the Chrome extension wasn't connected.
