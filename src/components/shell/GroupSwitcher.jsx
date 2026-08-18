@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
-import { groupAcca, groupMore, writeLastGroupId } from "../../utils/routes";
+import { GROUPS, groupAcca, writeLastGroupId } from "../../utils/routes";
 
 export default function GroupSwitcher() {
   const { groups } = useApp();
@@ -73,7 +73,7 @@ export default function GroupSwitcher() {
             className="group-switcher-item group-switcher-manage"
             onClick={() => {
               setOpen(false);
-              navigate(groupMore(groupId));
+              navigate(GROUPS);
             }}
           >
             Manage groups

@@ -361,15 +361,6 @@
   font-size: 18px;
 }
 
-.more-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 320px;
-  margin: 8px auto 0;
-  padding: 0 16px;
-}
-
 @media (max-width: 480px) {
   .global-header-inner {
     padding: 0 8px;
@@ -378,4 +369,78 @@
   .group-switcher-trigger {
     font-size: 15px;
   }
+}
+
+/* ---- App menu (replaces the More tab) ---- */
+.app-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 56px 12px 12px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.app-menu {
+  width: 100%;
+  max-width: 320px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-lg);
+}
+
+.app-menu-heading {
+  margin: 4px 8px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.app-menu-item {
+  display: block;
+  width: 100%;
+  padding: 11px 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-menu-item:hover {
+  background: var(--bg-surface-hover);
+}
+
+.app-menu-item-danger {
+  color: var(--color-danger);
+}
+
+.app-menu-rule {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid var(--border-color);
+}
+
+.app-menu-footer {
+  margin-top: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.app-menu-footer a {
+  color: var(--text-secondary);
 }

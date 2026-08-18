@@ -2677,113 +2677,11 @@
   font-weight: 500;
 }
 
-/* ---- Group Settings Toggle ---- */
-.group-setting-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
-  padding: 14px 16px;
-  background-color: var(--surface-raised, rgba(255, 255, 255, 0.04));
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
-  border-radius: 12px;
-  cursor: pointer;
-}
-
-.group-setting-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.group-setting-title {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.group-setting-hint {
-  font-size: 12px;
-  color: var(--text-secondary, #94a3b8);
-  line-height: 1.4;
-}
-
-.group-setting-row-stacked {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
-  cursor: default;
-}
-
-.group-setting-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.group-setting-date {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 10px;
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  color: inherit;
-  background-color: var(--surface, rgba(0, 0, 0, 0.25));
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
-  border-radius: 8px;
-}
-
-.group-setting-clear {
-  flex-shrink: 0;
-  padding: 8px 12px;
-  font-size: 13px;
-  color: var(--text-secondary, #94a3b8);
-  background: none;
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.group-setting-clear:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.group-setting-row input[type="checkbox"] {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
-  accent-color: var(--color-success, #4ade80);
-  cursor: pointer;
-}
-
 /* ---- Group Leave Section ---- */
 .group-leave-section {
   margin-top: 40px;
   padding: 20px 16px 0;
   text-align: center;
-}
-
-.group-leave-link {
-  background: none;
-  border: none;
-  color: var(--text-secondary, #94a3b8);
-  font-size: 13px;
-  cursor: pointer;
-  padding: 4px 8px;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 150ms ease-out;
-}
-
-.group-leave-link:hover {
-  color: #ef4444;
-}
-
-.group-leave-link:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* ---- Settings Danger Zone ---- */
@@ -2818,23 +2716,6 @@
   font-size: 14px;
   padding: 8px 16px;
   margin-top: 8px;
-}
-
-/* ---- Invite Panel Close ---- */
-.invite-panel-close {
-  align-self: flex-end;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
-  transition: color var(--transition-fast);
-}
-
-.invite-panel-close:hover {
-  color: var(--text-primary);
 }
 
 /* ---- Empty State Hint ---- */

@@ -250,8 +250,9 @@ def update_group(
             detail="Only a group admin can change these settings"
         )
 
-    # Only what was actually sent, so a null season_start_date clears the
-    # boundary instead of being mistaken for "field omitted".
+    # Only what was actually sent, so a nullable field can be cleared without
+    # that being mistaken for "field omitted". GroupUpdate carries no fields at
+    # present — see its docstring.
     for field, value in update.model_dump(exclude_unset=True).items():
         setattr(group, field, value)
 
