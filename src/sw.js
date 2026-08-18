@@ -1,8 +1,19 @@
 import { precacheAndRoute } from 'workbox-precaching'
+import { clientsClaim } from 'workbox-core'
 
 // v2.1 — bust cache after splash screen removal
 // Precache app shell (injected by vite-plugin-pwa at build time)
 precacheAndRoute(self.__WB_MANIFEST)
+
+// injectManifest builds our own worker, so the skip-waiting handshake that
+// generateSW would add has to be wired up here. Without it the new worker sits
+// in "waiting" forever and open tabs keep serving the old precached shell.
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+})
+
+// Take over open tabs as soon as the new worker activates
+clientsClaim()
 
 // Push notification handler
 self.addEventListener('push', (event) => {
