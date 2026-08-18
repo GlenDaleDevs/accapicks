@@ -205,8 +205,10 @@ export const getFilteredMatches = async (leagues, dateFrom, dateTo) => {
   return response.data;
 };
 
-export const getFavourableMatchups = async () => {
-  const response = await axios.get(`${API_URL}/odds/favourable`);
+export const getStandings = async (season = "current") => {
+  const response = await axios.get(`${API_URL}/odds/standings`, {
+    params: { season },
+  });
   return response.data;
 };
 

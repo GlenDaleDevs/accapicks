@@ -72,7 +72,7 @@ def build_division_tables(rows):
     )
 
 
-def _rank(table):
+def rank_table(table):
     """Sort by points, then goal difference, then goals for. Name breaks ties
     so the ordering is deterministic across runs."""
     ordered = sorted(
@@ -128,7 +128,7 @@ def build_ladders_from_rows(rows_by_div):
             )
 
         for table, ladder in ((home_table, home_ladder), (away_table, away_ladder)):
-            for entry in _rank(table):
+            for entry in rank_table(table):
                 entry["div"] = code
                 entry["div_name"] = division["name"]
                 entry["ladder_rank"] = offset + entry["div_rank"]

@@ -37,7 +37,7 @@ DIVISIONS = [
 DIVISION_BY_CODE = {d["code"]: d for d in DIVISIONS}
 DIVISION_BY_ODDS_KEY = {d["odds_key"]: d for d in DIVISIONS if d["odds_key"]}
 
-# Divisions we surface matchups for. National League is ladder-only: it exists
+# Divisions we surface tables for. National League is ladder-only: it exists
 # to rank promoted clubs, and AccaPicks doesn't carry NL fixtures.
 TARGET_DIVISIONS = ["E0", "E1", "E2", "E3"]
 

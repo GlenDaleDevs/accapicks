@@ -1,0 +1,134 @@
+/* ---- Form: league standings ---- */
+.standings {
+  padding: 0 16px;
+}
+
+.standings-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.standings-select {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.segmented-sm {
+  flex: 1;
+  margin: 0;
+}
+
+.segmented-sm .segmented-btn {
+  font-size: 13px;
+}
+
+/* League chips scroll sideways rather than wrapping to a second row */
+.standings-leagues {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+}
+
+.standings-leagues::-webkit-scrollbar {
+  display: none;
+}
+
+.standings-chip {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.standings-chip-active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* The table scrolls inside its own box — the page itself never scrolls sideways */
+.standings-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.standings-table th,
+.standings-table td {
+  padding: 9px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.standings-table thead th {
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.standings-table tbody tr + tr th,
+.standings-table tbody tr + tr td {
+  border-top: 1px solid var(--border-color);
+}
+
+.standings-pos {
+  width: 28px;
+  color: var(--text-muted);
+}
+
+.standings-team {
+  width: auto;
+  padding-left: 4px !important;
+  text-align: left !important;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.standings-strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.standings-basis {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* Goals for/against are the first thing to go on a phone */
+@media (max-width: 420px) {
+  .standings-wide {
+    display: none;
+  }
+}
