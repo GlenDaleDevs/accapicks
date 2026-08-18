@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 import * as api from "../api/client";
 import Skeleton from "./Skeleton";
 import "./Leagues.css";
+import { FormKey, MatchRow } from "./FixtureRow";
 import "./FixturesList.css";
+
+const TRACKERS = [
+  { key: "results", label: "Results" },
+  { key: "btts", label: "BTTS" },
+  { key: "over25", label: "Over 2.5" },
+];
 
 function dayHeading(iso) {
   const d = new Date(`${iso}T12:00:00`);
   return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
-}
-
-function kickoffTime(iso) {
-  if (!iso) return "";
-  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 }
 
 // Matches arrive in kickoff order, so a day changes at most once per pass.
@@ -25,63 +27,10 @@ function byDay(matches) {
   return days;
 }
 
-const OUTCOME_TITLE = { W: "Won", D: "Drew", L: "Lost" };
-
-// Oldest to newest, so the rightmost circle is the most recent result.
-function Form({ form }) {
-  if (!form?.length) return null;
-  return (
-    <span className="fixture-form">
-      {form.map((outcome, i) => (
-        <span
-          key={i}
-          className={`form-dot form-${outcome.toLowerCase()}`}
-          title={OUTCOME_TITLE[outcome]}
-        />
-      ))}
-      <span className="sr-only">Form: {form.join(", ")}</span>
-    </span>
-  );
-}
-
-function Team({ name, stats }) {
-  return (
-    <div className="fixture-team">
-      {stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null}
-      <span className="fixture-name">{name}</span>
-      <Form form={stats?.form} />
-    </div>
-  );
-}
-
-function MatchRow({ match, teams }) {
-  return (
-    <li className="fixture-row">
-      <Team name={match.home} stats={teams[match.home]} />
-      <span className={`fixture-mid${match.played ? " fixture-score" : ""}`}>
-        {match.played ? `${match.home_goals}–${match.away_goals}` : kickoffTime(match.kickoff)}
-      </span>
-      <Team name={match.away} stats={teams[match.away]} />
-    </li>
-  );
-}
-
-// Dots alone don't say which end is the latest game, and nobody should have to
-// guess from the data.
-function FormKey() {
-  return (
-    <p className="fixture-key">
-      <span className="fixture-key-item"><span className="form-dot form-w" />Won</span>
-      <span className="fixture-key-item"><span className="form-dot form-d" />Drew</span>
-      <span className="fixture-key-item"><span className="form-dot form-l" />Lost</span>
-      <span className="fixture-key-note">Last 5, most recent on the right</span>
-    </p>
-  );
-}
-
 export default function FixturesList() {
   const [week, setWeek] = useState("");
   const [leagueCode, setLeagueCode] = useState(null);
+  const [tracker, setTracker] = useState("results");
   // Stamped with the week it came back for, so changing week shows the
   // skeleton rather than the previous week's fixtures.
   const [result, setResult] = useState(null);
@@ -117,6 +66,20 @@ export default function FixturesList() {
             </option>
           ))}
         </select>
+
+        <div className="segmented segmented-sm" role="tablist" aria-label="Tracker">
+          {TRACKERS.map(({ key, label }) => (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={tracker === key}
+              className={`segmented-btn${tracker === key ? " segmented-btn-active" : ""}`}
+              onClick={() => setTracker(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="league-chips" role="tablist" aria-label="League">
@@ -139,13 +102,18 @@ export default function FixturesList() {
         </div>
       ) : days.length ? (
         <>
-        <FormKey />
+        <FormKey tracker={tracker} />
         {days.map((day) => (
           <section key={day.date} className="fixture-day">
             <h3 className="fixture-day-title">{dayHeading(day.date)}</h3>
             <ul className="fixture-rows">
               {day.matches.map((m) => (
-                <MatchRow key={`${m.home}-${m.away}`} match={m} teams={league?.teams || {}} />
+                <MatchRow
+                  key={`${m.home}-${m.away}`}
+                  match={m}
+                  teams={league?.teams || {}}
+                  tracker={tracker}
+                />
               ))}
             </ul>
           </section>
