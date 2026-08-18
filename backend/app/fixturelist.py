@@ -3,8 +3,8 @@
 Two feeds, one shape. Upcoming fixtures come from The-Odds-API /events (zero
 credits, about a round ahead); everything already played comes from the
 football-data.co.uk results the Form tables are built from. Both are bucketed
-into Monday-to-Sunday weeks in UK time, so "last week's results" and "this
-week's fixtures" are the same kind of thing to the client.
+into game weeks in UK time, so "last week's results" and "this week's
+fixtures" are the same kind of thing to the client.
 
 Team names are reconciled to the football-data vocabulary, so a club doesn't
 change name between a result and a fixture — or between here and the tables.
@@ -13,7 +13,7 @@ change name between a result and a fixture — or between here and the tables.
 import asyncio
 import logging
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from . import odds_api
 from .predictionmodel import names
@@ -24,6 +24,8 @@ from .weekblocks import UK_TZ
 
 logger = logging.getLogger(__name__)
 
+TUESDAY = 1
+
 REFRESH_INTERVAL_SECONDS = 60 * 60  # the events cache has the same TTL
 RETRY_INTERVAL_SECONDS = 10 * 60
 
@@ -31,16 +33,30 @@ _cache = {"generated_at": None, "weeks": [], "by_week": {}, "ready": False}
 
 
 def _week_start(day):
-    """The Monday of that day's week."""
-    return day - timedelta(days=day.weekday())
+    """The Tuesday that opens this day's game week.
+
+    A round is Thu/Fri/Sat/Sun/Mon around its Saturday — the same shape
+    weekblocks.WEEKEND_OFFSETS uses for accas — so the window has to run
+    Tuesday to Monday. A calendar week would split a round in two, putting a
+    Monday night game with the following Saturday's fixtures instead of the
+    one it was played alongside.
+    """
+    return day - timedelta(days=(day.weekday() - TUESDAY) % 7)
 
 
-def _week_label(monday):
-    sunday = monday + timedelta(days=6)
-    if monday.month == sunday.month:
-        return f"{monday.day}–{sunday.day} {monday.strftime('%b')}"
-    return (f"{monday.day} {monday.strftime('%b')} – "
-            f"{sunday.day} {sunday.strftime('%b')}")
+def _day_label(day):
+    return f"{day.day} {day.strftime('%b')}"
+
+
+def _week_label(dates):
+    """The span the week's fixtures actually cover, not the whole window —
+    "15–17 Aug" says more than the Tuesday the bucket happens to start on."""
+    first, last = min(dates), max(dates)
+    if first == last:
+        return _day_label(first)
+    if first.month == last.month:
+        return f"{first.day}–{last.day} {first.strftime('%b')}"
+    return f"{_day_label(first)} – {_day_label(last)}"
 
 
 def _uk_date(iso):
@@ -80,8 +96,8 @@ def _played_matches(div_code, buckets):
         played_on = row["played_on"]
         if not played_on:
             continue
-        monday = _week_start(played_on)
-        buckets[monday][div_code].append({
+        week = _week_start(played_on)
+        buckets[week][div_code].append({
             "date": played_on.isoformat(),
             "kickoff": None,
             "home": row["home"],
@@ -90,7 +106,7 @@ def _played_matches(div_code, buckets):
             "away_goals": row["away_goals"],
             "played": True,
         })
-        seen[monday].add((row["home"], row["away"]))
+        seen[week].add((row["home"], row["away"]))
         teams.update((row["home"], row["away"]))
 
     return seen, teams
@@ -110,12 +126,12 @@ def _upcoming_matches(div_code, buckets, seen, index):
 
         home = _canonical(event.get("home_team"), index)
         away = _canonical(event.get("away_team"), index)
-        monday = _week_start(day)
+        week = _week_start(day)
         # A fixture that has just been played can still be listed as upcoming.
-        if (home, away) in seen.get(monday, set()):
+        if (home, away) in seen.get(week, set()):
             continue
 
-        buckets[monday][div_code].append({
+        buckets[week][div_code].append({
             "date": day.isoformat(),
             "kickoff": commence,
             "home": home,
@@ -150,20 +166,23 @@ def refresh_once():
         seen, teams = _played_matches(div_code, buckets)
         _upcoming_matches(div_code, buckets, seen, names.build_index(teams))
 
-    today = datetime.now(UK_TZ).date()
-    this_monday = _week_start(today)
+    this_week = _week_start(datetime.now(UK_TZ).date())
 
-    weeks = [
-        {"key": monday.isoformat(), "label": _week_label(monday),
-         "upcoming": monday >= this_monday}
-        for monday in sorted(buckets)
-    ]
+    weeks = []
+    for start, by_div in sorted(buckets.items()):
+        dates = [date.fromisoformat(m["date"])
+                 for matches in by_div.values() for m in matches]
+        weeks.append({
+            "key": start.isoformat(),
+            "label": _week_label(dates) if dates else _day_label(start),
+            "upcoming": start >= this_week,
+        })
 
     _cache.update({
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "weeks": weeks,
-        "by_week": {monday.isoformat(): _sorted_leagues(by_div)
-                    for monday, by_div in buckets.items()},
+        "by_week": {start.isoformat(): _sorted_leagues(by_div)
+                    for start, by_div in buckets.items()},
         "ready": True,
     })
     logger.info("Fixture list refreshed: %d weeks", len(weeks))
@@ -175,9 +194,9 @@ def default_week():
     weeks = _cache["weeks"]
     if not weeks:
         return None
-    this_monday = _week_start(datetime.now(UK_TZ).date()).isoformat()
+    this_week = _week_start(datetime.now(UK_TZ).date()).isoformat()
     for week in weeks:
-        if week["key"] >= this_monday:
+        if week["key"] >= this_week:
             return week["key"]
     return weeks[-1]["key"]
 
