@@ -27,9 +27,8 @@ function byDay(matches) {
   return days;
 }
 
-export default function FixturesList() {
+export default function FixturesList({ leagueCode, onLeagueChange }) {
   const [week, setWeek] = useState("");
-  const [leagueCode, setLeagueCode] = useState(null);
   const [tracker, setTracker] = useState("results");
   // Stamped with the week it came back for, so changing week shows the
   // skeleton rather than the previous week's fixtures.
@@ -51,6 +50,20 @@ export default function FixturesList() {
 
   return (
     <div className="fixtures-list">
+      <div className="league-chips" role="tablist" aria-label="League">
+        {leagues.map((l) => (
+          <button
+            key={l.code}
+            role="tab"
+            aria-selected={l.code === league?.code}
+            className={`league-chip${l.code === league?.code ? " league-chip-active" : ""}`}
+            onClick={() => onLeagueChange(l.code)}
+          >
+            {l.name}
+          </button>
+        ))}
+      </div>
+
       <div className="league-controls">
         <select
           className="league-select"
@@ -67,7 +80,12 @@ export default function FixturesList() {
           ))}
         </select>
 
-        <div className="segmented segmented-sm" role="tablist" aria-label="Tracker">
+        <span className="control-label" id="tracker-label">Choose what to track</span>
+        <div
+          className="segmented segmented-sm"
+          role="tablist"
+          aria-labelledby="tracker-label"
+        >
           {TRACKERS.map(({ key, label }) => (
             <button
               key={key}
@@ -80,20 +98,6 @@ export default function FixturesList() {
             </button>
           ))}
         </div>
-      </div>
-
-      <div className="league-chips" role="tablist" aria-label="League">
-        {leagues.map((l) => (
-          <button
-            key={l.code}
-            role="tab"
-            aria-selected={l.code === league?.code}
-            className={`league-chip${l.code === league?.code ? " league-chip-active" : ""}`}
-            onClick={() => setLeagueCode(l.code)}
-          >
-            {l.name}
-          </button>
-        ))}
       </div>
 
       {loading ? (

@@ -23,6 +23,15 @@
   margin: 0;
 }
 
+/* Sits closer to the control it labels than to whatever is above it */
+.control-label {
+  margin-top: 4px;
+  margin-bottom: -3px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 /* League chips scroll sideways rather than wrapping to a second row */
 .league-chips {
   display: flex;
