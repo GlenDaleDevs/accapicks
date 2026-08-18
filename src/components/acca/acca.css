@@ -137,9 +137,9 @@
 
 .pick-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  flex-direction: column;
+  gap: 5px;
+  padding: 11px 14px 12px;
   margin-bottom: 8px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -151,76 +151,67 @@
   border-style: dashed;
 }
 
-.pick-row-who {
+.pick-head {
   display: flex;
   align-items: center;
-  gap: 9px;
-  min-width: 0;
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 20px;
 }
 
-.pick-avatar {
-  width: 28px;
-  height: 28px;
+/* On its own line there is room for the whole name, so nothing truncates —
+   the reason "Brewi…" used to appear. */
+.pick-name {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-full);
-  background-color: var(--bg-elevated);
+  gap: 7px;
+  min-width: 0;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 700;
-}
-
-.pick-name {
-  color: var(--text-primary);
-  font-size: 14px;
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 90px;
 }
 
-.pick-row-bet {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  min-width: 0;
+.pick-you {
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
+/* The pick itself — the thing the row exists to show. Wraps to as many lines
+   as the fixture needs. */
 .pick-desc {
-  flex: 1;
-  min-width: 0;
+  margin: 0;
   color: var(--text-primary);
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .pick-meta {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .pick-kickoff {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .pick-odds {
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.pick-mark { font-size: 15px; font-weight: 700; }
+.pick-mark { font-size: 16px; font-weight: 700; line-height: 1; }
 .pick-mark-won { color: var(--color-success); }
 .pick-mark-lost { color: var(--color-danger); }
 .pick-mark-void { color: var(--text-muted); }
@@ -238,7 +229,7 @@
 }
 
 .pick-waiting {
-  margin-left: auto;
+  flex-shrink: 0;
   color: var(--text-muted);
   font-size: 13px;
 }

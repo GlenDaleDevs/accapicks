@@ -93,33 +93,41 @@ export default function AccaBody({
           const isSelf = user && m.user_id === user.id;
           return (
             <div key={m.user_id} className={`pick-row${bet ? "" : " pick-row-empty"}`}>
-              <div className="pick-row-who">
-                <span className="pick-avatar" aria-hidden="true">
-                  {m.username.charAt(0).toUpperCase()}
+              {/* Who, plus whichever of the two right-hand affordances applies.
+                  Remove and a result mark are mutually exclusive: Remove needs
+                  an open acca, a mark needs a settled one. */}
+              <div className="pick-head">
+                <span className="pick-name">
+                  {m.username}
+                  {isSelf && <span className="pick-you">You</span>}
                 </span>
-                <span className="pick-name">{m.username}</span>
-              </div>
-
-              {bet ? (
-                <div className="pick-row-bet">
-                  <span className="pick-desc">{bet.description}</span>
-                  <span className="pick-meta">
-                    {bet.commence_time && (
-                      <span className="pick-kickoff">{formatKickoffTime(bet.commence_time)}</span>
-                    )}
-                    <span className="pick-odds">{formatOdds(bet.odds, oddsFormat)}</span>
-                    {resultMark(bet.result)}
-                  </span>
-                  {isSelf && canPick && (
+                {bet ? (
+                  isSelf && canPick ? (
                     <button type="button" className="pick-remove" onClick={() => onRemovePick(bet.id)}>
                       Remove
                     </button>
-                  )}
-                </div>
-              ) : (
-                <span className="pick-waiting">
-                  {state === ACCA_STATE.OPEN ? "Waiting" : "No pick"}
-                </span>
+                  ) : (
+                    resultMark(bet.result)
+                  )
+                ) : (
+                  <span className="pick-waiting">
+                    {state === ACCA_STATE.OPEN ? "Waiting" : "No pick"}
+                  </span>
+                )}
+              </div>
+
+              {bet && (
+                <>
+                  {/* The pick is the content of the row. It wraps — never
+                      truncated, which is what hid the fixture before. */}
+                  <p className="pick-desc">{bet.description}</p>
+                  <div className="pick-meta">
+                    <span className="pick-kickoff">
+                      {bet.commence_time ? formatKickoffTime(bet.commence_time) : ""}
+                    </span>
+                    <span className="pick-odds">{formatOdds(bet.odds, oddsFormat)}</span>
+                  </div>
+                </>
               )}
             </div>
           );
