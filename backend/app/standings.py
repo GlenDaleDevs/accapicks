@@ -68,6 +68,13 @@ def _serialise(table):
     ]
 
 
+def overall_table(rows):
+    """Ranked combined table from raw result rows. Shared with the fixture
+    list, so a club's position there is the one the Form tab shows."""
+    home_table, away_table = build_division_tables(rows)
+    return _serialise(_overall(home_table, away_table))
+
+
 def _build_league(season_code, div_code):
     division = DIVISION_BY_CODE[div_code]
     league = {"code": div_code, "name": division["name"],
