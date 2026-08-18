@@ -11,6 +11,13 @@ const TRACKERS = [
   { key: "over25", label: "Over 2.5" },
 ];
 
+// "venue" shows each side its own half of the record: the home team's home
+// games, the away team's away games.
+const VENUES = [
+  { key: "overall", label: "Overall" },
+  { key: "venue", label: "Home/Away" },
+];
+
 function dayHeading(iso) {
   const d = new Date(`${iso}T12:00:00`);
   return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
@@ -27,9 +34,10 @@ function byDay(matches) {
   return days;
 }
 
-export default function FixturesList({ leagueCode, onLeagueChange }) {
+export default function FixturesList({ leagueCode, onLeagues }) {
   const [week, setWeek] = useState("");
   const [tracker, setTracker] = useState("results");
+  const [venue, setVenue] = useState("overall");
   // Stamped with the week it came back for, so changing week shows the
   // skeleton rather than the previous week's fixtures.
   const [result, setResult] = useState(null);
@@ -37,10 +45,14 @@ export default function FixturesList({ leagueCode, onLeagueChange }) {
   useEffect(() => {
     let cancelled = false;
     api.getFixtureList(week)
-      .then((d) => { if (!cancelled) setResult({ week, data: d }); })
+      .then((d) => {
+        if (cancelled) return;
+        setResult({ week, data: d });
+        onLeagues((d.leagues || []).map(({ code, name }) => ({ code, name })));
+      })
       .catch(() => { if (!cancelled) setResult({ week, data: { weeks: [], leagues: [], ready: false } }); });
     return () => { cancelled = true; };
-  }, [week]);
+  }, [week, onLeagues]);
 
   const loading = result?.week !== week;
   const data = loading ? null : result.data;
@@ -50,20 +62,6 @@ export default function FixturesList({ leagueCode, onLeagueChange }) {
 
   return (
     <div className="fixtures-list">
-      <div className="league-chips" role="tablist" aria-label="League">
-        {leagues.map((l) => (
-          <button
-            key={l.code}
-            role="tab"
-            aria-selected={l.code === league?.code}
-            className={`league-chip${l.code === league?.code ? " league-chip-active" : ""}`}
-            onClick={() => onLeagueChange(l.code)}
-          >
-            {l.name}
-          </button>
-        ))}
-      </div>
-
       <div className="league-controls">
         <select
           className="league-select"
@@ -98,6 +96,20 @@ export default function FixturesList({ leagueCode, onLeagueChange }) {
             </button>
           ))}
         </div>
+
+        <div className="segmented segmented-sm" role="tablist" aria-label="Home or away">
+          {VENUES.map(({ key, label }) => (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={venue === key}
+              className={`segmented-btn${venue === key ? " segmented-btn-active" : ""}`}
+              onClick={() => setVenue(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
@@ -106,7 +118,7 @@ export default function FixturesList({ leagueCode, onLeagueChange }) {
         </div>
       ) : days.length ? (
         <>
-        <FormKey tracker={tracker} />
+        <FormKey tracker={tracker} venue={venue} />
         {days.map((day) => (
           <section key={day.date} className="fixture-day">
             <h3 className="fixture-day-title">{dayHeading(day.date)}</h3>
@@ -117,6 +129,7 @@ export default function FixturesList({ leagueCode, onLeagueChange }) {
                   match={m}
                   teams={league?.teams || {}}
                   tracker={tracker}
+                  venue={venue}
                 />
               ))}
             </ul>

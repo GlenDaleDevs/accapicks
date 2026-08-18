@@ -10,9 +10,9 @@ Team names are reconciled to the football-data vocabulary, so a club doesn't
 change name between a result and a fixture — or between here and the tables.
 
 Each division also carries a per-club league position and last-five trackers —
-results, both teams to score, and over 2.5 goals — computed from the same
-results, so a row can say where a side sits and how it has been going without
-a second request.
+results, both teams to score, and over 2.5 goals — each split three ways into
+overall, home-only and away-only, computed from the same results, so a row can
+say where a side sits and how it has been going without a second request.
 """
 
 import asyncio
@@ -100,13 +100,29 @@ def _outcome(scored, conceded):
     return "L" if scored < conceded else "D"
 
 
+def _last_five(entries):
+    """The three trackers over the most recent five of these matches.
+
+    Sliced before splitting so all three describe the same five games — flick
+    between them and you are comparing like with like.
+    """
+    recent = entries[-FORM_LENGTH:]
+    return {
+        "results": [result for _, result, _, _ in recent],
+        "btts": [btts for _, _, btts, _ in recent],
+        "over25": [over for _, _, _, over in recent],
+    }
+
+
 def _team_stats(rows):
     """Per-club position and last-five trackers for one division.
 
-    {club: {"pos": int|None, "results": [...], "btts": [...], "over25": [...]}}
+    {club: {"pos": int|None,
+            "overall": {"results": [...], "btts": [...], "over25": [...]},
+            "home": {...}, "away": {...}}}
 
-    All three trackers run oldest to newest over the same five matches, so the
-    rightmost circle is the most recent game whichever one is on screen.
+    Home and away are the same three trackers over that club's home-only or
+    away-only matches, which is a different last five from the overall one.
     """
     position = {row["team"]: row["pos"] for row in overall_table(rows)} if rows else {}
 
@@ -118,17 +134,19 @@ def _team_stats(rows):
         btts = "Y" if home_goals > 0 and away_goals > 0 else "N"
         over25 = "Y" if home_goals + away_goals > 2 else "N"
 
-        history[row["home"]].append((_outcome(home_goals, away_goals), btts, over25))
-        history[row["away"]].append((_outcome(away_goals, home_goals), btts, over25))
+        history[row["home"]].append(
+            ("home", _outcome(home_goals, away_goals), btts, over25))
+        history[row["away"]].append(
+            ("away", _outcome(away_goals, home_goals), btts, over25))
 
     stats = {}
     for team in set(position) | set(history):
-        recent = history[team][-FORM_LENGTH:]
+        played = history[team]
         stats[team] = {
             "pos": position.get(team),
-            "results": [r for r, _, _ in recent],
-            "btts": [b for _, b, _ in recent],
-            "over25": [o for _, _, o in recent],
+            "overall": _last_five(played),
+            "home": _last_five([e for e in played if e[0] == "home"]),
+            "away": _last_five([e for e in played if e[0] == "away"]),
         }
     return stats
 
