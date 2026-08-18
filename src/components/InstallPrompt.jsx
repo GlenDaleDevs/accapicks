@@ -28,18 +28,21 @@ const INSTRUCTIONS = {
 };
 
 export default function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  // index.html captures the event for us if it fired before React mounted
+  const [deferredPrompt, setDeferredPrompt] = useState(() => window.__installPromptEvent);
   const [showHelp, setShowHelp] = useState(false);
   const platform = detectPlatform();
 
   useEffect(() => {
     const onBeforeInstallPrompt = (e) => {
       e.preventDefault();
+      window.__installPromptEvent = e;
       setDeferredPrompt(e);
     };
     // TODO: hide the button again once installed — off for now so it stays
     // visible for testing on devices that already have the app
     const onInstalled = () => {
+      window.__installPromptEvent = null;
       setDeferredPrompt(null);
       setShowHelp(false);
     };
@@ -59,6 +62,7 @@ export default function InstallPrompt() {
     }
     // A beforeinstallprompt event can only be used once
     const promptEvent = deferredPrompt;
+    window.__installPromptEvent = null;
     setDeferredPrompt(null);
     try {
       promptEvent.prompt();
