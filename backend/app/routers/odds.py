@@ -1,6 +1,6 @@
 import re
 from fastapi import APIRouter, Depends, Request, HTTPException
-from .. import odds_api, favourable
+from .. import odds_api, standings
 from ..schemas import VALID_SPORT_KEYS
 from .auth import get_current_user
 from ..limiter import limiter
@@ -73,15 +73,17 @@ def get_filtered_matches(
     return formatted_matches
 
 
-@router.get("/odds/favourable")
+@router.get("/odds/standings")
 @limiter.limit("30/minute")
-def get_favourable_matchups(request: Request, user_id: int = Depends(get_current_user)):
-    """Lopsided upcoming fixtures, served from the background-refreshed cache.
+def get_standings(request: Request, season: str = "current", user_id: int = Depends(get_current_user)):
+    """League tables, served from the background-refreshed cache.
 
-    An empty list is a valid answer, not a failure — a round with no strong
-    mismatch is more credible than one that always finds something.
+    `season` is "current" or "last" — the football-data season codes stay
+    server-side so a caller can't ask for an arbitrary file.
     """
-    return favourable.get_cached()
+    if season not in standings.SEASONS:
+        raise HTTPException(status_code=400, detail="Invalid season")
+    return standings.get_cached(season)
 
 
 @router.get("/odds/matches/{event_id}/btts")
