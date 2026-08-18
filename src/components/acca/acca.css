@@ -401,3 +401,66 @@
   font-size: 14px;
   line-height: 1.5;
 }
+
+/* ---- Previous weeks list ---- */
+.previous-weeks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.previous-week {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 4px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.previous-weeks li + li .previous-week {
+  border-top: 1px solid var(--border-color);
+}
+
+.previous-week-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.previous-week-label {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.previous-week-outcome {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.previous-week-won {
+  color: var(--color-success);
+}
+
+.previous-week-lost {
+  color: var(--color-danger);
+}
+
+.previous-week-date {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.previous-weeks-empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
