@@ -25,14 +25,48 @@ function byDay(matches) {
   return days;
 }
 
-function MatchRow({ match }) {
+const OUTCOME_TITLE = { W: "Won", D: "Drew", L: "Lost" };
+
+// Oldest to newest, so the rightmost circle is the most recent result.
+function Form({ form }) {
+  if (!form?.length) return null;
+  return (
+    <span className="fixture-form">
+      {form.map((outcome, i) => (
+        <span
+          key={i}
+          className={`form-dot form-${outcome.toLowerCase()}`}
+          title={OUTCOME_TITLE[outcome]}
+        />
+      ))}
+      <span className="sr-only">Form: {form.join(", ")}</span>
+    </span>
+  );
+}
+
+// `side` places the position on the inside edge, nearest the score.
+function Team({ name, stats, side }) {
+  const position = stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null;
+  return (
+    <div className={`fixture-team fixture-${side}`}>
+      <div className="fixture-team-name">
+        {side === "away" && position}
+        <span className="fixture-name">{name}</span>
+        {side === "home" && position}
+      </div>
+      <Form form={stats?.form} />
+    </div>
+  );
+}
+
+function MatchRow({ match, teams }) {
   return (
     <li className="fixture-row">
-      <span className="fixture-team fixture-home">{match.home}</span>
+      <Team name={match.home} stats={teams[match.home]} side="home" />
       <span className={`fixture-mid${match.played ? " fixture-score" : ""}`}>
         {match.played ? `${match.home_goals}–${match.away_goals}` : kickoffTime(match.kickoff)}
       </span>
-      <span className="fixture-team fixture-away">{match.away}</span>
+      <Team name={match.away} stats={teams[match.away]} side="away" />
     </li>
   );
 }
@@ -101,7 +135,7 @@ export default function FixturesList() {
             <h3 className="fixture-day-title">{dayHeading(day.date)}</h3>
             <ul className="fixture-rows">
               {day.matches.map((m) => (
-                <MatchRow key={`${m.home}-${m.away}`} match={m} />
+                <MatchRow key={`${m.home}-${m.away}`} match={m} teams={league?.teams || {}} />
               ))}
             </ul>
           </section>
