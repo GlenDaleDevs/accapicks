@@ -17,7 +17,7 @@ const SPLITS = [
   { key: "away", label: "Away" },
 ];
 
-export default function FormTab({ leagueCode, onLeagueChange }) {
+export default function FormTab({ leagueCode, onLeagues }) {
   const [season, setSeason] = useState("current");
   const [split, setSplit] = useState("overall");
   // Stamped with the season it came back for, so switching season shows the
@@ -27,10 +27,14 @@ export default function FormTab({ leagueCode, onLeagueChange }) {
   useEffect(() => {
     let cancelled = false;
     api.getStandings(season)
-      .then((d) => { if (!cancelled) setResult({ season, data: d }); })
+      .then((d) => {
+        if (cancelled) return;
+        setResult({ season, data: d });
+        onLeagues((d.leagues || []).map(({ code, name }) => ({ code, name })));
+      })
       .catch(() => { if (!cancelled) setResult({ season, data: { leagues: [], ready: false } }); });
     return () => { cancelled = true; };
-  }, [season]);
+  }, [season, onLeagues]);
 
   const loading = result?.season !== season;
   const data = loading ? null : result.data;
@@ -42,20 +46,6 @@ export default function FormTab({ leagueCode, onLeagueChange }) {
 
   return (
     <div className="standings">
-      <div className="league-chips" role="tablist" aria-label="League">
-        {leagues.map((l) => (
-          <button
-            key={l.code}
-            role="tab"
-            aria-selected={l.code === league?.code}
-            className={`league-chip${l.code === league?.code ? " league-chip-active" : ""}`}
-            onClick={() => onLeagueChange(l.code)}
-          >
-            {l.name}
-          </button>
-        ))}
-      </div>
-
       <div className="league-controls">
         <select
           className="league-select"

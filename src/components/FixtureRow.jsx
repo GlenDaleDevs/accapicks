@@ -37,31 +37,35 @@ function Form({ marks, tracker }) {
   );
 }
 
-function Team({ name, stats, tracker }) {
+// In "venue" mode each side shows its own half of the record — the home team's
+// home games, the away team's away games — a different last five from overall.
+function Team({ name, stats, tracker, venue, side }) {
+  const split = stats?.[venue === "venue" ? side : "overall"];
   return (
     <div className="fixture-team">
       {stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null}
       <span className="fixture-name">{name}</span>
-      <Form marks={stats?.[tracker]} tracker={tracker} />
+      <Form marks={split?.[tracker]} tracker={tracker} />
     </div>
   );
 }
 
-export function MatchRow({ match, teams, tracker }) {
+export function MatchRow({ match, teams, tracker, venue }) {
+  const shared = { tracker, venue };
   return (
     <li className="fixture-row">
-      <Team name={match.home} stats={teams[match.home]} tracker={tracker} />
+      <Team name={match.home} stats={teams[match.home]} side="home" {...shared} />
       <span className={`fixture-mid${match.played ? " fixture-score" : ""}`}>
         {match.played ? `${match.home_goals}–${match.away_goals}` : kickoffTime(match.kickoff)}
       </span>
-      <Team name={match.away} stats={teams[match.away]} tracker={tracker} />
+      <Team name={match.away} stats={teams[match.away]} side="away" {...shared} />
     </li>
   );
 }
 
 // Dots alone don't say which end is the latest game, and nobody should have to
 // guess from the data.
-export function FormKey({ tracker }) {
+export function FormKey({ tracker, venue }) {
   return (
     <p className="fixture-key">
       {LEGENDS[tracker].map(([mark, label]) => (
@@ -70,7 +74,9 @@ export function FormKey({ tracker }) {
           {label}
         </span>
       ))}
-      <span className="fixture-key-note">Last 5, most recent on the right</span>
+      <span className="fixture-key-note">
+        {venue === "venue" ? "Last 5 home/away" : "Last 5"}, most recent on the right
+      </span>
     </p>
   );
 }
