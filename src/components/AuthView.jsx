@@ -389,7 +389,7 @@ export default function AuthView({
 
             <div className="auth-actions">
               <button type="submit" className="btn btn-primary" disabled={loading || (mode === "signup" && (usernameStatus === "taken" || usernameStatus === "invalid" || usernameStatus === "checking"))}>
-                {loading ? "Loading..." : mode === "signup" ? "Sign Up" : "Login"}
+                {loading ? "Loading..." : mode === "signup" ? "Sign Up" : "Login Here"}
               </button>
               <div className="auth-links">
                 <a
