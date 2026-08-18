@@ -38,6 +38,7 @@ export default function FixturesList({ leagueCode, onLeagues }) {
   const [week, setWeek] = useState("");
   const [tracker, setTracker] = useState("results");
   const [venue, setVenue] = useState("overall");
+  const [optionsOpen, setOptionsOpen] = useState(false);
   // Stamped with the week it came back for, so changing week shows the
   // skeleton rather than the previous week's fixtures.
   const [result, setResult] = useState(null);
@@ -60,56 +61,94 @@ export default function FixturesList({ leagueCode, onLeagues }) {
   const league = leagues.find((l) => l.code === leagueCode) || leagues[0];
   const days = byDay(league?.matches || []);
 
+  // Weeks run oldest first, so stepping left is back in time. The current week
+  // is the first still to be played — the same one the server picks when asked
+  // for none.
+  // The week list survives a reload, so stepping doesn't blank the header and
+  // disable the arrows while the new week is in flight.
+  const weeks = (data || result?.data)?.weeks || [];
+  const shownKey = week || data?.week || result?.data?.week || "";
+  const index = weeks.findIndex((w) => w.key === shownKey);
+  const currentKey = (weeks.find((w) => w.upcoming) || weeks[weeks.length - 1])?.key;
+  const previous = index > 0 ? weeks[index - 1] : null;
+  const next = index >= 0 ? weeks[index + 1] : null;
+  const weekLabel = shownKey === currentKey
+    ? "Current Week"
+    : weeks[index]?.label || "";
+
   return (
     <div className="fixtures-list">
-      <div className="league-controls">
-        <select
-          className="league-select"
-          // The server picks the week when we ask for none, so reflect its
-          // answer back into the picker rather than showing a blank option.
-          value={week || data?.week || ""}
-          onChange={(e) => setWeek(e.target.value)}
-          aria-label="Week"
+      <div className="week-nav">
+        <button
+          type="button"
+          className="week-arrow"
+          onClick={() => previous && setWeek(previous.key)}
+          disabled={!previous}
+          aria-label={previous ? `Previous week, ${previous.label}` : "No earlier week"}
         >
-          {(data?.weeks || []).map((w) => (
-            <option key={w.key} value={w.key}>
-              {w.label}{w.upcoming ? "" : " (results)"}
-            </option>
-          ))}
-        </select>
-
-        <span className="control-label" id="tracker-label">Choose what to track</span>
-        <div
-          className="segmented segmented-sm"
-          role="tablist"
-          aria-labelledby="tracker-label"
+          ‹
+        </button>
+        <span className="week-current" aria-live="polite">{weekLabel}</span>
+        <button
+          type="button"
+          className="week-arrow"
+          onClick={() => next && setWeek(next.key)}
+          disabled={!next}
+          aria-label={next ? `Next week, ${next.label}` : "No later week"}
         >
-          {TRACKERS.map(({ key, label }) => (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={tracker === key}
-              className={`segmented-btn${tracker === key ? " segmented-btn-active" : ""}`}
-              onClick={() => setTracker(key)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+          ›
+        </button>
+      </div>
 
-        <div className="segmented segmented-sm" role="tablist" aria-label="Home or away">
-          {VENUES.map(({ key, label }) => (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={venue === key}
-              className={`segmented-btn${venue === key ? " segmented-btn-active" : ""}`}
-              onClick={() => setVenue(key)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="track">
+        <button
+          type="button"
+          className="track-toggle"
+          aria-expanded={optionsOpen}
+          aria-controls="track-options"
+          onClick={() => setOptionsOpen((open) => !open)}
+        >
+          <span>Choose what to track</span>
+          {/* The summary keeps the current choice visible while collapsed */}
+          <span className="track-summary">
+            {TRACKERS.find((t) => t.key === tracker)?.label}
+            {" · "}
+            {VENUES.find((v) => v.key === venue)?.label}
+          </span>
+          <span className={`track-caret${optionsOpen ? " track-caret-open" : ""}`} aria-hidden="true">›</span>
+        </button>
+
+        {optionsOpen && (
+          <div className="track-options" id="track-options">
+            <div className="segmented segmented-sm" role="tablist" aria-label="Bet type">
+              {TRACKERS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={tracker === key}
+                  className={`segmented-btn${tracker === key ? " segmented-btn-active" : ""}`}
+                  onClick={() => setTracker(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="segmented segmented-sm" role="tablist" aria-label="Home or away">
+              {VENUES.map(({ key, label }) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={venue === key}
+                  className={`segmented-btn${venue === key ? " segmented-btn-active" : ""}`}
+                  onClick={() => setVenue(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {loading ? (
