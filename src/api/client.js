@@ -205,6 +205,13 @@ export const getFilteredMatches = async (leagues, dateFrom, dateTo) => {
   return response.data;
 };
 
+export const getFixtureList = async (week = "") => {
+  const response = await axios.get(`${API_URL}/odds/fixtures`, {
+    params: week ? { week } : {},
+  });
+  return response.data;
+};
+
 export const getStandings = async (season = "current") => {
   const response = await axios.get(`${API_URL}/odds/standings`, {
     params: { season },

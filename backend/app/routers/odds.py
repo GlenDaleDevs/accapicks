@@ -1,6 +1,6 @@
 import re
 from fastapi import APIRouter, Depends, Request, HTTPException
-from .. import odds_api, standings
+from .. import fixturelist, odds_api, standings
 from ..schemas import VALID_SPORT_KEYS
 from .auth import get_current_user
 from ..limiter import limiter
@@ -84,6 +84,19 @@ def get_standings(request: Request, season: str = "current", user_id: int = Depe
     if season not in standings.SEASONS:
         raise HTTPException(status_code=400, detail="Invalid season")
     return standings.get_cached(season)
+
+
+@router.get("/odds/fixtures")
+@limiter.limit("30/minute")
+def get_fixture_list(request: Request, week: str = "", user_id: int = Depends(get_current_user)):
+    """One week of fixtures and results across the four English divisions.
+
+    `week` is the Monday of the week wanted, as returned in `weeks`. Omitted,
+    it serves the current week.
+    """
+    if week and not DATE_PATTERN.match(week):
+        raise HTTPException(status_code=400, detail="Invalid week format. Use YYYY-MM-DD")
+    return fixturelist.get_week(week or None)
 
 
 @router.get("/odds/matches/{event_id}/btts")

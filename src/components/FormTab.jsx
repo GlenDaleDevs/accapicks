@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import * as api from "../api/client";
 import Skeleton from "./Skeleton";
 import StandingsTable from "./StandingsTable";
+import "./Leagues.css";
 import "./Standings.css";
 
 // "2526" -> "2025/26"
@@ -42,9 +43,9 @@ export default function FormTab() {
 
   return (
     <div className="standings">
-      <div className="standings-controls">
+      <div className="league-controls">
         <select
-          className="standings-select"
+          className="league-select"
           value={season}
           onChange={(e) => setSeason(e.target.value)}
           aria-label="Season"
@@ -68,13 +69,13 @@ export default function FormTab() {
         </div>
       </div>
 
-      <div className="standings-leagues" role="tablist" aria-label="League">
+      <div className="league-chips" role="tablist" aria-label="League">
         {leagues.map((l) => (
           <button
             key={l.code}
             role="tab"
             aria-selected={l.code === league?.code}
-            className={`standings-chip${l.code === league?.code ? " standings-chip-active" : ""}`}
+            className={`league-chip${l.code === league?.code ? " league-chip-active" : ""}`}
             onClick={() => setLeagueCode(l.code)}
           >
             {l.name}
