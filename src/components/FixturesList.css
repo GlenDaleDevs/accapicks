@@ -3,10 +3,6 @@
   padding: 0 16px;
 }
 
-.league-select-wide {
-  flex: 1;
-}
-
 .fixture-day + .fixture-day {
   margin-top: 16px;
 }
