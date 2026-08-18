@@ -31,10 +31,10 @@ logger = logging.getLogger(__name__)
 
 REFRESH_INTERVAL_SECONDS = 30 * 60
 
-# How far ahead a week opens. Four days puts the Saturday week up on Tuesday —
+# How far ahead a week opens. Three days puts the Saturday week up on Wednesday —
 # late enough that the API is listing the whole weekend, early enough that
 # there's a week to pick in well before kickoff.
-LEAD_DAYS = 4
+LEAD_DAYS = 3
 
 ACTIVE_STATUSES = ("open", "locked")
 
