@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Landing.css";
+import InstallPrompt from "./InstallPrompt";
 import { showToast } from "../utils/toast";
 import { checkUsername } from "../api/client";
 
@@ -413,6 +414,8 @@ export default function AuthView({
         )}
       </form>
       </div>
+
+      <InstallPrompt />
 
       <footer className="landing-footer">
         <div className="landing-footer-links">
