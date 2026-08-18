@@ -48,6 +48,26 @@ Late development — deployed to production on Railway, security hardening compl
 - [x] ~~Decide what to do with the lapsed pre-season weeks~~ — deleted automatically once their last
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
+### Open threads (2026-08-18) — read these first if picking up elsewhere
+- [ ] **Did the auto week fire?** Today is the first day the Saturday block falls inside `LEAD_DAYS = 4`.
+      Expect an acca covering Fri 21 – Mon 24 Aug, labelled **Week 1**, plus a push to the group.
+      If it didn't: check `groups.auto_weeks` is true, that no other open acca was blocking it, and the
+      Railway logs for `Auto week error`
+- [ ] **Confirm `season_start_date` is 21 Aug 2026 or earlier, not the 22nd.** The week's
+      `first_match_date` is the Friday opener, so a boundary on the 22nd would drop Week 1 out of the
+      season entirely and it would read "past season"
+- [ ] **Nothing shipped since 15 Aug has been seen in a browser** — the Chrome extension won't connect
+      (`list_connected_browsers` returns empty, so it isn't pairing with the account at all). Unverified:
+      the Group Settings toggles, the reworded no-week card, the week strip label, and the restacked
+      pick rows. Specific thing to judge: whether five stacked pick rows push the returns bar too low
+- [ ] **Favourable Matchups — blend metric not shipped.** Backtested; a better *ranker* (+1 to +3.7 pts
+      strike rate at matched volume) but a worse *picker* (loses head-to-head where the two disagree).
+      Rerun with `scripts/backtest_matchups.py --metrics blend`. If ever adopted, 0.75 rescales to ~0.55
+- [ ] **The 0–0.25 anomaly** — near-level fixtures returned +2.8% / +8.3% best over 2,332 bets. Biggest
+      sample in the study and the opposite of what the tab surfaces. Investigate before touching the model
+- [ ] Delete `CURRENT_SEASON` and the post-GW10 comments from `predictionmodel/config.py` — measured as
+      actively worse (see `backend/scripts/BACKTEST.md`)
+
 ### Quick wins (1 session each)
 - [ ] Install `eslint-plugin-react` so JSX-only identifiers stop reading as unused (13 pre-existing lint errors)
 - [ ] Join-a-group flow: the invite link already works end-to-end; what's missing is invite context on the
@@ -80,4 +100,4 @@ Late development — deployed to production on Railway, security hardening compl
 - Last Man Standing: fully independent, no blockers — just needs dedicated sessions
 
 ## Last Updated
-2026-08-16
+2026-08-18
