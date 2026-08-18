@@ -44,16 +44,11 @@ function Form({ form }) {
   );
 }
 
-// `side` places the position on the inside edge, nearest the score.
-function Team({ name, stats, side }) {
-  const position = stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null;
+function Team({ name, stats }) {
   return (
-    <div className={`fixture-team fixture-${side}`}>
-      <div className="fixture-team-name">
-        {side === "away" && position}
-        <span className="fixture-name">{name}</span>
-        {side === "home" && position}
-      </div>
+    <div className="fixture-team">
+      {stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null}
+      <span className="fixture-name">{name}</span>
       <Form form={stats?.form} />
     </div>
   );
@@ -62,12 +57,25 @@ function Team({ name, stats, side }) {
 function MatchRow({ match, teams }) {
   return (
     <li className="fixture-row">
-      <Team name={match.home} stats={teams[match.home]} side="home" />
+      <Team name={match.home} stats={teams[match.home]} />
       <span className={`fixture-mid${match.played ? " fixture-score" : ""}`}>
         {match.played ? `${match.home_goals}–${match.away_goals}` : kickoffTime(match.kickoff)}
       </span>
-      <Team name={match.away} stats={teams[match.away]} side="away" />
+      <Team name={match.away} stats={teams[match.away]} />
     </li>
+  );
+}
+
+// Dots alone don't say which end is the latest game, and nobody should have to
+// guess from the data.
+function FormKey() {
+  return (
+    <p className="fixture-key">
+      <span className="fixture-key-item"><span className="form-dot form-w" />Won</span>
+      <span className="fixture-key-item"><span className="form-dot form-d" />Drew</span>
+      <span className="fixture-key-item"><span className="form-dot form-l" />Lost</span>
+      <span className="fixture-key-note">Last 5, most recent on the right</span>
+    </p>
   );
 }
 
@@ -130,7 +138,9 @@ export default function FixturesList() {
           <Skeleton width="100%" height="44px" count={5} />
         </div>
       ) : days.length ? (
-        days.map((day) => (
+        <>
+        <FormKey />
+        {days.map((day) => (
           <section key={day.date} className="fixture-day">
             <h3 className="fixture-day-title">{dayHeading(day.date)}</h3>
             <ul className="fixture-rows">
@@ -139,7 +149,8 @@ export default function FixturesList() {
               ))}
             </ul>
           </section>
-        ))
+        ))}
+        </>
       ) : (
         <div className="placeholder-card">
           <h3 className="placeholder-title">
