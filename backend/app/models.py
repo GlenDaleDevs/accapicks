@@ -41,9 +41,6 @@ class Group(Base):
     # Monotonic high-water mark for acca round numbers. Never decremented, so a
     # deleted week leaves an honest gap instead of its number being reissued.
     next_round_number = Column(Integer, nullable=False, default=1, server_default="1")
-    # Open the next Saturday (or full midweek round) without anyone running the
-    # wizard. See autoweek.py.
-    auto_weeks = Column(Boolean, nullable=False, default=True, server_default="1")
     # Accas whose first_match_date falls before this drop out of the table, the
     # acca-stats bar and member profiles. Null means count everything ever.
     season_start_date = Column(Date, nullable=True)

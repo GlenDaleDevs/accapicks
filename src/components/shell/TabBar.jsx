@@ -1,5 +1,5 @@
 import { Link, useLocation, useParams } from "react-router-dom";
-import { groupAcca, groupFixtures, groupTable, groupMore } from "../../utils/routes";
+import { groupAcca, groupFixtures, groupTable } from "../../utils/routes";
 
 function IconAcca() {
   return (
@@ -29,16 +29,6 @@ function IconTable() {
   );
 }
 
-function IconMore() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <circle cx="5" cy="12" r="1.9" />
-      <circle cx="12" cy="12" r="1.9" />
-      <circle cx="19" cy="12" r="1.9" />
-    </svg>
-  );
-}
-
 export default function TabBar() {
   const { groupId } = useParams();
   const { pathname } = useLocation();
@@ -51,7 +41,6 @@ export default function TabBar() {
     { to: groupAcca(groupId), match: `/g/${groupId}/acca`, label: "Acca", icon: <IconAcca /> },
     { to: groupFixtures(groupId), match: `/g/${groupId}/fixtures`, label: "Fixtures", icon: <IconFixtures /> },
     { to: groupTable(groupId), match: `/g/${groupId}/table`, label: "Table", icon: <IconTable /> },
-    { to: groupMore(groupId), match: `/g/${groupId}/more`, label: "More", icon: <IconMore /> },
   ];
 
   return (

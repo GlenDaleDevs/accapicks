@@ -1,9 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import AppMenu from "./AppMenu";
 import GroupSwitcher from "./GroupSwitcher";
-import { SETTINGS } from "../../utils/routes";
 
 export default function GlobalHeader() {
-  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="global-header">
@@ -12,15 +12,20 @@ export default function GlobalHeader() {
         <button
           type="button"
           className="global-header-profile"
-          onClick={() => navigate(SETTINGS)}
-          aria-label="Settings"
+          onClick={() => setMenuOpen(true)}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          aria-label="Menu"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="8" r="3.6" />
-            <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+            <path d="M4 7h16" />
+            <path d="M4 12h16" />
+            <path d="M4 17h16" />
           </svg>
         </button>
       </div>
+
+      {menuOpen && <AppMenu onClose={() => setMenuOpen(false)} />}
     </header>
   );
 }

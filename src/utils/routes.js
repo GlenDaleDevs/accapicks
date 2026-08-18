@@ -4,10 +4,10 @@
 export const groupAcca = (groupId) => `/g/${groupId}/acca`;
 export const groupFixtures = (groupId) => `/g/${groupId}/fixtures`;
 export const groupTable = (groupId) => `/g/${groupId}/table`;
-export const groupMore = (groupId) => `/g/${groupId}/more`;
-export const memberPicks = (groupId, userId) => `/g/${groupId}/more/members/${userId}`;
+export const memberPicks = (groupId, userId) => `/g/${groupId}/members/${userId}`;
 export const accaDetail = (groupId, accaId) => `/g/${groupId}/accas/${accaId}`;
 
+export const GROUPS = "/groups";
 export const SETTINGS = "/settings";
 
 // Last group the user viewed. Cleared on logout — see handleLogout in App.jsx.

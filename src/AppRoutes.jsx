@@ -5,7 +5,7 @@ import AccaTab from "./components/AccaTab";
 import MemberPickHistory from "./components/MemberPickHistory";
 import FixturesTab from "./components/FixturesTab";
 import TableTab from "./components/TableTab";
-import MoreTab from "./components/MoreTab";
+import GroupsPage from "./components/GroupsPage";
 import UserSettings from "./components/UserSettings";
 import PageTransition from "./components/PageTransition";
 import Skeleton from "./components/Skeleton";
@@ -29,7 +29,7 @@ function RootRedirect() {
   }
 
   // First run: no group to put tabs around yet, so show create/join on its own.
-  if (groups.length === 0) return <MoreTab />;
+  if (groups.length === 0) return <GroupsPage />;
 
   const stored = readLastGroupId();
   const valid = groups.some((g) => String(g.id) === String(stored));
@@ -120,10 +120,12 @@ export default function AppRoutes() {
         <Route path="accas/:accaId" element={<AccaIdRedirect />} />
         <Route path="fixtures" element={<FixturesTab />} />
         <Route path="table" element={<TableTab />} />
-        <Route path="more" element={<MoreTab />} />
-        <Route path="more/members/:userId" element={<MemberPickHistory />} />
+        <Route path="members/:userId" element={<MemberPickHistory />} />
+        {/* The More tab is gone; its contents live in the header menu. */}
+        <Route path="more" element={<Navigate to="../acca" replace />} />
       </Route>
 
+      <Route path="/groups" element={<GroupsPage />} />
       <Route path="/settings" element={<SettingsRoute />} />
 
       <Route path="/groups/:groupId" element={<LegacyGroupRedirect />} />

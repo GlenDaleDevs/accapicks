@@ -8,6 +8,10 @@ breaks is needed anywhere.
 Auto-created accas are identified by `created_by IS NULL`: nobody made them, so
 there is no creator to record. That marker is also what keeps `extend_week` off
 manually created accas, where the chosen dates are a deliberate decision.
+
+Every group gets weeks — there is no opt-out. A group that has never had one
+also gets its season boundary set here, to the first date of the first week
+that opens, so the table starts counting from the group's real first week.
 """
 
 import asyncio
@@ -127,9 +131,25 @@ def _notify(db, acca, block):
         logger.error(f"Failed to notify group {acca.group_id} of new week: {e}")
 
 
+def _start_season(group, block):
+    """First week a group ever opens starts its season.
+
+    Set from the block's earliest date, not its Saturday: a week that opens on
+    a Friday has that Friday as its first_match_date, and a boundary on the
+    Saturday would drop the very week that set it out of the season.
+    """
+    if group.season_start_date:
+        return
+    group.season_start_date = date.fromisoformat(min(block["dates"]))
+    logger.info(
+        "Season start for group %s set to %s by its first auto week",
+        group.id, group.season_start_date,
+    )
+
+
 def create_auto_weeks(db: Session, blocks, today):
-    """Open the next week for every eligible group."""
-    groups = db.query(models.Group).filter(models.Group.auto_weeks.is_(True)).all()
+    """Open the next week for every group."""
+    groups = db.query(models.Group).all()
 
     created = []
     for group in groups:
@@ -143,6 +163,7 @@ def create_auto_weeks(db: Session, blocks, today):
                 break  # blocks are sorted, so nothing later qualifies either
             if taken & set(block["dates"]):
                 continue
+            _start_season(group, block)
             created.append((_create(db, group, block), block))
             break
 
