@@ -41,6 +41,15 @@
       </div>
     </div>
     <div id="root"></div>
+    <script>
+      // Chrome can fire beforeinstallprompt before React mounts — stash it so
+      // InstallPrompt can still offer the native install dialog
+      window.__installPromptEvent = null;
+      window.addEventListener("beforeinstallprompt", function (e) {
+        e.preventDefault();
+        window.__installPromptEvent = e;
+      });
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
