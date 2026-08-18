@@ -8,15 +8,18 @@ import { groupAcca } from "../utils/routes";
 import WeekStrip from "./acca/WeekStrip";
 import AccaBody from "./acca/AccaBody";
 import Modal from "./ui/Modal";
+import PreviousWeeks from "./acca/PreviousWeeks";
 import FixtureGrid from "./FixtureGrid";
 import AccaWizard from "./AccaWizard";
 import Skeleton from "./Skeleton";
 import "./acca/acca.css";
 
-// Resolution order: the soonest week still taking picks, else the one in play,
-// else the most recent result. The list arrives sorted by first_match_date —
-// locks_at can't be used here because it stays null until somebody picks, so
-// several open weeks would share a null lock time.
+// Resolution order: the soonest week still taking picks, else the one in play.
+// Deliberately no fallback to the last result — between weeks the tab offers
+// previous weeks as a button rather than dropping you into a finished acca that
+// reads at a glance like the one you can still pick in. The list arrives sorted
+// by first_match_date — locks_at can't be used here because it stays null until
+// somebody picks, so several open weeks would share a null lock time.
 function resolveCurrent(accas) {
   if (accas.length === 0) return null;
   // Earliest open week that hasn't expired: that's the deadline approaching.
@@ -25,10 +28,7 @@ function resolveCurrent(accas) {
   const live = accas.find((a) => a.status === "open" && !isExpired(a));
   if (live) return live;
   const locked = accas.filter((a) => a.status === "locked");
-  if (locked.length) return locked[locked.length - 1];
-  const settled = accas.filter((a) => ["won", "lost", "settled"].includes(a.status));
-  if (settled.length) return settled[settled.length - 1];
-  return accas[accas.length - 1];
+  return locked.length ? locked[locked.length - 1] : null;
 }
 
 export default function AccaTab({ user, oddsFormat }) {
@@ -42,6 +42,7 @@ export default function AccaTab({ user, oddsFormat }) {
   const [error, setError] = useState("");
   const [showWizard, setShowWizard] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [showPrevious, setShowPrevious] = useState(false);
   const [fixtureLeague, setFixtureLeague] = useState("");
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
@@ -77,6 +78,16 @@ export default function AccaTab({ user, oddsFormat }) {
 
   const selectedIndex = selected ? accas.findIndex((a) => a.id === selected.id) : -1;
   const isCurrent = selected && current && selected.id === current.id;
+
+  // Season-relative, matching the label the week will actually get. Counting
+  // round_number here would offer "Start week 34" in a group's third season.
+  const nextWeekNumber = accas.reduce((max, a) => Math.max(max, a.week_number || 0), 0) + 1;
+  // week_number is null for accas from a previous season. A group mid-migration
+  // can have none at all, in which case showing everything beats showing nothing.
+  const seasonAccas = useMemo(() => {
+    const thisSeason = accas.filter((a) => a.week_number);
+    return thisSeason.length ? thisSeason : accas;
+  }, [accas]);
 
   const loadDetail = useCallback(async (accaId, showSpinner) => {
     if (!accaId) return;
@@ -219,15 +230,34 @@ export default function AccaTab({ user, oddsFormat }) {
   }
 
   if (!selected) {
+    const everHadOne = accas.length > 0;
     return (
       <div className="acca-tab">
         <div className="placeholder-card">
-          <h3 className="placeholder-title">No weeks yet</h3>
-          <p className="placeholder-text">Start one and your mates can add their picks.</p>
+          <h3 className="placeholder-title">
+            {everHadOne ? "Next week isn't open yet" : "No weeks yet"}
+          </h3>
+          <p className="placeholder-text">
+            {everHadOne
+              ? "It opens a few days before the next Saturday's fixtures. Start one yourself if you can't wait."
+              : "Start one and your mates can add their picks."}
+          </p>
           <button className="btn btn-primary mt-16" onClick={() => setShowWizard(true)}>
-            Create the first week
+            {everHadOne ? `Start week ${nextWeekNumber}` : "Create the first week"}
           </button>
+          {everHadOne && (
+            <button className="btn btn-ghost mt-16" onClick={() => setShowPrevious(true)}>
+              View previous weeks
+            </button>
+          )}
         </div>
+
+        <Modal open={showPrevious} title="Previous weeks" onClose={() => setShowPrevious(false)}>
+          <PreviousWeeks
+            accas={seasonAccas}
+            onSelect={(acca) => { setShowPrevious(false); goToWeek(acca); }}
+          />
+        </Modal>
         <Modal open={showWizard} title="New week" onClose={() => setShowWizard(false)}>
           <AccaWizard onCreated={handleCreate} onCancel={() => setShowWizard(false)} />
         </Modal>
@@ -246,10 +276,6 @@ export default function AccaTab({ user, oddsFormat }) {
   // group admin or nobody.
   const isGroupAdmin = members.some((m) => m.user_id === user?.id && m.role === "admin");
   const canDelete = detail?.status === "open" && (isGroupAdmin || detail?.created_by === user?.id);
-  // Season-relative, matching the label the week will actually get. Counting
-  // round_number here would offer "Start week 34" in a group's third season.
-  const nextWeekNumber = accas.reduce((max, a) => Math.max(max, a.week_number || 0), 0) + 1;
-
   return (
     <div className="acca-tab">
       <WeekStrip
