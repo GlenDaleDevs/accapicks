@@ -18,8 +18,12 @@ function meanings(tracker) {
 }
 
 // Oldest to newest, so the rightmost circle is the most recent match.
-function Form({ marks, tracker }) {
-  if (!marks?.length) return null;
+function Form({ marks, tracker, emptyLabel }) {
+  // Early season a club can have no record at this venue at all — say so
+  // rather than rendering nothing, which reads as a broken row.
+  if (!marks?.length) {
+    return <span className="fixture-form-empty" title={emptyLabel}>–</span>;
+  }
   const title = meanings(tracker);
   return (
     <span className="fixture-form">
@@ -40,12 +44,17 @@ function Form({ marks, tracker }) {
 // In "venue" mode each side shows its own half of the record — the home team's
 // home games, the away team's away games — a different last five from overall.
 function Team({ name, stats, tracker, venue, side }) {
-  const split = stats?.[venue === "venue" ? side : "overall"];
+  const byVenue = venue === "venue";
+  const split = stats?.[byVenue ? side : "overall"];
   return (
     <div className="fixture-team">
       {stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null}
       <span className="fixture-name">{name}</span>
-      <Form marks={split?.[tracker]} tracker={tracker} />
+      <Form
+        marks={split?.[tracker]}
+        tracker={tracker}
+        emptyLabel={byVenue ? `No ${side} games played yet` : "No games played yet"}
+      />
     </div>
   );
 }
