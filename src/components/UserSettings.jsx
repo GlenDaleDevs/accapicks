@@ -170,7 +170,12 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
       {/* Notifications */}
       {pushSupported && (
         <div className="settings-section">
-          <h3 className="settings-section-title">Notifications</h3>
+          <h3 className="settings-section-title">
+            Notifications{" "}
+            <span className={`settings-status ${pushSubscribed ? "on" : "off"}`}>
+              ({pushSubscribed ? "Enabled" : "Disabled"})
+            </span>
+          </h3>
           {pushPermission === "denied" ? (
             <p style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '14px' }}>
               Notifications are blocked. To enable them, update your browser&apos;s notification settings for this site.

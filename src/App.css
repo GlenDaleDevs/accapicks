@@ -2073,6 +2073,20 @@
   margin: 0 0 16px 0;
 }
 
+.settings-status {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.settings-status.on {
+  color: var(--color-success);
+}
+
+.settings-status.off {
+  color: var(--text-muted);
+}
+
+
 .settings-info-row {
   display: flex;
   justify-content: space-between;
