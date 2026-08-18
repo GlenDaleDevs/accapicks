@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FixturesList from "./FixturesList";
 import FormTab from "./FormTab";
 
 export default function FixturesTab() {
@@ -27,17 +28,7 @@ export default function FixturesTab() {
         </button>
       </div>
 
-      {view === "all" ? (
-        <div className="placeholder-card">
-          <h3 className="placeholder-title">Feature in progress</h3>
-          <p className="placeholder-text">
-            Every fixture for the current week will be listed here, grouped by day,
-            and will tap straight through to your pick.
-          </p>
-        </div>
-      ) : (
-        <FormTab />
-      )}
+      {view === "all" ? <FixturesList /> : <FormTab />}
     </div>
   );
 }

@@ -3,66 +3,6 @@
   padding: 0 16px;
 }
 
-.standings-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.standings-select {
-  flex-shrink: 0;
-  padding: 7px 10px;
-  border: 1px solid var(--border-color-light);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 13px;
-}
-
-.segmented-sm {
-  flex: 1;
-  margin: 0;
-}
-
-.segmented-sm .segmented-btn {
-  font-size: 13px;
-}
-
-/* League chips scroll sideways rather than wrapping to a second row */
-.standings-leagues {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  margin-bottom: 12px;
-  scrollbar-width: none;
-}
-
-.standings-leagues::-webkit-scrollbar {
-  display: none;
-}
-
-.standings-chip {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border: 1px solid var(--border-color-light);
-  border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 13px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.standings-chip-active {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
 /* The table scrolls inside its own box — the page itself never scrolls sideways */
 .standings-scroll {
   overflow-x: auto;

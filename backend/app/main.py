@@ -15,6 +15,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from .database import engine, Base, SessionLocal
 from .timeutils import as_utc
+from .fixturelist import refresh_fixture_list
 from .standings import refresh_standings
 from .autoweek import auto_create_weeks
 from . import models
@@ -39,6 +40,7 @@ async def lifespan(app):
     cleanup_task = asyncio.create_task(cleanup_verification_codes())
     blacklist_task = asyncio.create_task(cleanup_blacklisted_tokens())
     standings_task = asyncio.create_task(refresh_standings())
+    fixtures_task = asyncio.create_task(refresh_fixture_list())
     week_task = asyncio.create_task(auto_create_weeks())
     yield
     logger.info("Shutting down background tasks")
@@ -47,6 +49,7 @@ async def lifespan(app):
     cleanup_task.cancel()
     blacklist_task.cancel()
     standings_task.cancel()
+    fixtures_task.cancel()
     week_task.cancel()
 
 # Custom rate limit handler

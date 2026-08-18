@@ -1,0 +1,78 @@
+/* ---- Fixtures: one week of matches ---- */
+.fixtures-list {
+  padding: 0 16px;
+}
+
+.league-select-wide {
+  flex: 1;
+}
+
+.fixture-day + .fixture-day {
+  margin-top: 16px;
+}
+
+.fixture-day-title {
+  margin: 0 0 6px 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fixture-rows {
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  list-style: none;
+  overflow: hidden;
+}
+
+.fixture-row {
+  display: grid;
+  /* Equal-width sides keep every score column in a straight line down the card */
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+}
+
+.fixture-row + .fixture-row {
+  border-top: 1px solid var(--border-color);
+}
+
+.fixture-team {
+  color: var(--text-primary);
+  font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fixture-home {
+  text-align: right;
+}
+
+.fixture-away {
+  text-align: left;
+}
+
+.fixture-mid {
+  min-width: 52px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.fixture-score {
+  color: var(--text-primary);
+  font-weight: 600;
+}
