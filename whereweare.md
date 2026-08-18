@@ -60,21 +60,16 @@ Late development — deployed to production on Railway, security hardening compl
       (`list_connected_browsers` returns empty, so it isn't pairing with the account at all). Unverified:
       the Group Settings toggles, the reworded no-week card, the week strip label, and the restacked
       pick rows. Specific thing to judge: whether five stacked pick rows push the returns bar too low
-- [ ] **Favourable Matchups — blend metric not shipped.** Backtested; a better *ranker* (+1 to +3.7 pts
-      strike rate at matched volume) but a worse *picker* (loses head-to-head where the two disagree).
-      Rerun with `scripts/backtest_matchups.py --metrics blend`. If ever adopted, 0.75 rescales to ~0.55
-- [ ] **The 0–0.25 anomaly** — near-level fixtures returned +2.8% / +8.3% best over 2,332 bets. Biggest
-      sample in the study and the opposite of what the tab surfaces. Investigate before touching the model
-- [ ] Delete `CURRENT_SEASON` and the post-GW10 comments from `predictionmodel/config.py` — measured as
-      actively worse (see `backend/scripts/BACKTEST.md`)
+- [ ] **Genuine midweek rounds group with the following weekend in the Fixtures tab.** `fixturelist.py`
+      anchors each game week on the Tuesday (Tue→Mon), so a Thu/Fri/Sat/Sun/Mon round holds together —
+      but a real Tue/Wed round falls at the start of the *next* window rather than standing alone.
+      No midweek rounds until the cups start, so it can wait. `weekblocks._midweek_blocks` already
+      distinguishes a round (4+ PL fixtures) from a rearranged game — reuse that rather than a new rule
 
 ### Quick wins (1 session each)
 - [ ] Install `eslint-plugin-react` so JSX-only identifiers stop reading as unused (13 pre-existing lint errors)
 - [ ] Join-a-group flow: the invite link already works end-to-end; what's missing is invite context on the
       auth screen ("You've been invited to Mr Worldwide"). Deferred from the overhaul plan §7
-- [ ] Pick a football stats API for Favourable Matchups — none is in use; The-Odds-API has no standings/form.
-      Candidates: API-Football (covers League One/Two with home/away splits), football-data.org (cleaner,
-      but free tier likely stops at Championship)
 - [ ] Apply new colour palette to CSS variables (palette chosen, waiting for logo/assets)
 - [ ] Generate logo (Weavy/Midjourney/Looka) and additional background assets
 - [ ] Debug push notifications in production (VAPID keys, test end-to-end)
