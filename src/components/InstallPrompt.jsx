@@ -1,12 +1,5 @@
 import { useState, useEffect } from "react";
 
-function isInstalled() {
-  return (
-    window.matchMedia?.("(display-mode: standalone)").matches ||
-    window.navigator.standalone === true
-  );
-}
-
 function detectPlatform() {
   const ua = navigator.userAgent || "";
   const isIOS =
@@ -36,7 +29,6 @@ const INSTRUCTIONS = {
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [installed, setInstalled] = useState(isInstalled);
   const [showHelp, setShowHelp] = useState(false);
   const platform = detectPlatform();
 
@@ -45,8 +37,9 @@ export default function InstallPrompt() {
       e.preventDefault();
       setDeferredPrompt(e);
     };
+    // TODO: hide the button again once installed — off for now so it stays
+    // visible for testing on devices that already have the app
     const onInstalled = () => {
-      setInstalled(true);
       setDeferredPrompt(null);
       setShowHelp(false);
     };
@@ -59,8 +52,6 @@ export default function InstallPrompt() {
     };
   }, []);
 
-  if (installed) return null;
-
   const handleClick = async () => {
     if (!deferredPrompt) {
       setShowHelp(true);
@@ -71,8 +62,7 @@ export default function InstallPrompt() {
     setDeferredPrompt(null);
     try {
       promptEvent.prompt();
-      const { outcome } = await promptEvent.userChoice;
-      if (outcome === "accepted") setInstalled(true);
+      await promptEvent.userChoice;
     } catch {
       setShowHelp(true);
     }
