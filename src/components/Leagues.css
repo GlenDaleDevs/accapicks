@@ -1,29 +1,26 @@
 /* ---- Shared league controls: season/week picker and league chips ---- */
+/* Stacked, not side by side: a season picker and three split buttons sharing
+   one row squeezed both to unreadable on a phone. */
 .league-controls {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
   margin-bottom: 12px;
 }
 
 .league-select {
-  flex-shrink: 0;
-  padding: 7px 10px;
+  width: 100%;
+  padding: 9px 10px;
   border: 1px solid var(--border-color-light);
   border-radius: var(--radius-md);
   background: var(--bg-surface);
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .segmented-sm {
-  flex: 1;
   margin: 0;
-}
-
-.segmented-sm .segmented-btn {
-  font-size: 13px;
 }
 
 /* League chips scroll sideways rather than wrapping to a second row */

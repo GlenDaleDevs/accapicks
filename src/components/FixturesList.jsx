@@ -62,7 +62,7 @@ export default function FixturesList() {
     <div className="fixtures-list">
       <div className="league-controls">
         <select
-          className="league-select league-select-wide"
+          className="league-select"
           // The server picks the week when we ask for none, so reflect its
           // answer back into the picker rather than showing a blank option.
           value={week || data?.week || ""}
