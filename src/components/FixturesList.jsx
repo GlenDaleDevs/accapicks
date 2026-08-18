@@ -108,7 +108,7 @@ export default function FixturesList({ leagueCode, onLeagues }) {
           aria-controls="track-options"
           onClick={() => setOptionsOpen((open) => !open)}
         >
-          <span>Choose what to track</span>
+          <span>Choose what to track here</span>
           {/* The summary keeps the current choice visible while collapsed */}
           <span className="track-summary">
             {TRACKERS.find((t) => t.key === tracker)?.label}
