@@ -20,6 +20,20 @@ Late development — deployed to production on Railway, security hardening compl
 - PWA support (installable app, service worker precaching, auto-reload on update)
 - Push notifications (subscribe/unsubscribe, bet creation + settlement triggers, security hardened)
 - npm audit clean (minimatch override, GitHub Actions --omit=dev)
+- **Fixtures & Standings rebuild (2026-08-19)** — Favourable Matchups removed (it read as tipping) and
+  replaced by two data views built from the football-data results the ladder already fetched: a **Form**
+  tab (overall/home/away tables, this season or last) and a **Fixtures** list of one game week at a time,
+  with results behind a week stepper. Each side carries its league position and five form dots —
+  Results / BTTS / Over 2.5, each available overall or home-and-away. `GET /odds/standings` and
+  `GET /odds/fixtures`, both background-cached, no new paid feed.
+- **More tab removed (2026-08-19)** — bottom nav is Acca/Fixtures/Table; group actions, Settings, Log out
+  and the compliance copy moved into a header menu. Groups get their own page at `/groups`.
+- **Weeks always open automatically (2026-08-19)** — the toggle and `groups.auto_weeks` are gone, and the
+  season boundary is derived from the first week a group opens rather than being set by hand.
+- **PWA install button (2026-08-19)** — on the login page, native prompt on Android, instructions on iOS.
+- **Service worker actually updates now (2026-08-19)** — see the fix below; this was why nothing shipped
+  since 15 Aug had been seen.
+- **Dependency audits clean (2026-08-19)** — npm and pip-audit both pass with nothing ignored.
 - **UI overhaul (2026-08-15)** — FPL-style 4-tab navigation (Acca/Fixtures/Table/More), group switcher in a
   global header, week-numbered accas with paging, four distinct acca states, pinned odds/returns, first modal
   in the codebase, reworked league table, movement arrows. 8 commits, **unpushed**. Plan:
@@ -48,23 +62,43 @@ Late development — deployed to production on Railway, security hardening compl
 - [x] ~~Decide what to do with the lapsed pre-season weeks~~ — deleted automatically once their last
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
-### Open threads (2026-08-18) — read these first if picking up elsewhere
-- [ ] **Did the auto week fire?** Today is the first day the Saturday block falls inside `LEAD_DAYS = 4`.
-      Expect an acca covering Fri 21 – Mon 24 Aug, labelled **Week 1**, plus a push to the group.
-      If it didn't: check `groups.auto_weeks` is true, that no other open acca was blocking it, and the
-      Railway logs for `Auto week error`
-- [ ] **Confirm `season_start_date` is 21 Aug 2026 or earlier, not the 22nd.** The week's
-      `first_match_date` is the Friday opener, so a boundary on the 22nd would drop Week 1 out of the
-      season entirely and it would read "past season"
-- [ ] **Nothing shipped since 15 Aug has been seen in a browser** — the Chrome extension won't connect
-      (`list_connected_browsers` returns empty, so it isn't pairing with the account at all). Unverified:
-      the Group Settings toggles, the reworded no-week card, the week strip label, and the restacked
-      pick rows. Specific thing to judge: whether five stacked pick rows push the returns bar too low
+### Open threads (2026-08-19) — read these first if picking up elsewhere
+- [ ] **The `drop_auto_weeks` migration has not run anywhere real.** It drops `groups.auto_weeks` behind an
+      IF-EXISTS guard. If a deploy fails on it, that's where to look
+- [ ] **FastAPI 0.128 → 0.141 and starlette 0.50 → 1.3.1 are unverified at runtime.** Forced by the audit:
+      starlette needed 1.x and the old FastAPI pinned `<0.51.0`. The middleware stack (security headers,
+      size limit, CORS in registration order), routers, Depends, HTTPException and lifespan were all
+      exercised against the new pair with real requests — but the app itself has never booted on them,
+      because this sandbox can't build `http-ece` or import its `cryptography`
+- [ ] **Push test — the week should reopen on its own.** The open week was deleted by hand on 19 Aug to
+      re-test the "week is open" push. With `LEAD_DAYS = 3` and Saturday on the 22nd, it qualifies from
+      Wed 19 Aug, so the next 30-minute tick should create it and notify the group. Note the background
+      task sleeps *before* its first run and restarts on every deploy
+- [ ] **Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd.** A week's
+      `first_match_date` is its Friday opener, so a boundary on the 22nd drops Week 1 out of the season.
+      Groups without a date now get one automatically from their first week's earliest date — which is
+      the Friday, deliberately — but any group that already had one keeps it unexamined
 - [ ] **Genuine midweek rounds group with the following weekend in the Fixtures tab.** `fixturelist.py`
       anchors each game week on the Tuesday (Tue→Mon), so a Thu/Fri/Sat/Sun/Mon round holds together —
       but a real Tue/Wed round falls at the start of the *next* window rather than standing alone.
       No midweek rounds until the cups start, so it can wait. `weekblocks._midweek_blocks` already
       distinguishes a round (4+ PL fixtures) from a rearranged game — reuse that rather than a new rule
+- [ ] **Home/Away form dots are mostly blank until ~week 5.** Not a bug: the home side of a round-2
+      fixture is usually a club that played away in round 1, so it has no home record yet. An empty
+      record renders a dash. Self-resolving; revisit only if it still looks sparse in late September
+- [ ] **Position and form on past weeks are "as of now", not as of that week.** Look back at August in
+      October and you'll see October's table position beside an August result. Doable — the rows are all
+      there — but more work than it's worth unless it grates
+
+### Resolved on 2026-08-19
+- [x] ~~Nothing shipped since 15 Aug has been seen in a browser~~ — root cause found and fixed: with
+      `strategies: 'injectManifest'`, vite-plugin-pwa does **not** inject the SKIP_WAITING handler, so
+      `updateServiceWorker(true)` posted a message nothing listened for. The new worker sat in "waiting"
+      forever and every open tab kept the old precached shell. Fixed in `src/sw.js`; the tab has since
+      been reviewed extensively on a phone
+- [x] ~~Did the auto week fire?~~ — it did, and weeks no longer depend on a per-group toggle at all
+- [x] ~~Repo had two branches~~ — `main` is now the default and `master` (six months stale, fully
+      contained in `main`) has been deleted
 
 ### Quick wins (1 session each)
 - [ ] Install `eslint-plugin-react` so JSX-only identifiers stop reading as unused (13 pre-existing lint errors)
@@ -95,4 +129,4 @@ Late development — deployed to production on Railway, security hardening compl
 - Last Man Standing: fully independent, no blockers — just needs dedicated sessions
 
 ## Last Updated
-2026-08-18
+2026-08-19

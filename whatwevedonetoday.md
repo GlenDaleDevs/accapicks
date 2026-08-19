@@ -230,3 +230,83 @@ fixture itself truncated away. The row was a single horizontal flex line and `.p
 
 Verified against the real stylesheet in a standalone preview at 360px. Build clean, lint unchanged at
 13 pre-existing errors. **Not seen in the running app** — the Chrome extension wasn't connected.
+
+# Done — 2026-08-19
+
+22 commits, all merged to `main` and deployed.
+
+## The one that unblocked everything else
+
+- [x] **Service worker never activated a new build.** With `strategies: 'injectManifest'`,
+      vite-plugin-pwa builds `src/sw.js` verbatim and does *not* inject the SKIP_WAITING handler that
+      the generated-worker mode adds. `App.jsx` called `updateServiceWorker(true)`, which posts
+      SKIP_WAITING to the waiting worker — and nothing was listening. Every new worker installed, sat
+      in "waiting" forever, and open tabs kept serving the old precached shell. Incognito had no worker,
+      so it fetched fresh: that split is what made it look like a deploy problem
+- [x] Added the message handler plus `clientsClaim()`. Self-heals — the *new* worker receives the
+      message, so one or two loads after the deploy it takes over
+
+This is the answer to "nothing shipped since 15 Aug has been seen in a browser". It was never Railway.
+
+## Install button
+
+- [x] `InstallPrompt` on the login page — native install dialog on Android via `beforeinstallprompt`,
+      platform instructions on iOS where Apple offers no API
+- [x] Captured `beforeinstallprompt` from an inline script in `index.html`: Chrome can fire it before
+      React mounts, and losing that race downgraded a one-tap install to a page of instructions
+- [x] Hides itself when already installed — then that check was removed on request so it stays testable
+
+## Favourable Matchups out, Form and Fixtures in
+
+- [x] Removed the feature, its endpoint, its background task and the backtest scripts. Kept the
+      football-data results layer and the home/away table builder, which everything below is built on
+- [x] **Form tab** — overall, home-only and away-only tables per division, this season or last
+- [x] **Fixtures tab** — one game week at a time, results behind a week stepper; upcoming from
+      The-Odds-API `/events` (zero credits), played from football-data, merged into one shape
+- [x] Game weeks anchor on the **Tuesday** (Tue→Mon), so a Thu/Fri/Sat/Sun/Mon round holds together.
+      A calendar week split rounds in half — Cardiff v Wrexham on Monday 17th landed with the 22/23
+      fixtures. Same shape `weekblocks.WEEKEND_OFFSETS` uses for accas
+- [x] Club names reconciled through `names.py`, so a side doesn't change name between a fixture, a
+      result and the table
+- [x] League position and five form dots per side — Results / BTTS / Over 2.5, each overall or
+      home-and-away. All computed from the results already fetched; no new feed, no extra request
+
+## More tab removed
+
+- [x] Bottom nav is Acca / Fixtures / Table. Group actions, Settings, Log out and the compliance copy
+      moved into a header menu; groups get their own page at `/groups`
+- [x] `/g/:id/more` redirects rather than 404s, and member picks moved to `/g/:id/members/:userId`
+
+## Settings that stopped being settings
+
+- [x] Weeks open automatically for every group — toggle gone, `groups.auto_weeks` dropped by migration
+- [x] Season boundary derived from the first week a group opens, using that week's **earliest** date.
+      Not its Saturday: a week opening on a Friday has the Friday as `first_match_date`, and a Saturday
+      boundary would drop the very week that set it
+- [x] `LEAD_DAYS` 4 → 3
+- [x] Notifications setting now reads "(Enabled)" / "(Disabled)" beside the heading
+
+## Acca tab
+
+- [x] Between weeks it no longer drops you into the last settled acca — which at a glance reads like the
+      week you can still pick in. Says the next week isn't open yet, with a "View previous weeks" button
+
+## Security audits
+
+- [x] npm: axios 1.13.5 → 1.19.0, react-router-dom 7.13.0 → 7.18.2. Clean
+- [x] pip: nine packages bumped. starlette had to reach 1.x, which forced FastAPI 0.128 → 0.141
+- [x] Dropped `ecdsa`, `rsa`, `pyasn1` — orphaned python-jose leftovers nothing imports. `ecdsa` carried
+      an unfixable Minerva advisory, so this also retired the permanent `--ignore-vuln` in the workflow
+
+## Repo hygiene
+
+- [x] `main` is the default branch; `master` deleted (six months stale, fully contained in `main`)
+
+## Not verified
+
+- The `drop_auto_weeks` migration has not run against a real database
+- The app has never booted on FastAPI 0.141 / starlette 1.3.1 — the middleware stack was exercised with
+  real requests against the new pair, but this sandbox can't build `http-ece` or import its `cryptography`
+- Neither `/odds/standings` nor `/odds/fixtures` has been hit for real from here: the sandbox's egress
+  policy blocks football-data.co.uk and accapicks.com. Table maths, week bucketing, dedup, name mapping
+  and the venue splits were all tested against synthetic fixtures instead
