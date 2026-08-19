@@ -174,6 +174,16 @@
   margin: 0 auto;
   padding-top: var(--header-h);
   padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 16px);
+  /* Column so the compliance footer can be pushed to the bottom of a short
+     page instead of floating just under the content. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* The routed page takes the space; the footer takes what's left. */
+.app-shell-main > *:first-child {
+  flex: 1 0 auto;
 }
 
 /* Page wrappers set min-height: 100dvh for their full-bleed backgrounds.
@@ -384,8 +394,9 @@
 }
 
 .app-menu {
-  width: 100%;
-  max-width: 320px;
+  width: max-content;
+  min-width: 180px;
+  max-width: min(320px, calc(100vw - 24px));
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding: 8px;
@@ -432,15 +443,11 @@
   border-top: 1px solid var(--border-color);
 }
 
-.app-menu-footer {
-  margin-top: 8px;
-  padding: 10px;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-muted);
-  font-size: 11px;
-  line-height: 1.6;
-}
-
-.app-menu-footer a {
-  color: var(--text-secondary);
+/* The compliance footer sits outside .groups-page / .group-detail-page, whose
+   fixed backgrounds would otherwise paint over it. */
+.app-shell-main .responsible-gambling-footer {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  margin-top: 24px;
 }
