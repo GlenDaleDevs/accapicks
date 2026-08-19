@@ -1,9 +1,16 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import AppMenu from "./AppMenu";
+import GroupSettingsPanel from "./GroupSettingsPanel";
 import GroupSwitcher from "./GroupSwitcher";
+import Modal from "../ui/Modal";
 
 export default function GlobalHeader() {
+  const { groupId } = useParams();
   const [menuOpen, setMenuOpen] = useState(false);
+  // Owned here, not by the menu: the menu unmounts when it closes, and the
+  // settings dialog has to survive that.
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <header className="global-header">
@@ -25,7 +32,16 @@ export default function GlobalHeader() {
         </button>
       </div>
 
-      {menuOpen && <AppMenu onClose={() => setMenuOpen(false)} />}
+      {menuOpen && (
+        <AppMenu
+          onClose={() => setMenuOpen(false)}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+      )}
+
+      <Modal open={settingsOpen} title="Group settings" onClose={() => setSettingsOpen(false)}>
+        <GroupSettingsPanel groupId={groupId} onClose={() => setSettingsOpen(false)} />
+      </Modal>
     </header>
   );
 }
