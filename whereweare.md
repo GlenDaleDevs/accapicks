@@ -140,8 +140,11 @@ Late development — deployed to production on Railway, security hardening compl
       careful look, not a dep-array sweep). npm audit is clean again too: new advisories had landed
       against babel/brace-expansion/ajv/fast-uri/vite since the morning's pass; all fixed
       non-breaking, vite 7.3.1 → 7.3.6
-- [ ] Join-a-group flow: the invite link already works end-to-end; what's missing is invite context on the
-      auth screen ("You've been invited to Mr Worldwide"). Deferred from the overhaul plan §7
+- [x] ~~Join-a-group flow: invite context on the auth screen~~ — done 2026-08-19 (pm). A public,
+      rate-limited `GET /groups/invite/{code}` resolves the parked invite to a name and member count;
+      the auth screen shows "You've been invited to X — N mates are already in" and defaults to
+      signup. A dead code drops the parked invite so signup isn't followed by a failed-join toast.
+      Full journey verified: link → banner → signup → verify → landed in the group as a member
 - [ ] Apply new colour palette to CSS variables (palette chosen, waiting for logo/assets)
 - [ ] Generate logo (Weavy/Midjourney/Looka) and additional background assets
 - [ ] Debug push notifications in production (VAPID keys, test end-to-end)

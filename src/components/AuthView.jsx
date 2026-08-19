@@ -14,8 +14,17 @@ export default function AuthView({
   onResetPassword,
   error: externalError,
   pendingVerificationEmail,
+  invitePreview,
 }) {
   const [mode, setMode] = useState(pendingVerificationEmail ? "verify" : "login"); // login, signup, verify, forgot, reset
+
+  // An invited person is usually new here, so land them on signup — but only
+  // by flipping the untouched default, never a mode they chose themselves.
+  useEffect(() => {
+    if (invitePreview) {
+      setMode((current) => (current === "login" ? "signup" : current));
+    }
+  }, [invitePreview]);
   const [email, setEmail] = useState(pendingVerificationEmail || "");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -209,6 +218,20 @@ export default function AuthView({
       </div>
 
       <div className="auth-form-container">
+        {invitePreview && (mode === "signup" || mode === "login") && (
+          <div className="invite-banner">
+            <span className="invite-banner-title">
+              You&apos;ve been invited to <strong>{invitePreview.name}</strong>
+            </span>
+            <span className="invite-banner-sub">
+              {invitePreview.member_count === 1
+                ? "1 mate is already in"
+                : `${invitePreview.member_count} mates are already in`}
+              {" — "}
+              {mode === "signup" ? "sign up to join" : "log in to join"}
+            </span>
+          </div>
+        )}
         {displayError && <div className="alert-error">{displayError}</div>}
         {successMessage && <div className="alert-success">{successMessage}</div>}
         <form className="auth-form" onSubmit={handleSubmit}>

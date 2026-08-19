@@ -2016,6 +2016,30 @@
 }
 
 /* ---- Responsible Gambling Footer ---- */
+/* ---- Invite context on the auth screen ---- */
+
+.invite-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  background: rgba(74, 222, 128, 0.08);
+  text-align: center;
+}
+
+.invite-banner-title {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.invite-banner-sub {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
 .responsible-gambling-footer {
   text-align: center;
   padding: 20px 16px;
