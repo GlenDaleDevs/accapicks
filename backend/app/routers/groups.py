@@ -1,4 +1,5 @@
 import logging
+import re
 import secrets
 import string
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -97,6 +98,33 @@ def get_groups(
 
 
 # Join a group using invite code
+@router.get("/groups/invite/{invite_code}")
+@limiter.limit("20/minute")
+def preview_invite(
+    request: Request,
+    invite_code: str,
+    db: Session = Depends(get_db),
+):
+    """What an invite link points at, for the logged-out auth screen.
+
+    Deliberately unauthenticated — the person tapping the link has no account
+    yet, which is the whole point of showing them where they've been invited.
+    Exposes only the group's name and size; codes are 6 alphanumerics from a
+    36^6 space behind a rate limit, so scanning for them isn't practical.
+    """
+    code = re.sub(r"[^A-Za-z0-9]", "", invite_code)[:6]
+    group = db.query(models.Group).filter(
+        func.upper(models.Group.invite_code) == code.upper()
+    ).first() if code else None
+    if not group:
+        raise HTTPException(status_code=404, detail="Invalid invite code")
+
+    member_count = db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group.id
+    ).count()
+    return {"name": group.name, "member_count": member_count}
+
+
 @router.post("/groups/join/{invite_code}")
 @limiter.limit("10/minute")
 def join_group(

@@ -120,6 +120,12 @@ export const createGroup = async (name, description) => {
   return response.data;
 };
 
+// Public: what an invite link points at, for the logged-out auth screen
+export const getInvitePreview = async (inviteCode) => {
+  const response = await axios.get(`${API_URL}/groups/invite/${inviteCode}`);
+  return response.data;
+};
+
 export const joinGroup = async (inviteCode) => {
   const response = await axios.post(`${API_URL}/groups/join/${inviteCode}`);
   return response.data;

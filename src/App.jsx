@@ -35,6 +35,8 @@ function App() {
     return ["decimal", "fractional"].includes(stored) ? stored : "decimal";
   });
   const [bookmakerLinks, setBookmakerLinks] = useState({});
+  // {code, name, member_count} when a live invite is parked — auth screen context
+  const [invitePreview, setInvitePreview] = useState(null);
 
   // Hold splash for 1.6s then fade out and remove
   useEffect(() => {
@@ -52,11 +54,14 @@ function App() {
   }, []);
 
   // An invite link can arrive before login — park the code for useGroups to
-  // consume once the user is signed in.
+  // consume once the user is signed in, and resolve the group's name so the
+  // auth screen can say where the invite leads. A previously parked (and
+  // unexpired) invite gets the same treatment, so closing and reopening the
+  // app doesn't lose the context.
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const rawInvite = urlParams.get("invite");
-    const inviteCode = rawInvite
+    let inviteCode = rawInvite
       ? rawInvite.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6)
       : null;
     if (inviteCode) {
@@ -64,7 +69,27 @@ function App() {
         code: inviteCode,
         savedAt: Date.now(),
       }));
+    } else {
+      try {
+        const parked = JSON.parse(localStorage.getItem("pendingInvite"));
+        if (parked && Date.now() - parked.savedAt < 24 * 60 * 60 * 1000) {
+          inviteCode = parked.code;
+        }
+      } catch {
+        // legacy or absent — no context to show
+      }
     }
+    if (!inviteCode) return;
+    let cancelled = false;
+    api.getInvitePreview(inviteCode)
+      .then((data) => {
+        if (!cancelled) setInvitePreview({ code: inviteCode, ...data });
+      })
+      .catch(() => {
+        // Dead code: drop it so signup isn't followed by a failed-join toast
+        if (!cancelled) localStorage.removeItem("pendingInvite");
+      });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -111,6 +136,7 @@ function App() {
                       onResetPassword={handleResetPassword}
                       error={error}
                       pendingVerificationEmail={pendingVerificationEmail}
+                      invitePreview={invitePreview}
                     />
                     <ComplianceFooter />
                   </div>
