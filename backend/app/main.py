@@ -19,7 +19,7 @@ from .fixturelist import refresh_fixture_list
 from .standings import refresh_standings
 from .autoweek import auto_create_weeks
 from . import models
-from .routers import auth, groups, accas, bets, odds, affiliate, notifications
+from .routers import auth, groups, groupstats, accas, bets, odds, affiliate, notifications
 from .limiter import limiter
 from .logging_config import setup_logging
 
@@ -127,6 +127,7 @@ if os.getenv("FORCE_HTTPS", "").lower() == "true":
 # Include all routers
 app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(groups.router, prefix="/api", tags=["groups"])
+app.include_router(groupstats.router, prefix="/api", tags=["groups"])
 app.include_router(accas.router, prefix="/api", tags=["accas"])
 app.include_router(bets.router, prefix="/api", tags=["bets"])
 app.include_router(odds.router, prefix="/api", tags=["odds"])

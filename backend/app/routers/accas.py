@@ -5,7 +5,7 @@ from datetime import datetime, timezone, date
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import nulls_last
 from sqlalchemy.orm import Session
-from .. import models, schemas, odds_api, season
+from .. import models, schemas, odds_api, season, bookmakers
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
@@ -277,7 +277,7 @@ async def compare_bookmakers(
     bets_with_odds = [(bet.description, float(bet.odds)) for bet in bets]
 
     # Try comparison with cached odds first
-    comparison = odds_api.compare_bookmakers_for_acca(bets_with_odds)
+    comparison = bookmakers.compare_bookmakers_for_acca(bets_with_odds)
 
     # If no cached odds found, fetch fresh odds for the acca's leagues
     if not comparison and acca.leagues:
@@ -285,7 +285,7 @@ async def compare_bookmakers(
             await asyncio.to_thread(odds_api.get_football_matches, league)
 
         # Try comparison again with fresh odds
-        comparison = odds_api.compare_bookmakers_for_acca(bets_with_odds)
+        comparison = bookmakers.compare_bookmakers_for_acca(bets_with_odds)
 
     if not comparison:
         raise HTTPException(
