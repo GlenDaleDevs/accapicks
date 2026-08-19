@@ -148,10 +148,23 @@ class GroupCreate(BaseModel):
 class GroupUpdate(BaseModel):
     """Partial update — only the fields actually sent are applied.
 
-    Nothing is settable at present: weeks always open automatically and the
-    season boundary is derived from the first week that opens. Kept so
-    PATCH /groups/{id} and its wiring survive for the next real setting.
+    season_start_date is nullable on purpose: sending null clears it, and the
+    next auto week re-derives it (see autoweek._start_season). That must not
+    be mistaken for "field omitted", which is why the endpoint applies
+    model_dump(exclude_unset=True).
     """
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    season_start_date: Optional[date] = None
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v):
+        if v is None:
+            return v
+        v = re.sub(r"<[^>]+>", "", v).strip()
+        if not v:
+            raise ValueError("Name cannot be blank")
+        return v
 
 
 class GroupResponse(BaseModel):

@@ -451,3 +451,76 @@
   flex-shrink: 0;
   margin-top: 24px;
 }
+
+/* ---- Group settings (modal off the header menu) ---- */
+
+.group-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.group-settings-label {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.group-settings-input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 15px;
+}
+
+.group-settings-hint {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.group-settings-members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group-settings-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 14px;
+}
+
+.group-settings-member:last-child {
+  border-bottom: none;
+}
+
+.group-settings-admin {
+  margin-left: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.group-settings-remove {
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.group-settings-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
