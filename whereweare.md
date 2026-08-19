@@ -94,10 +94,11 @@ Late development — deployed to production on Railway, security hardening compl
       `/odds/fixtures` endpoints (200). Also proved the `d843af3` VAPID fix end-to-end: with fresh
       per-send claims, an FCM push and an Apple push each get a JWT for their own audience, while the
       old shared dict pinned both to whichever service was hit first
-- [ ] **Push test — the week should reopen on its own.** The open week was deleted by hand on 19 Aug to
-      re-test the "week is open" push. With `LEAD_DAYS = 3` and Saturday on the 22nd, it qualifies from
-      Wed 19 Aug, so the next 30-minute tick should create it and notify the group. Note the background
-      task sleeps *before* its first run and restarts on every deploy
+- [ ] **Push test — the week should reopen on its own.** Deleted again at 14:06 to re-test the iPhone
+      push after re-subscribing — and then an afternoon of deploys kept resetting the tick, because the
+      task slept *before* its first run. Fixed 2026-08-19 (pm): the autoweek pass now runs at startup,
+      so every deploy recreates a due week within a minute or two. Still to confirm: the "week is
+      open" push actually landing on the iPhone
 - [ ] **Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd.** A week's
       `first_match_date` is its Friday opener, so a boundary on the 22nd drops Week 1 out of the season.
       Groups without a date now get one automatically from their first week's earliest date — which is

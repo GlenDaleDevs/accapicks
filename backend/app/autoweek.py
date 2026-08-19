@@ -261,11 +261,18 @@ def run_once(db: Session):
 
 
 async def auto_create_weeks():
-    """Background task. Runs on a slow tick — fixture lists barely move."""
+    """Background task. Runs once at startup, then on a slow tick.
+
+    Running first matters more than it looks: the task restarts on every
+    deploy, and sleeping first meant a run of deploys under 30 minutes apart
+    pushed week creation back indefinitely — an afternoon of shipping once
+    kept a deleted week from reopening for an hour. The pass is cheap (the
+    events feed is the free endpoint) and idempotent, so running it on every
+    deploy is safe.
+    """
     from .database import SessionLocal
 
     while True:
-        await asyncio.sleep(REFRESH_INTERVAL_SECONDS)
         db = SessionLocal()
         try:
             await asyncio.to_thread(run_once, db)
@@ -274,3 +281,4 @@ async def auto_create_weeks():
             db.rollback()
         finally:
             db.close()
+        await asyncio.sleep(REFRESH_INTERVAL_SECONDS)
