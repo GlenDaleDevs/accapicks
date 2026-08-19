@@ -194,21 +194,11 @@ export const getMatches = async (sport = "soccer_epl") => {
   return response.data;
 };
 
-export const getFilteredMatches = async (leagues, dateFrom, dateTo) => {
-  const response = await axios.get(`${API_URL}/odds/matches/filtered`, {
-    params: {
-      leagues: leagues.join(","),
-      date_from: dateFrom,
-      date_to: dateTo,
-    },
-  });
-  return response.data;
-};
-
-export const getFixtureList = async (week = "") => {
-  const response = await axios.get(`${API_URL}/odds/fixtures`, {
-    params: week ? { week } : {},
-  });
+export const getFixtureList = async (week = "", league = "") => {
+  const params = {};
+  if (week) params.week = week;
+  if (league) params.league = league;
+  const response = await axios.get(`${API_URL}/odds/fixtures`, { params });
   return response.data;
 };
 

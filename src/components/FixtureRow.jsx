@@ -59,15 +59,31 @@ function Team({ name, stats, tracker, venue, side }) {
   );
 }
 
-export function MatchRow({ match, teams, tracker, venue }) {
+export function MatchRow({ match, teams, tracker, venue, pickable, expanded, onTogglePick, takenBy }) {
   const shared = { tracker, venue };
+  const mid = match.played
+    ? `${match.home_goals}–${match.away_goals}`
+    : kickoffTime(match.kickoff);
   return (
     <li className="fixture-row">
       <Team name={match.home} stats={teams[match.home]} side="home" {...shared} />
-      <span className={`fixture-mid${match.played ? " fixture-score" : ""}`}>
-        {match.played ? `${match.home_goals}–${match.away_goals}` : kickoffTime(match.kickoff)}
-      </span>
+      {pickable ? (
+        // The middle cell doubles as the affordance — a 4th column would
+        // squeeze both name columns on a 360px screen.
+        <button
+          type="button"
+          className="fixture-mid fixture-mid-pick"
+          aria-expanded={expanded}
+          onClick={onTogglePick}
+        >
+          <span>{mid}</span>
+          <span className="fixture-pick-hint">{expanded ? "Close" : "Pick"}</span>
+        </button>
+      ) : (
+        <span className={`fixture-mid${match.played ? " fixture-score" : ""}`}>{mid}</span>
+      )}
       <Team name={match.away} stats={teams[match.away]} side="away" {...shared} />
+      {takenBy && <span className="fixture-taken-note">Picked by {takenBy}</span>}
     </li>
   );
 }

@@ -106,3 +106,20 @@ export function potentialReturns(acca) {
 export function formatMoney(value) {
   return `£${value.toFixed(2)}`;
 }
+
+/**
+ * The week picks should land in: the soonest one still taking picks, else the
+ * one in play. Deliberately no fallback to the last settled result — landing
+ * in a finished acca reads at a glance like one you can still pick in.
+ * The list must arrive sorted by first_match_date; locks_at can't order weeks
+ * because it stays null until somebody picks.
+ */
+export function resolveCurrent(accas) {
+  if (accas.length === 0) return null;
+  // Expired ones must be skipped — an acca nobody picked in stays "open"
+  // forever, and landing on one offers picks that can never be made.
+  const live = accas.find((a) => a.status === "open" && !isExpired(a));
+  if (live) return live;
+  const locked = accas.filter((a) => a.status === "locked");
+  return locked.length ? locked[locked.length - 1] : null;
+}

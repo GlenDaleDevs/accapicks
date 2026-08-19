@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import * as api from "../api/client";
 import Skeleton from "./Skeleton";
 import "./Leagues.css";
+import FixtureCard from "./FixtureCard";
 import { FormKey, MatchRow } from "./FixtureRow";
 import "./FixturesList.css";
 
@@ -34,8 +35,11 @@ function byDay(matches) {
   return days;
 }
 
-export default function FixturesList({ leagueCode, onLeagues }) {
-  const [week, setWeek] = useState("");
+export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", picking = null }) {
+  const [week, setWeek] = useState(initialWeek);
+  // One expanded odds panel at a time; keyed by the row so a week or league
+  // change simply stops matching anything.
+  const [expandedKey, setExpandedKey] = useState(null);
   const [tracker, setTracker] = useState("results");
   const [venue, setVenue] = useState("overall");
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -43,17 +47,22 @@ export default function FixturesList({ leagueCode, onLeagues }) {
   // skeleton rather than the previous week's fixtures.
   const [result, setResult] = useState(null);
 
+  // Odds are joined server-side for one division per request, so ask for the
+  // one on screen. Before the leagues list arrives the selection is always
+  // the first division, so defaulting to E0 avoids a refetch when it loads.
+  const fetchLeague = leagueCode || "E0";
   useEffect(() => {
     let cancelled = false;
-    api.getFixtureList(week)
+    api.getFixtureList(week, fetchLeague)
       .then((d) => {
         if (cancelled) return;
         setResult({ week, data: d });
+        setExpandedKey(null);
         onLeagues((d.leagues || []).map(({ code, name }) => ({ code, name })));
       })
       .catch(() => { if (!cancelled) setResult({ week, data: { weeks: [], leagues: [], ready: false } }); });
     return () => { cancelled = true; };
-  }, [week, onLeagues]);
+  }, [week, fetchLeague, onLeagues]);
 
   const loading = result?.week !== week;
   const data = loading ? null : result.data;
@@ -162,15 +171,38 @@ export default function FixturesList({ leagueCode, onLeagues }) {
           <section key={day.date} className="fixture-day">
             <h3 className="fixture-day-title">{dayHeading(day.date)}</h3>
             <ul className="fixture-rows">
-              {day.matches.map((m) => (
-                <MatchRow
-                  key={`${m.home}-${m.away}`}
-                  match={m}
-                  teams={league?.teams || {}}
-                  tracker={tracker}
-                  venue={venue}
-                />
-              ))}
+              {day.matches.map((m) => {
+                const key = `${m.home}-${m.away}`;
+                const canPick = picking ? picking.pickable(m, league) : false;
+                const takenBet = picking && m.odds ? picking.takenByEvent[m.odds.id] : null;
+                const open = canPick && expandedKey === key;
+                return (
+                  <Fragment key={key}>
+                    <MatchRow
+                      match={m}
+                      teams={league?.teams || {}}
+                      tracker={tracker}
+                      venue={venue}
+                      pickable={canPick}
+                      expanded={open}
+                      onTogglePick={() => setExpandedKey(open ? null : key)}
+                      takenBy={takenBet?.username}
+                    />
+                    {open && (
+                      <li className="fixture-pick-panel">
+                        <FixtureCard
+                          match={m.odds}
+                          fixtureTaken={false}
+                          takenBet={null}
+                          onPickMatch={picking.onPick}
+                          isSubmitting={picking.submitting}
+                          oddsFormat={picking.oddsFormat}
+                        />
+                      </li>
+                    )}
+                  </Fragment>
+                );
+              })}
             </ul>
           </section>
         ))}

@@ -17,3 +17,4 @@
 - `Base.metadata.create_all()` runs before Alembic migrations — use `IF NOT EXISTS` guards in migrations that create tables
 - The-Odds-API: BTTS market is NOT available on the bulk `/sports/{sport}/odds/` endpoint (returns 422). Must use per-event endpoint `/sports/{sport}/events/{eventId}/odds?markets=btts` (1 credit per call) — lazy-fetch and cache
 - The-Odds-API: Compare Bookmakers is best-effort — the API is a third-party aggregator with incomplete coverage, so not all bookmakers that offer a bet will appear
+- A migration that re-emits the whole schema behind an early-return guard never converts existing columns — the guard always fires on a fresh chain run because the previous migration just created the tables. After "runs from an empty database", also diff column types against the models (`information_schema.columns`); `accas.locks_at` stayed varchar this way and 500'd the acca list on response validation

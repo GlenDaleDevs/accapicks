@@ -6,6 +6,7 @@ from .auth import get_current_user
 from ..limiter import limiter
 
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+DIVISION_PATTERN = re.compile(r"^E[0-3]$")
 EVENT_ID_PATTERN = re.compile(r"^[a-f0-9]{1,64}$")
 
 router = APIRouter()
@@ -88,15 +89,23 @@ def get_standings(request: Request, season: str = "current", user_id: int = Depe
 
 @router.get("/odds/fixtures")
 @limiter.limit("30/minute")
-def get_fixture_list(request: Request, week: str = "", user_id: int = Depends(get_current_user)):
+def get_fixture_list(request: Request, week: str = "", league: str = "", user_id: int = Depends(get_current_user)):
     """One week of fixtures and results across the four English divisions.
 
     `week` is the Monday of the week wanted, as returned in `weeks`. Omitted,
-    it serves the current week.
+    it serves the current week. `league` is a division code (E0-E3); when the
+    requested week is upcoming, that division's fixtures carry cached
+    bookmaker odds — one division per request keeps a cold visit to at most
+    one odds fetch.
     """
     if week and not DATE_PATTERN.match(week):
         raise HTTPException(status_code=400, detail="Invalid week format. Use YYYY-MM-DD")
-    return fixturelist.get_week(week or None)
+    if league and not DIVISION_PATTERN.match(league):
+        raise HTTPException(status_code=400, detail="Invalid league code")
+    payload = fixturelist.get_week(week or None)
+    if league:
+        payload = fixturelist.attach_odds(payload, league)
+    return payload
 
 
 @router.get("/odds/matches/{event_id}/btts")
