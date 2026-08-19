@@ -1,3 +1,34 @@
+# Done — 2026-08-19 (second session, afternoon/evening)
+
+## Pre-Saturday verification
+- [x] FastAPI 0.141 / starlette 1.3.1 booted and exercised with real requests (auth, blacklist, rate limits, headers, CORS, new endpoints) — this sandbox builds `http-ece`
+- [x] Migration chain proven on real PostgreSQL 16, empty-DB and prod paths; found and fixed the latent varchar `locks_at` (chain-built DBs 500'd the acca list) — `locks_at_timestamptz`
+- [x] Opening-weekend week block simulated: Fri 21 → Mon 24, anchored Sat 22, qualifies Wed with LEAD_DAYS=3
+
+## The notification saga — closed by a real iPhone delivery
+- [x] Root-caused the missed week-open push: shared VAPID claims dict pinned `aud` (fix verified against pywebpush both ways)
+- [x] 12h TTL on all pushes — ttl=0 meant Apple silently dropped pushes to locked phones
+- [x] Autoweek pass runs at startup — deploys were resetting the 30-min tick and holding the week back
+- [x] "First pick is in!" wording on the week's first pick push
+
+## Features
+- [x] Fixtures tab is the one picking surface — modal picker deleted, "Add your pick" navigates, cached odds inline on rows (h2h auto; BTTS/O-U behind More bets), then redesigned: prices under team names, draw under kickoff, bordered fixture cards
+- [x] Nudge — button on unpicked members' rows once a deadline (locks_at) exists; one push per target per acca, unique-constraint enforced
+- [x] Invite context on the auth screen — public preview endpoint, "You've been invited to X", defaults to signup; full journey verified
+- [x] Group Settings back (header-menu modal): rename, season start date, remove member
+- [x] Bookmaker comparison rehomed at the foot of the slip (was orphaned since the overhaul)
+- [x] Compliance copy out of the menu, into page footers everywhere (incl. /groups, /settings); menu shrink-wrapped
+
+## Housekeeping
+- [x] Cleanup pass: groups.py split, App.jsx → hooks (327→128 lines), dead code swept
+- [x] Lint 0 errors 0 warnings (eslint-plugin-react; real fixes); npm audit clean again (fresh advisories; vite 7.3.6)
+- [x] Odds cache TTL 2h → 4h; fixtures endpoint resilient to 429s; dict-iteration race fixed
+- [x] Stale backlog corrected: O/U + BTTS bet types were already live end-to-end
+
+Everything deployed to accapicks.com through the day; migrations confirmed run in prod.
+
+---
+
 # Done — 2026-08-15
 
 Updated as tasks are completed during the session.

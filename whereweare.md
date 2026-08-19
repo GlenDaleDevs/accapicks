@@ -54,7 +54,7 @@ Late development — deployed to production on Railway, security hardening compl
   window, zero on past weeks.
 - **UI overhaul (2026-08-15)** — FPL-style 4-tab navigation (Acca/Fixtures/Table/More), group switcher in a
   global header, week-numbered accas with paging, four distinct acca states, pinned odds/returns, first modal
-  in the codebase, reworked league table, movement arrows. 8 commits, **unpushed**. Plan:
+  in the codebase, reworked league table, movement arrows. Shipped and deployed. Plan:
   `.claude/plans/glittery-coalescing-naur.md`
 
 ## What's Left
@@ -69,9 +69,9 @@ Late development — deployed to production on Railway, security hardening compl
       International breaks resolve themselves — no fixtures, no week. On by default, toggle in Group
       Settings, push when a week opens, empty lapsed weeks deleted. Manual creation stays for one-offs,
       which is why the create-in-date-order 409 had to go.
-      Still to do: **verify in a browser before Saturday** (nothing visual was checked), and decide
-      whether Friday-only weeks or a shorter `LEAD_DAYS` are wanted — a week currently opens 4 days out,
-      so the opening weekend appears on Tue 18 Aug.
+      Since verified end-to-end (browser, sandbox, and twice in prod on 19 Aug — deletion, recreation
+      and push all observed). `LEAD_DAYS` is now 3, and the pass runs at startup, so a deploy can never
+      delay a week opening.
 - [x] ~~**Fresh league table for the new season.**~~ — done 2026-08-16. `groups.season_start_date`, set
       by an admin in Group Settings, scopes the leaderboard, the accas-won bar and member profiles
       together. Keyed on `first_match_date`, not `round_number`, which is no longer chronological.
@@ -89,9 +89,9 @@ Late development — deployed to production on Railway, security hardening compl
       on the new build for a while
 - [ ] **Check `ODDS_CACHE_TTL` on Railway** — the 4h default only applies when the env var is unset;
       if Railway sets 7200 explicitly, it wins
-- [ ] **`locks_at_timestamptz` migration runs on next deploy** — guarded, and a no-op on production's
-      already-datetime column; it exists because a chain-built database kept `locks_at` as varchar
-      (see mistakes.md)
+- [x] ~~`locks_at_timestamptz` migration runs on next deploy~~ — ran in prod 2026-08-19 (pm): the
+      Dockerfile gates uvicorn on `alembic upgrade head`, and every deploy after the commit came up
+      (weeks recreated, pushes delivered), so the chain including it completed. Same for `add_nudges`
 - [x] ~~The `drop_auto_weeks` migration has not run anywhere real~~ — verified 2026-08-19 (pm) against
       real PostgreSQL 16: the full chain runs from an empty database, and the prod path (DB stamped at
       `add_season_start` with `auto_weeks` present → `upgrade head`) drops the column cleanly. Also
@@ -108,7 +108,8 @@ Late development — deployed to production on Railway, security hardening compl
 - [x] ~~Push test~~ — **closed 2026-08-19 (pm): the iPhone received the push.** The full chain is
       confirmed live: re-subscribe after toggling, per-send VAPID claims, 12h TTL, and the
       run-at-startup autoweek pass recreating the week after a deploy
-- [ ] **Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd.** A week's
+- [ ] **Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd** — now a
+      30-second job in the new Group Settings (header menu, admin only). A week's
       `first_match_date` is its Friday opener, so a boundary on the 22nd drops Week 1 out of the season.
       Groups without a date now get one automatically from their first week's earliest date — which is
       the Friday, deliberately — but any group that already had one keeps it unexamined
@@ -151,8 +152,9 @@ Late development — deployed to production on Railway, security hardening compl
       Full journey verified: link → banner → signup → verify → landed in the group as a member
 - [ ] Apply new colour palette to CSS variables (palette chosen, waiting for logo/assets)
 - [ ] Generate logo (Weavy/Midjourney/Looka) and additional background assets
-- [ ] Debug push notifications in production (VAPID keys, test end-to-end)
-- [ ] General polish pass — remaining pages (group list/detail, acca/bet slip, fixture grid, bookmaker comparison, leaderboard, profile/settings)
+- [x] ~~Debug push notifications in production~~ — the 19 Aug saga: per-send VAPID claims, 12h TTL,
+      startup autoweek pass; closed by a real iPhone delivery
+- [ ] General polish pass — remaining pages (groups page, acca/bet slip, fixtures rows, bookmaker comparison, leaderboard, settings)
 
 ### Medium effort (1-2 sessions)
 - [ ] Add Framer Motion micro-animations (page transitions, card entrances, leaderboard count-ups)
@@ -174,5 +176,11 @@ Late development — deployed to production on Railway, security hardening compl
 - Bet Builder: depends on The-Odds-API same-game multi availability (may be limited)
 - Last Man Standing: fully independent, no blockers — just needs dedicated sessions
 
+## Next session
+Saturday 22 Aug is the opening weekend — first live run of auto-settlement for the new season
+(including BTTS/O-U picks if anyone uses More bets). Keep it light and watch: settlement results,
+odds-API credit usage (dashboard), and that nudges/pushes behave with real traffic. After that:
+affiliate research + comparison UI refresh, logo/palette, or start Last Man Standing.
+
 ## Last Updated
-2026-08-19
+2026-08-19 (evening) — session wrap; day log in whatwevedonetoday.md
