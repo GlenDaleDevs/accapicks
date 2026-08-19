@@ -1,8 +1,7 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as api from "../api/client";
 import Skeleton from "./Skeleton";
 import "./Leagues.css";
-import FixtureCard from "./FixtureCard";
 import { FormKey, MatchRow } from "./FixtureRow";
 import "./FixturesList.css";
 
@@ -37,9 +36,6 @@ function byDay(matches) {
 
 export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", picking = null }) {
   const [week, setWeek] = useState(initialWeek);
-  // One expanded odds panel at a time; keyed by the row so a week or league
-  // change simply stops matching anything.
-  const [expandedKey, setExpandedKey] = useState(null);
   const [tracker, setTracker] = useState("results");
   const [venue, setVenue] = useState("overall");
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -57,7 +53,6 @@ export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", 
       .then((d) => {
         if (cancelled) return;
         setResult({ week, data: d });
-        setExpandedKey(null);
         onLeagues((d.leagues || []).map(({ code, name }) => ({ code, name })));
       })
       .catch(() => { if (!cancelled) setResult({ week, data: { weeks: [], leagues: [], ready: false } }); });
@@ -172,35 +167,21 @@ export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", 
             <h3 className="fixture-day-title">{dayHeading(day.date)}</h3>
             <ul className="fixture-rows">
               {day.matches.map((m) => {
-                const key = `${m.home}-${m.away}`;
                 const canPick = picking ? picking.pickable(m, league) : false;
                 const takenBet = picking && m.odds ? picking.takenByEvent[m.odds.id] : null;
-                const open = canPick && expandedKey === key;
                 return (
-                  <Fragment key={key}>
-                    <MatchRow
-                      match={m}
-                      teams={league?.teams || {}}
-                      tracker={tracker}
-                      venue={venue}
-                      pickable={canPick}
-                      expanded={open}
-                      onTogglePick={() => setExpandedKey(open ? null : key)}
-                      takenBy={takenBet?.username}
-                    />
-                    {open && (
-                      <li className="fixture-pick-panel">
-                        <FixtureCard
-                          match={m.odds}
-                          fixtureTaken={false}
-                          takenBet={null}
-                          onPickMatch={picking.onPick}
-                          isSubmitting={picking.submitting}
-                          oddsFormat={picking.oddsFormat}
-                        />
-                      </li>
-                    )}
-                  </Fragment>
+                  <MatchRow
+                    key={`${m.home}-${m.away}`}
+                    match={m}
+                    teams={league?.teams || {}}
+                    tracker={tracker}
+                    venue={venue}
+                    canPick={canPick}
+                    takenBy={takenBet?.username}
+                    onPick={picking?.onPick}
+                    submitting={picking?.submitting}
+                    oddsFormat={picking?.oddsFormat}
+                  />
                 );
               })}
             </ul>

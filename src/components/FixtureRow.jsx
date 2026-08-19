@@ -1,6 +1,8 @@
 // The match row and its last-five trackers. Kept apart from FixturesList so
 // that file stays about fetching a week and choosing what to show.
 
+import { MoreBets, OddsChip } from "./FixtureOdds";
+
 function kickoffTime(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -43,13 +45,14 @@ function Form({ marks, tracker, emptyLabel }) {
 
 // In "venue" mode each side shows its own half of the record — the home team's
 // home games, the away team's away games — a different last five from overall.
-function Team({ name, stats, tracker, venue, side }) {
+function Team({ name, stats, tracker, venue, side, chip }) {
   const byVenue = venue === "venue";
   const split = stats?.[byVenue ? side : "overall"];
   return (
     <div className="fixture-team">
       {stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null}
       <span className="fixture-name">{name}</span>
+      {chip}
       <Form
         marks={split?.[tracker]}
         tracker={tracker}
@@ -59,30 +62,40 @@ function Team({ name, stats, tracker, venue, side }) {
   );
 }
 
-export function MatchRow({ match, teams, tracker, venue, pickable, expanded, onTogglePick, takenBy }) {
+export function MatchRow({
+  match, teams, tracker, venue,
+  canPick = false, takenBy, onPick, submitting = false, oddsFormat = "decimal",
+}) {
   const shared = { tracker, venue };
   const mid = match.played
     ? `${match.home_goals}–${match.away_goals}`
     : kickoffTime(match.kickoff);
+  // Odds render whenever the join found a price — greyed out when the fixture
+  // can't be picked (taken, already picked, locked) — home under the home
+  // name, away under the away name, the draw under the kickoff time.
+  const odds = !match.played && match.odds ? match.odds : null;
+  const chip = (value, type, label) => (
+    <OddsChip
+      label={label}
+      value={value}
+      disabled={!canPick || submitting}
+      onClick={() => onPick(odds, type)}
+      oddsFormat={oddsFormat}
+    />
+  );
   return (
     <li className="fixture-row">
-      <Team name={match.home} stats={teams[match.home]} side="home" {...shared} />
-      {pickable ? (
-        // The middle cell doubles as the affordance — a 4th column would
-        // squeeze both name columns on a 360px screen.
-        <button
-          type="button"
-          className="fixture-mid fixture-mid-pick"
-          aria-expanded={expanded}
-          onClick={onTogglePick}
-        >
-          <span>{mid}</span>
-          <span className="fixture-pick-hint">{expanded ? "Close" : "Pick"}</span>
-        </button>
-      ) : (
+      <Team name={match.home} stats={teams[match.home]} side="home" {...shared}
+        chip={odds && chip(odds.home_odds, "home")} />
+      <div className="fixture-mid-col">
         <span className={`fixture-mid${match.played ? " fixture-score" : ""}`}>{mid}</span>
+        {odds && chip(odds.draw_odds, "draw", "Draw")}
+      </div>
+      <Team name={match.away} stats={teams[match.away]} side="away" {...shared}
+        chip={odds && chip(odds.away_odds, "away")} />
+      {odds && canPick && (
+        <MoreBets odds={odds} onPick={onPick} submitting={submitting} oddsFormat={oddsFormat} />
       )}
-      <Team name={match.away} stats={teams[match.away]} side="away" {...shared} />
       {takenBy && <span className="fixture-taken-note">Picked by {takenBy}</span>}
     </li>
   );
