@@ -63,13 +63,19 @@ Late development — deployed to production on Railway, security hardening compl
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
 ### Open threads (2026-08-19) — read these first if picking up elsewhere
-- [ ] **The `drop_auto_weeks` migration has not run anywhere real.** It drops `groups.auto_weeks` behind an
-      IF-EXISTS guard. If a deploy fails on it, that's where to look
-- [ ] **FastAPI 0.128 → 0.141 and starlette 0.50 → 1.3.1 are unverified at runtime.** Forced by the audit:
-      starlette needed 1.x and the old FastAPI pinned `<0.51.0`. The middleware stack (security headers,
-      size limit, CORS in registration order), routers, Depends, HTTPException and lifespan were all
-      exercised against the new pair with real requests — but the app itself has never booted on them,
-      because this sandbox can't build `http-ece` or import its `cryptography`
+- [x] ~~The `drop_auto_weeks` migration has not run anywhere real~~ — verified 2026-08-19 (pm) against
+      real PostgreSQL 16: the full chain runs from an empty database, and the prod path (DB stamped at
+      `add_season_start` with `auto_weeks` present → `upgrade head`) drops the column cleanly. Also
+      confirmed the Dockerfile runs `alembic upgrade head` *before* uvicorn imports the app, so
+      `create_all()` can never pre-empt the initial migration on a fresh database
+- [x] ~~FastAPI 0.128 → 0.141 and starlette 0.50 → 1.3.1 are unverified at runtime~~ — verified
+      2026-08-19 (pm) in a sandbox that *can* build `http-ece`: the app boots, lifespan and background
+      tasks start, and real requests exercised signup → verify → login → groups → leaderboard →
+      logout, token blacklist (revoked token rejected), 1MB size limit (413), login rate limit (429),
+      security headers + CSP on every response, CORS preflight, and the new `/odds/standings` and
+      `/odds/fixtures` endpoints (200). Also proved the `d843af3` VAPID fix end-to-end: with fresh
+      per-send claims, an FCM push and an Apple push each get a JWT for their own audience, while the
+      old shared dict pinned both to whichever service was hit first
 - [ ] **Push test — the week should reopen on its own.** The open week was deleted by hand on 19 Aug to
       re-test the "week is open" push. With `LEAD_DAYS = 3` and Saturday on the 22nd, it qualifies from
       Wed 19 Aug, so the next 30-minute tick should create it and notify the group. Note the background
@@ -91,6 +97,10 @@ Late development — deployed to production on Railway, security hardening compl
       there — but more work than it's worth unless it grates
 
 ### Resolved on 2026-08-19
+- [x] ~~Will the opening weekend produce the right week?~~ — simulated `find_week_blocks` with the
+      real shape of the opening round (Fri 21 → Mon 24): one block, anchored Sat 22, all four dates
+      included — the Friday opener is in. With `LEAD_DAYS = 3` it qualifies from Wed 19, matching the
+      push-test expectation below
 - [x] ~~Nothing shipped since 15 Aug has been seen in a browser~~ — root cause found and fixed: with
       `strategies: 'injectManifest'`, vite-plugin-pwa does **not** inject the SKIP_WAITING handler, so
       `updateServiceWorker(true)` posted a message nothing listened for. The new worker sat in "waiting"
