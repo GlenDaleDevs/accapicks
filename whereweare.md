@@ -101,11 +101,9 @@ Late development — deployed to production on Railway, security hardening compl
       `/odds/fixtures` endpoints (200). Also proved the `d843af3` VAPID fix end-to-end: with fresh
       per-send claims, an FCM push and an Apple push each get a JWT for their own audience, while the
       old shared dict pinned both to whichever service was hit first
-- [ ] **Push test — the week should reopen on its own.** Deleted again at 14:06 to re-test the iPhone
-      push after re-subscribing — and then an afternoon of deploys kept resetting the tick, because the
-      task slept *before* its first run. Fixed 2026-08-19 (pm): the autoweek pass now runs at startup,
-      so every deploy recreates a due week within a minute or two. Still to confirm: the "week is
-      open" push actually landing on the iPhone
+- [x] ~~Push test~~ — **closed 2026-08-19 (pm): the iPhone received the push.** The full chain is
+      confirmed live: re-subscribe after toggling, per-send VAPID claims, 12h TTL, and the
+      run-at-startup autoweek pass recreating the week after a deploy
 - [ ] **Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd.** A week's
       `first_match_date` is its Friday opener, so a boundary on the 22nd drops Week 1 out of the season.
       Groups without a date now get one automatically from their first week's earliest date — which is
@@ -156,8 +154,9 @@ Late development — deployed to production on Railway, security hardening compl
 - [ ] Affiliate link setup (research programs, sign up, populate BookmakerLink table, add disclosure)
 
 ### Large effort (2-4 sessions)
-- [ ] More bet types — Phase 1: Over/Under 2.5 (add totals market to API, frontend tabs, settlement logic)
-- [ ] More bet types — Phase 2: BTTS (check API availability, binary settlement)
+- [x] ~~More bet types — Over/Under 2.5 and BTTS~~ — already live end-to-end, the backlog was stale:
+      both are pickable under "More bets" on a fixture row, priced (totals from the bulk call, BTTS
+      lazily at 1 credit/event, 24h cache), and settlement.py settles all four pick types
 
 ### Future (multi-session projects)
 - [ ] Last Man Standing mode (new game mode: LMSGame, LMSRound, LMSPick models, elimination rounds)
