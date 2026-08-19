@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import "./Landing.css";
 import InstallPrompt from "./InstallPrompt";
 import { showToast } from "../utils/toast";
@@ -439,14 +438,8 @@ export default function AuthView({
       </div>
 
       <InstallPrompt />
-
-      <footer className="landing-footer">
-        <div className="landing-footer-links">
-          <Link to="/terms">Terms of Service</Link>
-          <Link to="/privacy">Privacy Policy</Link>
-        </div>
-        <p className="landing-footer-responsible">18+ only. Please gamble responsibly.</p>
-      </footer>
+      {/* Compliance copy comes from the shared ComplianceFooter App.jsx
+          renders below this view — it carries BeGambleAware too. */}
     </div>
   );
 }
