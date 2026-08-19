@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import InvitePanel from "./InvitePanel";
 import * as api from "../../api/client";
 import { useApp } from "../../context/AppContext";
 import { showToast } from "../../utils/toast";
 import { GROUPS, SETTINGS } from "../../utils/routes";
 
-// Everything the old More tab held, minus a tab: group actions, app settings
-// and the compliance copy that has to appear somewhere.
+// Everything the old More tab held, minus a tab: group actions and app
+// settings. The compliance copy lives in the page footer, not in here.
 export default function AppMenu({ onClose }) {
   const { groupId } = useParams();
   const navigate = useNavigate();
@@ -97,17 +97,6 @@ export default function AppMenu({ onClose }) {
         >
           Log out
         </button>
-
-        <footer className="app-menu-footer">
-          18+ only | Please gamble responsibly |{" "}
-          <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">
-            BeGambleAware.org
-          </a>
-          <br />
-          <Link to="/terms" onClick={onClose}>Terms of Service</Link>
-          {" | "}
-          <Link to="/privacy" onClick={onClose}>Privacy Policy</Link>
-        </footer>
       </div>
     </div>
   );
