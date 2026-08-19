@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { Link, useLocation, useOutlet, useParams } from "react-router-dom";
+import { useLocation, useOutlet, useParams } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import ComplianceFooter from "../ComplianceFooter";
 import PageTransition from "../PageTransition";
 import GlobalHeader from "./GlobalHeader";
 import TabBar from "./TabBar";
@@ -33,14 +34,7 @@ export default function AppShell() {
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>{outlet}</PageTransition>
         </AnimatePresence>
-        <footer className="responsible-gambling-footer">
-          18+ only | Please gamble responsibly |{" "}
-          <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">
-            BeGambleAware.org
-          </a>
-          <br />
-          <Link to="/terms">Terms of Service</Link> | <Link to="/privacy">Privacy Policy</Link>
-        </footer>
+        <ComplianceFooter />
       </main>
       <TabBar />
     </div>

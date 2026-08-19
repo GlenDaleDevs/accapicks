@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import ComplianceFooter from "./ComplianceFooter";
 import GroupsList from "./GroupsList";
 import { useApp } from "../context/AppContext";
 
@@ -23,6 +24,8 @@ export default function GroupsPage() {
         onJoinGroup={onJoinGroup}
         error={error}
       />
+
+      <ComplianceFooter />
     </div>
   );
 }
