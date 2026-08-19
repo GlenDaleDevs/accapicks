@@ -55,7 +55,16 @@ export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", 
         setResult({ week, data: d });
         onLeagues((d.leagues || []).map(({ code, name }) => ({ code, name })));
       })
-      .catch(() => { if (!cancelled) setResult({ week, data: { weeks: [], leagues: [], ready: false } }); });
+      .catch(() => {
+        // Keep the last known weeks list: wiping it disables both stepper
+        // arrows and strands the tab on a transient failure (e.g. a 429).
+        if (!cancelled) {
+          setResult((prev) => ({
+            week,
+            data: { weeks: prev?.data?.weeks || [], leagues: [], ready: false },
+          }));
+        }
+      });
     return () => { cancelled = true; };
   }, [week, fetchLeague, onLeagues]);
 
