@@ -2,34 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import * as api from "../api/client";
 import { showToast } from "../utils/toast";
-import { ACCA_STATE, getAccaState, isExpired } from "../utils/accaState";
-import { buildPick, buildStructuredData } from "../utils/pickDescription";
-import { groupAcca } from "../utils/routes";
+import { ACCA_STATE, getAccaState, isExpired, resolveCurrent } from "../utils/accaState";
+import { groupAcca, groupFixtures } from "../utils/routes";
 import WeekStrip from "./acca/WeekStrip";
 import AccaBody from "./acca/AccaBody";
 import Modal from "./ui/Modal";
 import PreviousWeeks from "./acca/PreviousWeeks";
-import FixtureGrid from "./FixtureGrid";
 import AccaWizard from "./AccaWizard";
 import Skeleton from "./Skeleton";
 import "./acca/acca.css";
-
-// Resolution order: the soonest week still taking picks, else the one in play.
-// Deliberately no fallback to the last result — between weeks the tab offers
-// previous weeks as a button rather than dropping you into a finished acca that
-// reads at a glance like the one you can still pick in. The list arrives sorted
-// by first_match_date — locks_at can't be used here because it stays null until
-// somebody picks, so several open weeks would share a null lock time.
-function resolveCurrent(accas) {
-  if (accas.length === 0) return null;
-  // Earliest open week that hasn't expired: that's the deadline approaching.
-  // Expired ones must be skipped — an acca nobody picked in stays "open"
-  // forever, and landing on one offers picks that can never be made.
-  const live = accas.find((a) => a.status === "open" && !isExpired(a));
-  if (live) return live;
-  const locked = accas.filter((a) => a.status === "locked");
-  return locked.length ? locked[locked.length - 1] : null;
-}
 
 export default function AccaTab({ user, oddsFormat }) {
   const { groupId, roundNumber } = useParams();
@@ -41,12 +22,7 @@ export default function AccaTab({ user, oddsFormat }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showWizard, setShowWizard] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
   const [showPrevious, setShowPrevious] = useState(false);
-  const [fixtureLeague, setFixtureLeague] = useState("");
-  const [matches, setMatches] = useState([]);
-  const [loadingMatches, setLoadingMatches] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const detailIdRef = useRef(null);
 
@@ -129,46 +105,11 @@ export default function AccaTab({ user, oddsFormat }) {
 
   const goToWeek = (acca) => navigate(`/g/${groupId}/acca/${acca.round_number}`);
 
-  const openPicker = async () => {
-    setShowPicker(true);
-    const leagues = detail?.leagues || [];
-    if (leagues.length === 1) {
-      setFixtureLeague(leagues[0]);
-      await loadMatches(leagues[0]);
-    }
-  };
-
-  const loadMatches = async (league) => {
-    if (!detail?.match_dates?.length) return;
-    const sorted = [...detail.match_dates].sort();
-    setLoadingMatches(true);
-    try {
-      const data = await api.getFilteredMatches([league], sorted[0], sorted[sorted.length - 1]);
-      setMatches(data);
-    } catch {
-      setMatches([]);
-    } finally {
-      setLoadingMatches(false);
-    }
-  };
-
-  const handlePick = async (match, pickType) => {
-    if (submitting) return;
-    const built = buildPick(match, pickType);
-    if (!built) return;
-    setSubmitting(true);
-    try {
-      await api.createBet(detail.id, built.description, built.odds, buildStructuredData(match, pickType));
-      await loadDetail(detail.id, false);
-      await loadIndex();
-      setShowPicker(false);
-      setMatches([]);
-      setFixtureLeague("");
-    } catch (err) {
-      showToast(err.response?.data?.detail || "Failed to add pick", "error");
-    } finally {
-      setSubmitting(false);
-    }
+  // Picks are made on the Fixtures tab now — one surface for browsing and
+  // picking. Land on the acca's week, not whatever week the tab last showed.
+  const goPick = () => {
+    const dates = [...(detail?.match_dates || [])].sort();
+    navigate(groupFixtures(groupId), { state: { week: dates[0] } });
   };
 
   const handleRemove = async (betId) => {
@@ -317,7 +258,7 @@ export default function AccaTab({ user, oddsFormat }) {
           members={members}
           user={user}
           oddsFormat={oddsFormat}
-          onAddPick={openPicker}
+          onAddPick={goPick}
           onRemovePick={handleRemove}
           readOnly={readOnly}
         />
@@ -339,22 +280,6 @@ export default function AccaTab({ user, oddsFormat }) {
           )}
         </div>
       )}
-
-      <Modal open={showPicker} title="Pick a match" onClose={() => setShowPicker(false)}>
-        {detail && (
-          <FixtureGrid
-            acca={detail}
-            filteredMatches={matches}
-            loadingFilteredMatches={loadingMatches}
-            fixtureLeague={fixtureLeague}
-            onSelectLeague={(l) => { setFixtureLeague(l); loadMatches(l); }}
-            onPickMatch={handlePick}
-            onCancel={() => setShowPicker(false)}
-            oddsFormat={oddsFormat}
-            isSubmitting={submitting}
-          />
-        )}
-      </Modal>
 
       <Modal open={showWizard} title="New week" onClose={() => setShowWizard(false)}>
         <AccaWizard onCreated={handleCreate} onCancel={() => setShowWizard(false)} />

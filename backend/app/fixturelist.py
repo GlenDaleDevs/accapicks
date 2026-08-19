@@ -81,6 +81,10 @@ def _canonical(name, index):
     resolved = names.resolve(name, index)
     if resolved:
         return resolved
+    # A silent miss renders exactly like "no games played yet", so say so —
+    # one refresh with a full index enumerates every gap in the alias table.
+    if index:
+        logger.warning("Unresolved club name %r — check names.ALIASES", name)
     # Early season the index is thin (a club with no results yet isn't in it),
     # so fall back to the alias table and then to the name as given.
     return names.ALIASES.get(name, name)
@@ -219,6 +223,7 @@ def _sorted_leagues(by_div):
         leagues.append({
             "code": code,
             "name": DIVISION_BY_CODE[code]["name"],
+            "odds_key": DIVISION_BY_CODE[code]["odds_key"],
             "matches": matches,
         })
     return leagues
@@ -287,6 +292,43 @@ def get_week(key=None):
         "week": key,
         "leagues": leagues,
     }
+
+
+def attach_odds(payload, league_code):
+    """Join cached bookmaker odds onto one division's upcoming fixtures.
+
+    Only the requested division, and only when the viewed week is upcoming, so
+    a past week never costs a request. Prices come through the same per-league
+    cache the pick modal used (4h TTL), so browsing and tapping add no API
+    traffic of their own — at worst one refresh per league per TTL window.
+
+    Rows are copied, not mutated: the match dicts belong to the module cache.
+    """
+    week = next((w for w in payload["weeks"] if w["key"] == payload["week"]), None)
+    league = next((l for l in payload["leagues"] if l["code"] == league_code), None)
+    if not week or not week["upcoming"] or not league or not league.get("odds_key"):
+        return payload
+    # A division with nothing to play this week (an international break) has
+    # nothing to price — don't spend a request finding that out.
+    if not any(not row["played"] for row in league["matches"]):
+        return payload
+
+    index = names.build_index(_cache["teams"].get(league_code, {}).keys())
+    priced = {}
+    for match in odds_api.get_football_matches(league["odds_key"]):
+        formatted = odds_api.format_match_for_display(match, league=league["odds_key"])
+        if not formatted:
+            continue
+        key = (_canonical(formatted["home_team"], index),
+               _canonical(formatted["away_team"], index))
+        priced[key] = formatted
+
+    league["matches"] = [
+        row if row["played"]
+        else {**row, "odds": priced.get((row["home"], row["away"]))}
+        for row in league["matches"]
+    ]
+    return payload
 
 
 async def refresh_fixture_list():

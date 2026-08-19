@@ -34,6 +34,13 @@ Late development — deployed to production on Railway, security hardening compl
 - **Service worker actually updates now (2026-08-19)** — see the fix below; this was why nothing shipped
   since 15 Aug had been seen.
 - **Dependency audits clean (2026-08-19)** — npm and pip-audit both pass with nothing ignored.
+- **Fixtures tab is the one picking surface (2026-08-19 pm)** — the modal picker is gone; "Add your
+  pick" navigates to the Fixtures tab, which now joins cached bookmaker odds onto the current week's
+  rows (one division per request, `?league=`, nothing fetched for past weeks or empty divisions) and
+  hosts the old FixtureCard inline under a tapped row. Odds cache TTL default 2h → 4h. Taken fixtures
+  read "Picked by X"; a pick lands you back on your slip. `useCurrentAcca` hook; AccaTab 364 → ~290
+  lines. Verified end-to-end against a stubbed odds feed: exactly one paid call per league per TTL
+  window, zero on past weeks.
 - **UI overhaul (2026-08-15)** — FPL-style 4-tab navigation (Acca/Fixtures/Table/More), group switcher in a
   global header, week-numbered accas with paging, four distinct acca states, pinned odds/returns, first modal
   in the codebase, reworked league table, movement arrows. 8 commits, **unpushed**. Plan:
@@ -63,6 +70,14 @@ Late development — deployed to production on Railway, security hardening compl
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
 ### Open threads (2026-08-19) — read these first if picking up elsewhere
+- [ ] **Legacy `GET /odds/matches/filtered` is unreachable from the new UI but kept alive** — installed
+      PWAs run the old shell until their service worker cycles; remove the endpoint once prod has been
+      on the new build for a while
+- [ ] **Check `ODDS_CACHE_TTL` on Railway** — the 4h default only applies when the env var is unset;
+      if Railway sets 7200 explicitly, it wins
+- [ ] **`locks_at_timestamptz` migration runs on next deploy** — guarded, and a no-op on production's
+      already-datetime column; it exists because a chain-built database kept `locks_at` as varchar
+      (see mistakes.md)
 - [x] ~~The `drop_auto_weeks` migration has not run anywhere real~~ — verified 2026-08-19 (pm) against
       real PostgreSQL 16: the full chain runs from an empty database, and the prod path (DB stamped at
       `add_season_start` with `auto_weeks` present → `upgrade head`) drops the column cleanly. Also
