@@ -190,17 +190,25 @@ def create_bet(
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create bet")
 
-    # Send push notification to group members
+    # Send push notification to group members. The first pick of the week is
+    # the "it's started" moment, so it gets its own wording.
     try:
         from ..push import send_push_to_group
         user_obj = db.query(models.User).filter(models.User.id == user_id).first()
         username = user_obj.username if user_obj else "Someone"
+        is_first_pick = (
+            db.query(models.Bet).filter(models.Bet.acca_id == acca.id).count() == 1
+        )
         send_push_to_group(
             db,
             acca.group_id,
             {
-                "title": "New Pick Added",
-                "body": f"{username} added a pick to {acca.name}",
+                "title": "First pick is in!" if is_first_pick else "New Pick Added",
+                "body": (
+                    f"{username} made the first pick for {acca.name} — get yours in"
+                    if is_first_pick
+                    else f"{username} added a pick to {acca.name}"
+                ),
                 "tag": f"bet-{acca.id}",
                 "url": f"/groups/{acca.group_id}/accas/{acca.id}",
             },
