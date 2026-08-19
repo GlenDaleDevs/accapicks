@@ -70,11 +70,9 @@ Late development — deployed to production on Railway, security hardening compl
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
 ### Open threads (2026-08-19) — read these first if picking up elsewhere
-- [ ] **BookmakerComparison is orphaned — the feature is silently gone from the UI.** Its only caller
-      (`AccaDetail`) was deleted in the 15 Aug overhaul (`f2452c0`), exactly the learned-rules
-      pattern. `App.jsx` still fetches `getBookmakerLinks` into state nothing renders. The affiliate
-      plan depends on this surface — decide where it lives in the 3-tab layout (probably the settled
-      slip) and wire it back, or delete component + fetch + endpoint together
+- [x] ~~BookmakerComparison is orphaned~~ — rehomed 2026-08-19 (pm) at the foot of the pick slip
+      (`acca/CompareBookmakers.jsx`): button-triggered as before (a backend cache miss can cost
+      credits), open accas with picks only, links/click-tracking intact
 - [ ] **Legacy `GET /odds/matches/filtered` is unreachable from the new UI but kept alive** — installed
       PWAs run the old shell until their service worker cycles; remove the endpoint once prod has been
       on the new build for a while

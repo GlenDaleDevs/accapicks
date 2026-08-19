@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import CompareBookmakers from "./CompareBookmakers";
 import { staggerContainer, staggerItem } from "../../utils/animations";
 import { formatOdds, formatKickoffTime } from "../../utils/formatters";
 import { NOTIONAL_STAKE } from "../../utils/constants";
@@ -147,6 +148,8 @@ export default function AccaBody({
           </div>
         </div>
       )}
+
+      <CompareBookmakers acca={acca} oddsFormat={oddsFormat} />
     </motion.div>
   );
 }
