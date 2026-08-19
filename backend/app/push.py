@@ -11,6 +11,12 @@ logger = logging.getLogger(__name__)
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
 VAPID_SUBJECT = "mailto:notifications@accapicks.com"
 
+# pywebpush defaults ttl to 0 — "deliver this instant or discard". A phone
+# that is locked or offline at that moment never sees the push: Apple's
+# service drops it silently (and still returns success). Every notification
+# here stays relevant for hours, so let the push service hold it that long.
+PUSH_TTL_SECONDS = 12 * 60 * 60
+
 
 def _vapid_claims():
     """A fresh dict per send.
@@ -45,6 +51,7 @@ def send_push(db: Session, user_id: int, payload: dict):
                 data=json.dumps(payload),
                 vapid_private_key=VAPID_PRIVATE_KEY,
                 vapid_claims=_vapid_claims(),
+                ttl=PUSH_TTL_SECONDS,
             )
             sub.last_used_at = datetime.now(timezone.utc)
         except WebPushException as e:
