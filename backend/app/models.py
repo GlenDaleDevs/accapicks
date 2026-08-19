@@ -191,3 +191,19 @@ class PushSubscription(Base):
 
     def __repr__(self):
         return f"<PushSubscription user:{self.user_id}>"
+
+
+class Nudge(Base):
+    """One member reminding another to pick. The unique constraint is the
+    anti-spam rule: one nudge per target per acca, ever, whoever sends it."""
+    __tablename__ = "nudges"
+
+    __table_args__ = (
+        UniqueConstraint('acca_id', 'target_user_id', name='uq_nudge_acca_target'),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    acca_id = Column(Integer, ForeignKey("accas.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    nudged_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

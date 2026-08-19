@@ -360,6 +360,8 @@ class AccaWithBets(BaseModel):
     created_by: Optional[int] = None
     created_at: UtcDatetime
     bets: list[BetResponse] = []
+    # Members already reminded this week — the UI hides their Nudge button
+    nudged_user_ids: list[int] = []
 
     class Config:
         from_attributes = True
