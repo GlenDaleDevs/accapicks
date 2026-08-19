@@ -51,6 +51,8 @@ export default function AccaBody({
   oddsFormat,
   onAddPick,
   onRemovePick,
+  onNudge,
+  nudgingUserId,
   readOnly,
 }) {
   const betByUser = {};
@@ -109,6 +111,21 @@ export default function AccaBody({
                     </button>
                   ) : (
                     resultMark(bet.result)
+                  )
+                ) : canPick && !isSelf && acca?.locks_at ? (
+                  // A deadline exists (locks_at = earliest picked kickoff), so
+                  // laggards can be nudged — once each, then the button goes.
+                  (acca.nudged_user_ids || []).includes(m.user_id) ? (
+                    <span className="pick-waiting">Nudged</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="pick-nudge"
+                      onClick={() => onNudge(m)}
+                      disabled={nudgingUserId === m.user_id}
+                    >
+                      {nudgingUserId === m.user_id ? "Nudging…" : "Nudge"}
+                    </button>
                   )
                 ) : (
                   <span className="pick-waiting">

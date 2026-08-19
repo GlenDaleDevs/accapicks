@@ -19,7 +19,7 @@ from .fixturelist import refresh_fixture_list
 from .standings import refresh_standings
 from .autoweek import auto_create_weeks
 from . import models
-from .routers import auth, groups, groupstats, accas, bets, odds, affiliate, notifications
+from .routers import auth, groups, groupstats, accas, bets, odds, affiliate, notifications, nudges
 from .limiter import limiter
 from .logging_config import setup_logging
 
@@ -130,6 +130,7 @@ app.include_router(groups.router, prefix="/api", tags=["groups"])
 app.include_router(groupstats.router, prefix="/api", tags=["groups"])
 app.include_router(accas.router, prefix="/api", tags=["accas"])
 app.include_router(bets.router, prefix="/api", tags=["bets"])
+app.include_router(nudges.router, prefix="/api", tags=["nudges"])
 app.include_router(odds.router, prefix="/api", tags=["odds"])
 app.include_router(affiliate.router, prefix="/api", tags=["affiliate"])
 app.include_router(notifications.router, prefix="/api", tags=["notifications"])

@@ -112,6 +112,23 @@ export default function AccaTab({ user, oddsFormat }) {
     navigate(groupFixtures(groupId), { state: { week: dates[0] } });
   };
 
+  const [nudgingUserId, setNudgingUserId] = useState(null);
+  const handleNudge = async (member) => {
+    if (nudgingUserId) return;
+    setNudgingUserId(member.user_id);
+    try {
+      await api.nudgeMember(detail.id, member.user_id);
+      showToast(`Nudge sent to ${member.username}`, "success");
+      await loadDetail(detail.id, false);
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Failed to send nudge", "error");
+      // A 409 means someone else beat them to it — refresh so the button goes
+      if (err.response?.status === 409) await loadDetail(detail.id, false);
+    } finally {
+      setNudgingUserId(null);
+    }
+  };
+
   const handleRemove = async (betId) => {
     if (!window.confirm("Remove this pick?")) return;
     try {
@@ -260,6 +277,8 @@ export default function AccaTab({ user, oddsFormat }) {
           oddsFormat={oddsFormat}
           onAddPick={goPick}
           onRemovePick={handleRemove}
+          onNudge={handleNudge}
+          nudgingUserId={nudgingUserId}
           readOnly={readOnly}
         />
       ) : (

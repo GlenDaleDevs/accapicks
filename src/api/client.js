@@ -189,6 +189,11 @@ export const createBet = async (accaId, description, odds, structuredData = {}) 
   return response.data;
 };
 
+export const nudgeMember = async (accaId, targetUserId) => {
+  const response = await axios.post(`${API_URL}/accas/${accaId}/nudge/${targetUserId}`);
+  return response.data;
+};
+
 export const deleteBet = async (betId) => {
   const response = await axios.delete(`${API_URL}/bets/${betId}`);
   return response.data;

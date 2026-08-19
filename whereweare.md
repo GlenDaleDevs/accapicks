@@ -34,6 +34,10 @@ Late development — deployed to production on Railway, security hardening compl
 - **Service worker actually updates now (2026-08-19)** — see the fix below; this was why nothing shipped
   since 15 Aug had been seen.
 - **Dependency audits clean (2026-08-19)** — npm and pip-audit both pass with nothing ignored.
+- **Nudge (2026-08-19 pm)** — a Nudge button on unpicked members' rows once a deadline exists
+  (`locks_at` = earliest picked kickoff); sends that member a push with the UK-time deadline, then the
+  button becomes "Nudged". Once per target per acca, enforced by a unique constraint (`nudges` table,
+  `add_nudges` migration) — refreshing or racing another member gets a 409, so no notification spam.
 - **Cleanup pass (2026-08-19 pm)** — Group Settings rebuilt as a header-menu modal (rename, season
   start date, remove member — the admin surface lost with the More tab); dead code swept (routes.py
   tombstone, never-called /users/me/stats, orphaned getMatches); groups.py split into groups +

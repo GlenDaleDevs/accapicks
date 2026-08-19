@@ -229,6 +229,10 @@ def get_acca(
     week_numbers, _ = season.week_numbers_for_group(db, acca.group_id)
     acca_dict = _acca_to_dict(acca, week_numbers.get(acca.id))
     acca_dict["bets"] = bet_responses
+    acca_dict["nudged_user_ids"] = [
+        n.target_user_id
+        for n in db.query(models.Nudge).filter(models.Nudge.acca_id == acca_id).all()
+    ]
 
     return acca_dict
 
