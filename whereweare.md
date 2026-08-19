@@ -70,6 +70,11 @@ Late development — deployed to production on Railway, security hardening compl
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
 ### Open threads (2026-08-19) — read these first if picking up elsewhere
+- [ ] **BookmakerComparison is orphaned — the feature is silently gone from the UI.** Its only caller
+      (`AccaDetail`) was deleted in the 15 Aug overhaul (`f2452c0`), exactly the learned-rules
+      pattern. `App.jsx` still fetches `getBookmakerLinks` into state nothing renders. The affiliate
+      plan depends on this surface — decide where it lives in the 3-tab layout (probably the settled
+      slip) and wire it back, or delete component + fetch + endpoint together
 - [ ] **Legacy `GET /odds/matches/filtered` is unreachable from the new UI but kept alive** — installed
       PWAs run the old shell until their service worker cycles; remove the endpoint once prod has been
       on the new build for a while
@@ -126,7 +131,11 @@ Late development — deployed to production on Railway, security hardening compl
       contained in `main`) has been deleted
 
 ### Quick wins (1 session each)
-- [ ] Install `eslint-plugin-react` so JSX-only identifiers stop reading as unused (13 pre-existing lint errors)
+- [x] ~~Install `eslint-plugin-react`~~ — done 2026-08-19 (pm). Lint is at **0 errors** (2 deliberate
+      exhaustive-deps warnings left in App.jsx — the SW-registration and invite-join effects need a
+      careful look, not a dep-array sweep). npm audit is clean again too: new advisories had landed
+      against babel/brace-expansion/ajv/fast-uri/vite since the morning's pass; all fixed
+      non-breaking, vite 7.3.1 → 7.3.6
 - [ ] Join-a-group flow: the invite link already works end-to-end; what's missing is invite context on the
       auth screen ("You've been invited to Mr Worldwide"). Deferred from the overhaul plan §7
 - [ ] Apply new colour palette to CSS variables (palette chosen, waiting for logo/assets)

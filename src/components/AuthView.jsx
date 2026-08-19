@@ -52,7 +52,7 @@ export default function AuthView({
         if (response.username === username) {
           setUsernameStatus(response.available ? "available" : "taken");
         }
-      } catch (err) {
+      } catch {
         setUsernameStatus(null);
       }
     }, 300);

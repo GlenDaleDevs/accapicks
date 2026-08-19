@@ -94,7 +94,7 @@ export const getMe = async () => {
 export const logout = async () => {
   try {
     await axios.post(`${API_URL}/auth/logout`);
-  } catch (err) {
+  } catch {
     // Fire-and-forget: don't block logout if API call fails
   }
 };
@@ -229,7 +229,7 @@ export const trackBookmakerClick = async (bookmakerKey, accaId, source) => {
       acca_id: accaId,
       source,
     });
-  } catch (err) {
+  } catch {
     // Fire-and-forget: catch silently so navigation is never blocked
   }
 };

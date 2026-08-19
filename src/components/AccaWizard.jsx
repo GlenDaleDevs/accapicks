@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { LEAGUE_OPTIONS, LEAGUE_NAME_MAP } from "../utils/constants";
-import { formatDisplayDate } from "../utils/formatters";
 import Calendar from "./Calendar";
 
 export default function AccaWizard({ onCreated, onCancel, error }) {
