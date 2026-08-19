@@ -9,7 +9,20 @@ from . import models
 logger = logging.getLogger(__name__)
 
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
-VAPID_CLAIMS = {"sub": "mailto:notifications@accapicks.com"}
+VAPID_SUBJECT = "mailto:notifications@accapicks.com"
+
+
+def _vapid_claims():
+    """A fresh dict per send.
+
+    pywebpush fills in `aud` (from the subscription's push service) and `exp`
+    by writing into the dict it is given — "passed structures are mutable in
+    python", as its own comment puts it. Sharing one module-level dict meant
+    the first push after a restart pinned `aud` to whichever push service it
+    happened to reach, and every later push was signed for that same audience.
+    Anyone on a different service then got a JWT the service rejects.
+    """
+    return {"sub": VAPID_SUBJECT}
 
 if not VAPID_PRIVATE_KEY:
     logger.warning("VAPID_PRIVATE_KEY not configured — push notifications disabled")
@@ -31,7 +44,7 @@ def send_push(db: Session, user_id: int, payload: dict):
                 subscription_info=subscription_info,
                 data=json.dumps(payload),
                 vapid_private_key=VAPID_PRIVATE_KEY,
-                vapid_claims=VAPID_CLAIMS,
+                vapid_claims=_vapid_claims(),
             )
             sub.last_used_at = datetime.now(timezone.utc)
         except WebPushException as e:
