@@ -34,6 +34,13 @@ Late development — deployed to production on Railway, security hardening compl
 - **Service worker actually updates now (2026-08-19)** — see the fix below; this was why nothing shipped
   since 15 Aug had been seen.
 - **Dependency audits clean (2026-08-19)** — npm and pip-audit both pass with nothing ignored.
+- **Cleanup pass (2026-08-19 pm)** — Group Settings rebuilt as a header-menu modal (rename, season
+  start date, remove member — the admin surface lost with the More tab); dead code swept (routes.py
+  tombstone, never-called /users/me/stats, orphaned getMatches); groups.py split into groups +
+  groupstats routers and the bookmaker comparison moved out of odds_api into bookmakers.py behind
+  two cache accessors; App.jsx split into useAuthSession/useGroups/usePwaUpdate hooks (327 → 128
+  lines). Lint: **0 errors, 0 warnings**. AuthView deliberately not split — one mode-machine, five
+  forms sharing state; splitting adds prop-drilling, not clarity.
 - **Fixtures tab is the one picking surface (2026-08-19 pm)** — the modal picker is gone; "Add your
   pick" navigates to the Fixtures tab, which now joins cached bookmaker odds onto the current week's
   rows (one division per request, `?league=`, nothing fetched for past weeks or empty divisions) and
