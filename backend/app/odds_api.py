@@ -278,7 +278,9 @@ def fresh_cached_odds():
     the cache stays private to the fetch layer.
     """
     now = time.time()
-    return [(sport, entry["data"]) for sport, entry in _cache.items()
+    # Snapshot first: background refreshes insert into _cache from other
+    # threads, and iterating a dict while it grows raises RuntimeError.
+    return [(sport, entry["data"]) for sport, entry in list(_cache.items())
             if now - entry["timestamp"] < CACHE_TTL_SECONDS]
 
 

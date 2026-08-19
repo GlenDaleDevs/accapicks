@@ -88,7 +88,9 @@ def get_standings(request: Request, season: str = "current", user_id: int = Depe
 
 
 @router.get("/odds/fixtures")
-@limiter.limit("30/minute")
+# Served from the in-memory cache, and the week stepper plus four league
+# chips legitimately produce a request per tap — 30/min bricked browsers.
+@limiter.limit("60/minute")
 def get_fixture_list(request: Request, week: str = "", league: str = "", user_id: int = Depends(get_current_user)):
     """One week of fixtures and results across the four English divisions.
 
