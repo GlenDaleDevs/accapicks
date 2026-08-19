@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MotionConfig } from "framer-motion";
 import PageTransition from "./components/PageTransition";
 import { useRegisterSW } from "virtual:pwa-register/react";
@@ -14,6 +14,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import CookieConsent from "./components/CookieConsent";
 import ToastContainer from "./components/ToastContainer";
 import AppRoutes from "./AppRoutes";
+import ComplianceFooter from "./components/ComplianceFooter";
 import { AppContext } from "./context/AppContext";
 import { clearLastGroupId } from "./utils/routes";
 import { showToast } from "./utils/toast";
@@ -310,11 +311,7 @@ function App() {
                       error={error}
                       pendingVerificationEmail={pendingVerificationEmail}
                     />
-                    <footer className="responsible-gambling-footer">
-                      18+ only | Please gamble responsibly | <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>
-                      <br />
-                      <Link to="/terms">Terms of Service</Link> | <Link to="/privacy">Privacy Policy</Link>
-                    </footer>
+                    <ComplianceFooter />
                   </div>
                 )
               }

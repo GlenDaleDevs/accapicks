@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api/client";
+import ComplianceFooter from "./ComplianceFooter";
 import { showToast } from "../utils/toast";
 import { groupAcca, readLastGroupId } from "../utils/routes";
 import { isPushSupported, getPushPermission, subscribeToPush, unsubscribeFromPush, isSubscribedToPush } from "../utils/pushNotifications";
@@ -295,6 +296,8 @@ export default function UserSettings({ user, oddsFormat, setOddsFormat, onLogout
       <p className="settings-version">
         Build: {new Date(__BUILD_TIME__).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
       </p>
+
+      <ComplianceFooter />
     </div>
   );
 }

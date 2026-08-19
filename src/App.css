@@ -2236,6 +2236,20 @@
   isolation: isolate;
   min-height: 100vh;
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sit the compliance copy at the foot of the page, where the ::after gradient
+   is at its darkest — mid-page it lands on the bright part of the photo and
+   the muted text is barely readable. */
+.groups-page .responsible-gambling-footer {
+  margin-top: auto;
+}
+
+/* A flex item stretches to full width, which centres the button's label. */
+.groups-page > .settings-back-link {
+  align-self: flex-start;
 }
 
 .groups-page::before {
