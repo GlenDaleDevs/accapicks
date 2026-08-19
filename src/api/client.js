@@ -189,11 +189,6 @@ export const deleteBet = async (betId) => {
 };
 
 // Odds
-export const getMatches = async (sport = "soccer_epl") => {
-  const response = await axios.get(`${API_URL}/odds/matches?sport=${sport}`);
-  return response.data;
-};
-
 export const getFixtureList = async (week = "", league = "") => {
   const params = {};
   if (week) params.week = week;
