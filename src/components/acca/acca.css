@@ -464,3 +464,14 @@
   color: var(--text-secondary);
   font-size: 14px;
 }
+
+/* ---- Bookmaker comparison at the foot of the slip ---- */
+
+.compare-bookmakers {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.compare-bookmakers .bookmaker-row {
+  text-align: left;
+}
