@@ -5,7 +5,7 @@ import * as api from "../api/client";
 
 const DEFAULT_VISIBLE = 5;
 
-export default function BookmakerComparison({ data, oddsFormat = "decimal", bookmakerLinks = {}, accaId, bets = [] }) {
+export default function BookmakerComparison({ data, oddsFormat = "decimal", bookmakerLinks = {}, accaId }) {
   const [showAll, setShowAll] = useState(false);
 
   if (!data || typeof data !== "object") return null;

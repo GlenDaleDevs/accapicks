@@ -16,14 +16,13 @@ function loadGoogleAnalytics() {
 }
 
 function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+  // Lazy init from storage — a synchronous setState inside the effect would
+  // just re-render the first frame for the same answer.
+  const [visible, setVisible] = useState(() => !localStorage.getItem("cookieConsent"));
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookieConsent");
-    if (consent === "accepted") {
+    if (localStorage.getItem("cookieConsent") === "accepted") {
       loadGoogleAnalytics();
-    } else if (!consent) {
-      setVisible(true);
     }
   }, []);
 
