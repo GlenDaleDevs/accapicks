@@ -28,10 +28,10 @@
   right: 0;
   height: var(--header-h);
   z-index: var(--z-chrome);
-  background-color: rgba(11, 50, 70, 0.92);
+  background-color: var(--bg-chrome);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(78, 235, 211, 0.14);
 }
 
 .global-header-inner {
@@ -202,10 +202,10 @@
   right: 0;
   z-index: var(--z-chrome);
   padding-bottom: var(--safe-bottom);
-  background-color: rgba(11, 50, 70, 0.94);
+  background-color: var(--bg-chrome);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(78, 235, 211, 0.14);
 }
 
 .tab-bar-inner {
@@ -236,6 +236,7 @@
 
 .tab-item-active {
   color: var(--accent-primary);
+  filter: drop-shadow(0 0 8px rgba(78, 235, 211, 0.45));
 }
 
 .tab-icon {

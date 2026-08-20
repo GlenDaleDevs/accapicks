@@ -30,6 +30,7 @@
   letter-spacing: 0.5px;
   height: 48px;
   border-radius: 10px;
+  box-shadow: var(--glow-accent);
 }
 .btn-primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #00e8bb, #33f0cc);

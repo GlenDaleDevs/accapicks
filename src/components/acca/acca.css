@@ -245,10 +245,10 @@
   gap: 16px;
   margin: 16px;
   padding: 14px 18px;
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-color-light);
+  background: linear-gradient(160deg, var(--bg-elevated), #14504e);
+  border: 1px solid rgba(78, 235, 211, 0.35);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), var(--glow-accent);
 }
 
 .returns-label {
