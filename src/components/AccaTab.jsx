@@ -9,6 +9,7 @@ import AccaBody from "./acca/AccaBody";
 import Modal from "./ui/Modal";
 import PreviousWeeks from "./acca/PreviousWeeks";
 import AccaWizard from "./AccaWizard";
+import InstallPrompt from "./InstallPrompt";
 import Skeleton from "./Skeleton";
 import "./acca/acca.css";
 
@@ -219,6 +220,8 @@ export default function AccaTab({ user, oddsFormat }) {
         <Modal open={showWizard} title="New week" onClose={() => setShowWizard(false)}>
           <AccaWizard onCreated={handleCreate} onCancel={() => setShowWizard(false)} />
         </Modal>
+
+        <InstallPrompt dismissible />
       </div>
     );
   }
@@ -303,6 +306,11 @@ export default function AccaTab({ user, oddsFormat }) {
       <Modal open={showWizard} title="New week" onClose={() => setShowWizard(false)}>
         <AccaWizard onCreated={handleCreate} onCancel={() => setShowWizard(false)} />
       </Modal>
+
+      {/* First screen after signup — the login page's install nudge never
+          reached people who arrived via an invite link. Dismissable because
+          iOS gives no installed-signal to hide it automatically. */}
+      <InstallPrompt dismissible />
     </div>
   );
 }

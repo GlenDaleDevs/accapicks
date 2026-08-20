@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./Landing.css"; // owns the .install-prompt styles
 
 function detectPlatform() {
   const ua = navigator.userAgent || "";
@@ -27,10 +28,21 @@ const INSTRUCTIONS = {
   ],
 };
 
-export default function InstallPrompt() {
+const DISMISS_KEY = "installPromptDismissed";
+
+// Whether we're already running as the installed app.
+function isStandalone() {
+  return (
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
+
+export default function InstallPrompt({ dismissible = false }) {
   // index.html captures the event for us if it fired before React mounted
   const [deferredPrompt, setDeferredPrompt] = useState(() => window.__installPromptEvent);
   const [showHelp, setShowHelp] = useState(false);
+  const [dismissed, setDismissed] = useState(() => !!localStorage.getItem(DISMISS_KEY));
   const platform = detectPlatform();
 
   useEffect(() => {
@@ -39,8 +51,6 @@ export default function InstallPrompt() {
       window.__installPromptEvent = e;
       setDeferredPrompt(e);
     };
-    // TODO: hide the button again once installed — off for now so it stays
-    // visible for testing on devices that already have the app
     const onInstalled = () => {
       window.__installPromptEvent = null;
       setDeferredPrompt(null);
@@ -54,6 +64,19 @@ export default function InstallPrompt() {
       window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
+
+  // Installed-state detection is only partial: inside the app it's certain;
+  // on Android/desktop Chrome the install event only fires when NOT installed,
+  // so no event means nothing to offer; iOS gives no signal at all from
+  // Safari — which is what the dismiss cross is for.
+  if (isStandalone()) return null;
+  if (platform !== "ios" && !deferredPrompt) return null;
+  if (dismissible && dismissed) return null;
+
+  const dismiss = () => {
+    localStorage.setItem(DISMISS_KEY, "1");
+    setDismissed(true);
+  };
 
   const handleClick = async () => {
     if (!deferredPrompt) {
@@ -74,6 +97,16 @@ export default function InstallPrompt() {
 
   return (
     <div className="install-prompt">
+      {dismissible && (
+        <button
+          type="button"
+          className="install-prompt-dismiss"
+          aria-label="Dismiss install suggestion"
+          onClick={dismiss}
+        >
+          ×
+        </button>
+      )}
       <button type="button" className="install-prompt-btn" onClick={handleClick}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 3v12" />
