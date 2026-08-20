@@ -2,7 +2,7 @@ export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/ap
 
 // Illustrative stake for the returns line. Display-only — never stored, never
 // per-user, and no money is handled anywhere in the app.
-export const NOTIONAL_STAKE = 10;
+export const NOTIONAL_STAKE = 5;
 
 export const LEAGUE_OPTIONS = [
   { key: "soccer_epl", name: "Premier League" },
