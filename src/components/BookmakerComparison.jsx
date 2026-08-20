@@ -21,7 +21,11 @@ export default function BookmakerComparison({ data, oddsFormat = "decimal", book
 
   const renderRow = ([bookmaker, d]) => {
     const isBest = d.total_odds === bestOdds;
-    const url = bookmakerLinks[bookmaker]?.url;
+    const rawUrl = bookmakerLinks[bookmaker]?.url;
+    // Only https links become clickable — a javascript:/data: URL in the
+    // affiliate config would otherwise render as a script sink (React only
+    // warns, doesn't block). Anything else falls through to the plain row.
+    const url = typeof rawUrl === "string" && rawUrl.startsWith("https://") ? rawUrl : null;
     const displayName = bookmakerLinks[bookmaker]?.display_name || BOOKMAKER_DISPLAY_NAMES[bookmaker] || bookmaker;
 
     const content = (

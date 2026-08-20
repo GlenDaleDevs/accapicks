@@ -102,13 +102,18 @@ export default function useAuthSession() {
   };
 
   const handleLogout = async () => {
-    await api.logout();
-    api.setAuthToken(null);
-    setUser(null);
-    setIsLoggedIn(false);
-    // Otherwise the next user on this device gets redirected into this user's group
-    clearLastGroupId();
-    window.history.replaceState({}, "", "/");
+    // Try the backend logout (blacklists the token) but never let a failed
+    // request strand a live session on the device — clear locally regardless.
+    try {
+      await api.logout();
+    } finally {
+      api.setAuthToken(null);
+      setUser(null);
+      setIsLoggedIn(false);
+      // Otherwise the next user on this device gets redirected into this user's group
+      clearLastGroupId();
+      window.history.replaceState({}, "", "/");
+    }
   };
 
   return {
