@@ -81,6 +81,17 @@ Late development — deployed to production on Railway, security hardening compl
       fixture has passed with no picks (`autoweek.cleanup_lapsed_weeks`).
 
 ### Open threads (2026-08-19) — read these first if picking up elsewhere
+- [ ] **National League (Carlisle mates) — decision pending one experiment.** The-Odds-API stops at
+      League Two (confirmed in their docs), so NL needs another source. Results/form already flow in
+      free via football-data.co.uk's `EC` file (ladder-only today, `predictionmodel/config.py`). Two
+      odds candidates: (a) football-data.co.uk `fixtures.csv` — free, same team vocabulary, but a
+      rolling short-horizon file (Thu download held only Friday's 3 games); **check Saturday morning
+      whether EC rows appear** when the NL plays. (b) API-Football — user has an account, NL current
+      season confirmed available (free tier is current-season-only, which is all we need); new
+      integration + new name reconciliation + non-commercial terms to weigh. Fallbacks that always
+      work: EC stats-only in the Fixtures/Standings tabs, and the FA Cup via The-Odds-API for
+      occasional live Carlisle odds. Settlement for any NL route rides the EC results file with the
+      existing normalization. Decision after Saturday's download
 - [x] ~~BookmakerComparison is orphaned~~ — rehomed 2026-08-19 (pm) at the foot of the pick slip
       (`acca/CompareBookmakers.jsx`): button-triggered as before (a backend cache miss can cost
       credits), open accas with picks only, links/click-tracking intact
