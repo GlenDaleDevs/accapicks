@@ -10,6 +10,7 @@ import Modal from "./ui/Modal";
 import PreviousWeeks from "./acca/PreviousWeeks";
 import AccaWizard from "./AccaWizard";
 import InstallPrompt from "./InstallPrompt";
+import PushPrompt from "./PushPrompt";
 import Skeleton from "./Skeleton";
 import "./acca/acca.css";
 
@@ -192,6 +193,7 @@ export default function AccaTab({ user, oddsFormat }) {
     const everHadOne = accas.length > 0;
     return (
       <div className="acca-tab">
+        <PushPrompt />
         <div className="placeholder-card">
           <h3 className="placeholder-title">
             {everHadOne ? "Next week isn't open yet" : "No weeks yet"}
@@ -239,6 +241,7 @@ export default function AccaTab({ user, oddsFormat }) {
   const canDelete = detail?.status === "open" && (isGroupAdmin || detail?.created_by === user?.id);
   return (
     <div className="acca-tab">
+      <PushPrompt />
       <WeekStrip
         acca={detail || selected}
         state={state}

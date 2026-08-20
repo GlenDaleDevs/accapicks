@@ -494,3 +494,57 @@
   opacity: 0.6;
   cursor: default;
 }
+
+/* ---- Push-enable nudge (top of Acca tab, dismissable) ---- */
+
+.push-prompt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(78, 235, 211, 0.35);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, var(--bg-elevated), #14504e);
+  box-shadow: var(--glow-accent);
+}
+
+.push-prompt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.push-prompt-title {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.push-prompt-sub {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.push-prompt-btn {
+  flex-shrink: 0;
+  width: auto;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.push-prompt-dismiss {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  padding: 2px 6px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
