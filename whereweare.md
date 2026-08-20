@@ -98,8 +98,8 @@ Late development — deployed to production on Railway, security hardening compl
 - [ ] **Legacy `GET /odds/matches/filtered` is unreachable from the new UI but kept alive** — installed
       PWAs run the old shell until their service worker cycles; remove the endpoint once prod has been
       on the new build for a while
-- [ ] **Check `ODDS_CACHE_TTL` on Railway** — the 4h default only applies when the env var is unset;
-      if Railway sets 7200 explicitly, it wins
+- [x] ~~Check `ODDS_CACHE_TTL` on Railway~~ — confirmed clear 2026-08-20, 4h default applies; deploys
+      green. Credit baseline before opening weekend: 43/500
 - [x] ~~`locks_at_timestamptz` migration runs on next deploy~~ — ran in prod 2026-08-19 (pm): the
       Dockerfile gates uvicorn on `alembic upgrade head`, and every deploy after the commit came up
       (weeks recreated, pushes delivered), so the chain including it completed. Same for `add_nudges`
