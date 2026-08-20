@@ -417,3 +417,26 @@
 .install-help li {
   margin-bottom: 8px;
 }
+
+/* Dismiss cross (only rendered where the prompt is dismissible) */
+.install-prompt {
+  position: relative;
+}
+
+.install-prompt-dismiss {
+  position: absolute;
+  top: -2px;
+  right: 6px;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Inside the app shell the prompt sits under the acca content */
+.acca-tab .install-prompt {
+  margin-top: 24px;
+}
