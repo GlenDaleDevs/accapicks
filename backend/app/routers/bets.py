@@ -2,7 +2,7 @@ from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from .. import models, schemas
+from .. import models, schemas, odds_api
 from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
@@ -114,24 +114,34 @@ def create_bet(
             ~models.Bet.user_id.in_(member_ids)
         ).delete(synchronize_session=False)
 
-    # Check if same pick already exists from a CURRENT MEMBER
-    duplicate_pick = db.query(models.Bet).filter(
-        models.Bet.acca_id == bet.acca_id,
-        models.Bet.description == bet.description,
-        models.Bet.user_id.in_(member_ids)
-    ).first()
+    # Check if same pick already exists from a CURRENT MEMBER.
+    # Dedup decision: for a market pick (event_id present), the description
+    # is now server-derived from event_id+pick_type (see verify_pick below)
+    # and isn't known yet at this point in the request, so checking it against
+    # the client's (untrusted) description would be both wrong and pointless.
+    # It's also unnecessary — the fixture-level exclusion above already blocks
+    # ANY other current member's bet on the same event_id regardless of
+    # pick_type, which is a strict superset of an event_id+pick_type dedup.
+    # So description-based dedup only runs for manual/legacy picks that have
+    # no event_id, where the client description is still the only key we have.
+    if not bet.event_id:
+        duplicate_pick = db.query(models.Bet).filter(
+            models.Bet.acca_id == bet.acca_id,
+            models.Bet.description == bet.description,
+            models.Bet.user_id.in_(member_ids)
+        ).first()
 
-    if duplicate_pick:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This pick has already been taken by another member"
-        )
-    # Clean up orphaned bets with same description (from ex-members)
-    db.query(models.Bet).filter(
-        models.Bet.acca_id == bet.acca_id,
-        models.Bet.description == bet.description,
-        ~models.Bet.user_id.in_(member_ids)
-    ).delete(synchronize_session=False)
+        if duplicate_pick:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This pick has already been taken by another member"
+            )
+        # Clean up orphaned bets with same description (from ex-members)
+        db.query(models.Bet).filter(
+            models.Bet.acca_id == bet.acca_id,
+            models.Bet.description == bet.description,
+            ~models.Bet.user_id.in_(member_ids)
+        ).delete(synchronize_session=False)
 
     # Convert odds to string if it's not already
     odds_str = str(bet.odds)
@@ -161,14 +171,36 @@ def create_bet(
             detail="Cannot pick a match more than 14 days in the future"
         )
 
+    # Server-verify market picks. Never trust client-supplied odds, team
+    # columns or description for these — a forged odds value inflates
+    # best_odds_won on the leaderboard, and forged/flipped team columns can
+    # make settlement (settlement.py) score a losing pick as a win. This runs
+    # after all the cheap checks above so rejected/duplicate spam never
+    # reaches it. Runs *after* commence_time validation per the plan, since
+    # that's a free check that should short-circuit first.
+    description = bet.description
+    home_team = bet.home_team
+    away_team = bet.away_team
+    if bet.event_id and bet.pick_type and bet.sport_key:
+        verified = odds_api.verify_pick(bet.sport_key, bet.event_id, bet.pick_type)
+        if verified is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Odds no longer available for this match — reopen it from Fixtures"
+            )
+        odds_str = str(verified["odds"])
+        home_team = verified["home_team"]
+        away_team = verified["away_team"]
+        description = verified["description"]
+
     new_bet = models.Bet(
         acca_id=bet.acca_id,
         user_id=user_id,
-        description=bet.description,
+        description=description,
         odds=odds_str,
         event_id=bet.event_id,
-        home_team=bet.home_team,
-        away_team=bet.away_team,
+        home_team=home_team,
+        away_team=away_team,
         pick_type=bet.pick_type,
         sport_key=bet.sport_key,
         commence_time=parsed_commence_time,

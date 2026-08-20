@@ -290,3 +290,107 @@ def fresh_cached_btts(event_id):
     if entry and time.time() - entry["timestamp"] < BTTS_CACHE_TTL_SECONDS:
         return entry["data"]
     return None
+
+
+def verify_pick(sport_key, event_id, pick_type):
+    """Server-side source of truth for a bet's odds/teams/description.
+
+    Never trust client-supplied odds, team columns or description for a market
+    pick — a client can forge any of those independently to inflate its price
+    or flip home/away so settlement scores it as a win. This re-derives all of
+    them from the same cached market data the Fixtures tab rendered, keyed on
+    (sport_key, event_id, pick_type).
+
+    Returns {"odds": float, "home_team": str, "away_team": str,
+    "description": str, "totals_line": float | None} on success, or None if
+    the fixture/outcome can't be verified right now (cold cache, unpriced
+    outcome, BTTS not cached). Callers must treat None as "reject the bet",
+    never fall back to client data.
+    """
+    if pick_type in ("btts_yes", "btts_no"):
+        # Cache-ONLY — get_btts_for_event fetches on a miss, which would cost
+        # 1 API credit per bet attempt (cost-DoS). The frontend only shows the
+        # BTTS chip after it has already warmed this cache via getBttsOdds.
+        bookmakers = fresh_cached_btts(event_id)
+        if not bookmakers:
+            return None
+
+        matches = get_football_matches(sport_key)
+        match = next((m for m in matches if m.get('id') == event_id), None)
+        if not match:
+            return None
+        formatted = format_match_for_display(match)
+        if not formatted:
+            return None
+
+        btts_yes = None
+        btts_no = None
+        for bookmaker in bookmakers:
+            for market in bookmaker.get("markets", []):
+                if market.get("key") == "btts":
+                    outcomes = market.get("outcomes", [])
+                    if btts_yes is None:
+                        btts_yes = next((o["price"] for o in outcomes if o["name"] == "Yes"), None)
+                    if btts_no is None:
+                        btts_no = next((o["price"] for o in outcomes if o["name"] == "No"), None)
+
+        price = btts_yes if pick_type == "btts_yes" else btts_no
+        if price is None:
+            return None
+
+        home_team = formatted['home_team']
+        away_team = formatted['away_team']
+        if pick_type == "btts_yes":
+            description = f"BTTS Yes - {home_team} vs {away_team}"
+        else:
+            description = f"BTTS No - {home_team} vs {away_team}"
+
+        return {
+            "odds": float(price),
+            "home_team": home_team,
+            "away_team": away_team,
+            "description": description,
+            "totals_line": None,
+        }
+
+    if pick_type in ("home", "away", "draw", "over_2_5", "under_2_5"):
+        matches = get_football_matches(sport_key)
+        match = next((m for m in matches if m.get('id') == event_id), None)
+        if not match:
+            return None
+        formatted = format_match_for_display(match)
+        if not formatted:
+            return None
+
+        home_team = formatted['home_team']
+        away_team = formatted['away_team']
+        totals_line = formatted['totals_line']
+
+        if pick_type == "home":
+            price = formatted['home_odds']
+            description = f"{home_team} to win"
+        elif pick_type == "away":
+            price = formatted['away_odds']
+            description = f"{away_team} to win"
+        elif pick_type == "draw":
+            price = formatted['draw_odds']
+            description = f"Draw - {home_team} vs {away_team}"
+        elif pick_type == "over_2_5":
+            price = formatted['over_2_5']
+            description = f"Over {totals_line} Goals - {home_team} vs {away_team}"
+        else:  # under_2_5
+            price = formatted['under_2_5']
+            description = f"Under {totals_line} Goals - {home_team} vs {away_team}"
+
+        if price is None:
+            return None
+
+        return {
+            "odds": float(price),
+            "home_team": home_team,
+            "away_team": away_team,
+            "description": description,
+            "totals_line": totals_line,
+        }
+
+    return None
