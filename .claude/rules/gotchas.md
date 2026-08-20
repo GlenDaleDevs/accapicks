@@ -55,4 +55,7 @@ Backend-dev agent committed but didn't push. Always verify with `git log origin/
 Adding `background-color` to `body` causes `position: fixed; z-index: -2` pseudo-elements to paint behind it. Framer Motion opacity transitions mask the issue temporarily (opacity < 1 creates a stacking context). Fix: add `isolation: isolate` to the pseudo-element's parent container.
 
 ## Elements outside page containers get hidden by fixed backgrounds
-The `.groups-page` and `.group-detail-page` use `position: fixed; inset: 0` pseudo-elements for backgrounds. Any sibling element (e.g. footer) needs `position: relative; z-index: 1` or it gets covered.
+Historical: `.groups-page`/`.group-detail-page` used `position: fixed; inset: 0` pseudo-elements for
+photo backgrounds (removed 2026-08-20 — photo lives on the landing page only now). If a fixed
+full-bleed background comes back anywhere, sibling elements (e.g. footer) need
+`position: relative; z-index: 1` or they get covered.

@@ -1,8 +1,4 @@
-/* Persistent app chrome: global header + bottom tab bar.
-   Both render OUTSIDE .groups-page / .group-detail-page, whose fixed
-   ::before/::after backgrounds sit at z-index -2/-1. Per .claude/rules/gotchas.md
-   anything outside those wrappers needs its own position + z-index or it gets
-   painted over. */
+/* Persistent app chrome: global header + bottom tab bar. */
 
 :root {
   --header-h: 52px;
@@ -186,10 +182,9 @@
   flex: 1 0 auto;
 }
 
-/* Page wrappers set min-height: 100dvh for their full-bleed backgrounds.
-   Inside the shell that overshoots by the height of the chrome. */
-.app-shell-main .groups-page,
-.app-shell-main .group-detail-page {
+/* The page wrapper sets min-height: 100dvh; inside the shell that
+   overshoots by the height of the chrome. */
+.app-shell-main .groups-page {
   min-height: calc(100dvh - var(--header-h) - var(--tabbar-h) - var(--safe-bottom));
 }
 
@@ -444,8 +439,6 @@
   border-top: 1px solid var(--border-color);
 }
 
-/* The compliance footer sits outside .groups-page / .group-detail-page, whose
-   fixed backgrounds would otherwise paint over it. */
 .app-shell-main .responsible-gambling-footer {
   position: relative;
   z-index: 1;
