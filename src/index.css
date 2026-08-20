@@ -4,11 +4,15 @@
    ============================================ */
 
 :root {
-  /* Background shades (Deep Space Blue #0B3246) */
-  --bg-primary: #0B3246;
-  --bg-surface: #103D56;
-  --bg-surface-hover: #164761;
-  --bg-elevated: #1D526D;
+  /* Background shades (Deep Space Blue). The scale is deliberately wider
+     than it looks: canvas sits darker and elevated sits lighter, so cards
+     and chrome separate instead of melting into one teal band. */
+  --bg-primary: #082635;
+  --bg-surface: #0F3C55;
+  --bg-surface-hover: #164A66;
+  --bg-elevated: #1E5877;
+  /* App chrome (header + tab bar): darker than everything it floats over */
+  --bg-chrome: rgba(4, 20, 30, 0.92);
 
   /* Accent colours */
   --accent-primary: #4EEBD3;
@@ -29,8 +33,10 @@
   --color-info: #4EEBD3;
 
   /* Borders (derived from DSB) */
-  --border-color: #153E53;
-  --border-color-light: #1D5068;
+  --border-color: #123648;
+  --border-color-light: #245B78;
+  /* Soft accent glow for the elements that should pop */
+  --glow-accent: 0 4px 18px rgba(78, 235, 211, 0.18);
 
   /* Misc */
   --radius-sm: 4px;
