@@ -75,7 +75,10 @@ export default function Leaderboard({ leaderboard, loading, groupId, accaStats, 
             <div className="league-col league-col-pos">#</div>
             {hasMovement && <div className="league-col league-col-move" aria-label="Movement" />}
             <div className="league-col league-col-name">Name</div>
-            <div className="league-col league-col-record" title="Picks won–lost">Picks</div>
+            <div className="league-col league-col-record" title="Picks won–lost">
+              Picks
+              <span className="league-col-sub">W–L</span>
+            </div>
             <div className="league-col league-col-winrate">Win %</div>
           </div>
 
