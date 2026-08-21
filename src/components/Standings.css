@@ -68,16 +68,11 @@
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-decoration: underline;
-  text-decoration-color: var(--text-primary);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
+  /* Solid line under the full name (border, not text-decoration, so it
+     doesn't skip under descenders or hug the glyphs). */
+  border-bottom: 2px solid var(--text-primary);
+  padding-bottom: 1px;
   cursor: pointer;
-}
-
-.standings-team-tap:hover,
-.standings-team-tap:focus-visible {
-  text-decoration-thickness: 3px;
 }
 
 .standings-strong {
