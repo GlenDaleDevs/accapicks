@@ -237,9 +237,9 @@ def create_bet(
             {
                 "title": "First pick is in!" if is_first_pick else "New Pick Added",
                 "body": (
-                    f"{username} made the first pick for {acca.name} — get yours in"
+                    f"{username} kicked off {acca.name}: {new_bet.description} — get yours in"
                     if is_first_pick
-                    else f"{username} added a pick to {acca.name}"
+                    else f"{username} picked {new_bet.description} in {acca.name}"
                 ),
                 "tag": f"bet-{acca.id}",
                 "url": f"/groups/{acca.group_id}/accas/{acca.id}",
