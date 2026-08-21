@@ -222,30 +222,37 @@ def create_bet(
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create bet")
 
-    # Send push notification to group members. The first pick of the week is
-    # the "it's started" moment, so it gets its own wording.
+    # Notify the rest of the group of the pick. The message is per-recipient:
+    # anyone who hasn't picked yet gets a nudge to get theirs in, the rest just
+    # get the news. Built in a loop rather than one group payload because the
+    # body differs by whether that member has already picked.
     try:
-        from ..push import send_push_to_group
+        from ..push import send_push
         user_obj = db.query(models.User).filter(models.User.id == user_id).first()
         username = user_obj.username if user_obj else "Someone"
-        is_first_pick = (
-            db.query(models.Bet).filter(models.Bet.acca_id == acca.id).count() == 1
-        )
-        send_push_to_group(
-            db,
-            acca.group_id,
-            {
-                "title": "First pick is in!" if is_first_pick else "New Pick Added",
-                "body": (
-                    f"{username} kicked off {acca.name}: {new_bet.description} — get yours in"
-                    if is_first_pick
-                    else f"{username} picked {new_bet.description} in {acca.name}"
-                ),
+
+        members = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == acca.group_id
+        ).all()
+        picked_ids = {
+            b.user_id for b in db.query(models.Bet.user_id).filter(
+                models.Bet.acca_id == acca.id
+            ).all()
+        }
+
+        headline = f"{username} picked {new_bet.description} in your group acca"
+        for member in members:
+            if member.user_id == user_id:
+                continue
+            body = headline if member.user_id in picked_ids else (
+                f"{headline}. Get your pick in now before the deadline"
+            )
+            send_push(db, member.user_id, {
+                "title": "New pick in your acca",
+                "body": body,
                 "tag": f"bet-{acca.id}",
                 "url": f"/groups/{acca.group_id}/accas/{acca.id}",
-            },
-            exclude_user_id=user_id,
-        )
+            })
     except Exception:
         pass  # Push is best-effort, don't fail the bet creation
 
