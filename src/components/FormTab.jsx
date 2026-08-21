@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import * as api from "../api/client";
 import Skeleton from "./Skeleton";
 import StandingsTable from "./StandingsTable";
+import { groupTeam } from "../utils/routes";
 import "./Leagues.css";
 import "./Standings.css";
 
@@ -18,6 +20,8 @@ const SPLITS = [
 ];
 
 export default function FormTab({ leagueCode, onLeagues }) {
+  const { groupId } = useParams();
+  const navigate = useNavigate();
   const [season, setSeason] = useState("current");
   const [split, setSplit] = useState("overall");
   // Stamped with the season it came back for, so switching season shows the
@@ -43,6 +47,9 @@ export default function FormTab({ leagueCode, onLeagues }) {
   // can't leave the view blank.
   const league = leagues.find((l) => l.code === leagueCode) || leagues[0];
   const rows = league?.[split] || [];
+  const onTeam = league?.code
+    ? (name) => navigate(groupTeam(groupId, league.code, name))
+    : undefined;
 
   return (
     <div className="standings">
@@ -78,7 +85,7 @@ export default function FormTab({ leagueCode, onLeagues }) {
         </div>
       ) : rows.length ? (
         <>
-          <StandingsTable rows={rows} />
+          <StandingsTable rows={rows} onTeam={onTeam} />
           <p className="standings-basis">
             {seasonLabel(data?.season)} {split === "overall" ? "table" : `${split} table`} —
             results from football-data.co.uk
