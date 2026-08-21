@@ -155,23 +155,16 @@
   white-space: nowrap;
 }
 
-/* Reads as a name, but the underline has to carry "this is a link" on its
-   own — on touch there's no hover, so the accent + thickness live at rest. */
+/* Reads as a name, but the line has to carry "this is a link" on its own —
+   on touch there's no hover. A solid border underline spans the whole name
+   (unlike text-decoration, which skips under descenders and hugs glyphs). */
 button.fixture-name-tap {
   border: none;
+  border-bottom: 2px solid var(--text-primary);
   background: none;
-  padding: 0;
+  padding: 0 0 1px;
   font: inherit;
-  text-decoration: underline;
-  text-decoration-color: var(--text-primary);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
   cursor: pointer;
-}
-
-button.fixture-name-tap:hover,
-button.fixture-name-tap:focus-visible {
-  text-decoration-thickness: 3px;
 }
 
 .fixture-form {
