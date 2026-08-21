@@ -151,6 +151,7 @@ Late development — deployed to production on Railway, security hardening compl
       contained in `main`) has been deleted
 
 ### Quick wins (1 session each)
+- [ ] **Pick-change notifications** — currently re-adding a pick re-notifies (and re-fires "First pick is in!" if you were the only picker, since is_first_pick recounts live at bets.py:231). Wanted: suppress an identical re-add, but on a *genuine* change send "mate changed their pick to X". Left as-is for now on purpose.
 - [x] ~~Install `eslint-plugin-react`~~ — done 2026-08-19 (pm). Lint is at **0 errors** (2 deliberate
       exhaustive-deps warnings left in App.jsx — the SW-registration and invite-join effects need a
       careful look, not a dep-array sweep). npm audit is clean again too: new advisories had landed
