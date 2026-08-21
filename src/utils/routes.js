@@ -6,6 +6,8 @@ export const groupFixtures = (groupId) => `/g/${groupId}/fixtures`;
 export const groupTable = (groupId) => `/g/${groupId}/table`;
 export const memberPicks = (groupId, userId) => `/g/${groupId}/members/${userId}`;
 export const accaDetail = (groupId, accaId) => `/g/${groupId}/accas/${accaId}`;
+export const groupTeam = (groupId, division, name) =>
+  `/g/${groupId}/team/${division}/${encodeURIComponent(name)}`;
 
 export const GROUPS = "/groups";
 export const SETTINGS = "/settings";

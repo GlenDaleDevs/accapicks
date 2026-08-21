@@ -8,6 +8,7 @@ from ..limiter import limiter
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 DIVISION_PATTERN = re.compile(r"^E[0-3]$")
 EVENT_ID_PATTERN = re.compile(r"^[a-f0-9]{1,64}$")
+TEAM_NAME_MAX_LENGTH = 64
 
 router = APIRouter()
 
@@ -108,6 +109,42 @@ def get_fixture_list(request: Request, week: str = "", league: str = "", user_id
     if league:
         payload = fixturelist.attach_odds(payload, league)
     return payload
+
+
+@router.get("/odds/team")
+# Fixtures-tab tap-through -- served from a disk read, not the odds API, so
+# it carries the same headroom as /odds/fixtures.
+@limiter.limit("60/minute")
+def get_team_detail(
+    request: Request,
+    division: str,
+    name: str,
+    season: str = "current",
+    user_id: int = Depends(get_current_user),
+):
+    """One team's league position, results and form for a season.
+
+    `name` is matched in-memory against the results rows (no SQL) -- it need
+    not be a known club; an unrecognised name just renders an empty page,
+    same as a club with no games yet. Always 200 for a valid division: a
+    season-scoped 404 would reject every tap on opening weekend, when no club
+    has rows yet.
+    """
+    if not DIVISION_PATTERN.match(division):
+        raise HTTPException(status_code=400, detail="Invalid division code")
+    if season not in standings.SEASONS:
+        raise HTTPException(status_code=400, detail="Invalid season")
+
+    name = name.strip()[:TEAM_NAME_MAX_LENGTH]
+    season_code = standings.SEASONS[season]
+    detail = fixturelist.team_detail(season_code, division, name)
+
+    return {
+        "team": name,
+        "division": division,
+        "season": season,
+        **detail,
+    }
 
 
 @router.get("/odds/matches/{event_id}/btts")

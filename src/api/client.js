@@ -215,6 +215,13 @@ export const getStandings = async (season = "current") => {
   return response.data;
 };
 
+export const getTeamDetail = async (division, name, season = "current") => {
+  const response = await axios.get(`${API_URL}/odds/team`, {
+    params: { division, name, season },
+  });
+  return response.data;
+};
+
 export const getBttsOdds =async (eventId, sportKey) => {
   const response = await axios.get(`${API_URL}/odds/matches/${eventId}/btts`, {
     params: { sport_key: sportKey },

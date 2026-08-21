@@ -7,7 +7,7 @@ import useCurrentAcca from "../hooks/useCurrentAcca";
 import { useApp } from "../context/AppContext";
 import { showToast } from "../utils/toast";
 import { buildPick, buildStructuredData } from "../utils/pickDescription";
-import { groupAcca } from "../utils/routes";
+import { groupAcca, groupTeam } from "../utils/routes";
 import "./Leagues.css";
 
 const VIEWS = [
@@ -99,6 +99,13 @@ export default function FixturesTab() {
   };
   const picking = { pickable, takenByEvent, onPick, submitting, oddsFormat };
 
+  // Division isn't in scope where a team name renders (FixturesList only
+  // knows the league's odds_key), so build the nav handler up here where
+  // groupId and the selected league code both live.
+  const onTeam = selected?.code
+    ? (name) => navigate(groupTeam(groupId, selected.code, name))
+    : null;
+
   return (
     <div className="fixtures-tab">
       <div className="league-chips" role="tablist" aria-label="League">
@@ -130,7 +137,7 @@ export default function FixturesTab() {
       </div>
 
       {view === "fixtures" ? (
-        <FixturesList {...viewProps} initialWeek={initialWeek} picking={picking} />
+        <FixturesList {...viewProps} initialWeek={initialWeek} picking={picking} onTeam={onTeam} />
       ) : (
         <FormTab {...viewProps} />
       )}
