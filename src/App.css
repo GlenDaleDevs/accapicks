@@ -1163,12 +1163,38 @@
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
-  margin-left: 12px;
   transition: color var(--transition-fast);
 }
 
 .bookmaker-row-link:hover .bookmaker-visit {
   color: var(--accent-primary);
+}
+
+.bookmaker-visit-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+}
+
+.bookmaker-ad-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color-light);
+  padding: 1px 5px;
+  border-radius: 4px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.bookmaker-affiliate-disclosure {
+  margin: -8px 0 16px 0;
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .bookmaker-show-more {

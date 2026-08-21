@@ -18,6 +18,10 @@ export default function BookmakerComparison({ data, oddsFormat = "decimal", book
   const bestOdds = entries[0][1].total_odds;
   const visibleEntries = showAll ? entries : entries.slice(0, DEFAULT_VISIBLE);
   const hiddenCount = entries.length - DEFAULT_VISIBLE;
+  const hasAffiliateLinks = visibleEntries.some(([bookmaker]) => {
+    const rawUrl = bookmakerLinks[bookmaker]?.url;
+    return typeof rawUrl === "string" && rawUrl.startsWith("https://");
+  });
 
   const renderRow = ([bookmaker, d]) => {
     const isBest = d.total_odds === bestOdds;
@@ -44,8 +48,11 @@ export default function BookmakerComparison({ data, oddsFormat = "decimal", book
           </span>
         </div>
         {url && (
-          <span className="bookmaker-visit">
-            Visit →
+          <span className="bookmaker-visit-wrapper">
+            <span className="bookmaker-ad-badge" aria-label="Affiliate link">Ad</span>
+            <span className="bookmaker-visit">
+              Visit →
+            </span>
           </span>
         )}
       </>
@@ -82,6 +89,11 @@ export default function BookmakerComparison({ data, oddsFormat = "decimal", book
       <p className="bookmaker-section-desc">
         See which bookmaker offers the best odds for your complete acca:
       </p>
+      {hasAffiliateLinks && (
+        <p className="bookmaker-affiliate-disclosure">
+          Links to bookmakers are affiliate links — we may earn a commission if you sign up or bet, at no extra cost to you.
+        </p>
+      )}
       <div>
         {visibleEntries.map(renderRow)}
       </div>
