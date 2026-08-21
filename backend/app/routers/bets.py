@@ -209,6 +209,17 @@ def create_bet(
     db.add(new_bet)
     db.flush()  # Get new_bet into session so recalculate sees it
     _recalculate_locks_at(db, acca, member_ids)
+
+    # One pick-notification per user per acca, ever. The marker survives a
+    # delete + re-pick (that's the whole point — a re-pick must stay silent),
+    # so we can't infer "first pick" from the bets table; we track it here.
+    first_pick_for_user = db.query(models.PickNotification).filter(
+        models.PickNotification.acca_id == acca.id,
+        models.PickNotification.user_id == user_id,
+    ).first() is None
+    if first_pick_for_user:
+        db.add(models.PickNotification(acca_id=acca.id, user_id=user_id))
+
     try:
         db.commit()
         db.refresh(new_bet)
@@ -222,37 +233,36 @@ def create_bet(
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create bet")
 
-    # Notify the rest of the group — but only on the FIRST pick of the game
-    # week. Previously every pick pinged every other member, so a 5-person
-    # group generated a flurry of notifications each week. One ping per member
-    # per week is enough: "the acca's live, someone's picked, get yours in".
-    # (Pick changes deliberately don't re-notify for now.)
-    try:
-        from ..push import send_push
-        bet_count = db.query(models.Bet).filter(
-            models.Bet.acca_id == acca.id
-        ).count()
-        if bet_count == 1:  # the bet we just committed is the first in the acca
+    # Notify the rest of the group of this user's (first) pick. Per-recipient:
+    # anyone who hasn't picked yet gets nudged to get theirs in.
+    if first_pick_for_user:
+        try:
+            from ..push import send_push
             user_obj = db.query(models.User).filter(models.User.id == user_id).first()
             username = user_obj.username if user_obj else "Someone"
             members = db.query(models.GroupMember).filter(
                 models.GroupMember.group_id == acca.group_id
             ).all()
-            body = (
-                f"{username} picked {new_bet.description} in your group acca. "
-                "Get your pick in now before the deadline"
-            )
+            picked_ids = {
+                b.user_id for b in db.query(models.Bet.user_id).filter(
+                    models.Bet.acca_id == acca.id
+                ).all()
+            }
+            headline = f"{username} picked {new_bet.description} in your group acca"
             for member in members:
                 if member.user_id == user_id:
                     continue
+                body = headline if member.user_id in picked_ids else (
+                    f"{headline}. Get your pick in now before the deadline"
+                )
                 send_push(db, member.user_id, {
                     "title": "New pick in your acca",
                     "body": body,
                     "tag": f"bet-{acca.id}",
                     "url": f"/groups/{acca.group_id}/accas/{acca.id}",
                 })
-    except Exception:
-        pass  # Push is best-effort, don't fail the bet creation
+        except Exception:
+            pass  # Push is best-effort, don't fail the bet creation
 
     # Get the user to include username in response
     user = db.query(models.User).filter(models.User.id == user_id).first()
