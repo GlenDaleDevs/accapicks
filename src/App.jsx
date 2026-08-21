@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import CookieConsent from "./components/CookieConsent";
+import PolicyUpdateBanner from "./components/PolicyUpdateBanner";
 import ToastContainer from "./components/ToastContainer";
 import AppRoutes from "./AppRoutes";
 import ComplianceFooter from "./components/ComplianceFooter";
@@ -145,6 +146,7 @@ function App() {
             />
           </Routes>
           <CookieConsent />
+          <PolicyUpdateBanner isLoggedIn={isLoggedIn} />
         </MotionConfig>
       </ErrorBoundary>
     </BrowserRouter>
