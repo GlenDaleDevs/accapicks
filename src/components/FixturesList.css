@@ -161,6 +161,7 @@
 button.fixture-name-tap {
   border: none;
   border-bottom: 2px solid var(--text-primary);
+  border-radius: 0;
   background: none;
   padding: 0 0 1px;
   font: inherit;

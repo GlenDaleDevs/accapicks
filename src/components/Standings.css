@@ -71,6 +71,7 @@
   /* Solid line under the full name (border, not text-decoration, so it
      doesn't skip under descenders or hug the glyphs). */
   border-bottom: 2px solid var(--text-primary);
+  border-radius: 0;
   padding-bottom: 1px;
   cursor: pointer;
 }
