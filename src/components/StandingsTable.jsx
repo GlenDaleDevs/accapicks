@@ -15,7 +15,7 @@ function signed(value) {
   return value > 0 ? `+${value}` : String(value);
 }
 
-export default function StandingsTable({ rows }) {
+export default function StandingsTable({ rows, onTeam }) {
   return (
     <div className="standings-scroll">
       <table className="standings-table">
@@ -34,7 +34,19 @@ export default function StandingsTable({ rows }) {
           {rows.map((row) => (
             <tr key={row.team}>
               <td className="standings-pos">{row.pos}</td>
-              <th className="standings-team" scope="row">{row.team}</th>
+              <th className="standings-team" scope="row">
+                {onTeam ? (
+                  <button
+                    type="button"
+                    className="standings-team-tap"
+                    onClick={() => onTeam(row.team)}
+                  >
+                    {row.team}
+                  </button>
+                ) : (
+                  row.team
+                )}
+              </th>
               {COLUMNS.map(({ key, wide, strong }) => (
                 <td
                   key={key}
