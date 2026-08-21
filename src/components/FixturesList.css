@@ -155,6 +155,23 @@
   white-space: nowrap;
 }
 
+/* Still reads as a name, not a button — underline is the only tell */
+button.fixture-name-tap {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--border-color-light);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+button.fixture-name-tap:hover,
+button.fixture-name-tap:focus-visible {
+  text-decoration-color: var(--accent-primary);
+}
+
 .fixture-form {
   display: flex;
   gap: 3px;

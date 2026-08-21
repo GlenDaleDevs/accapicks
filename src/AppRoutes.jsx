@@ -5,6 +5,7 @@ import AccaTab from "./components/AccaTab";
 import MemberPickHistory from "./components/MemberPickHistory";
 import FixturesTab from "./components/FixturesTab";
 import TableTab from "./components/TableTab";
+import TeamDetail from "./components/TeamDetail";
 import GroupsPage from "./components/GroupsPage";
 import UserSettings from "./components/UserSettings";
 import PageTransition from "./components/PageTransition";
@@ -119,6 +120,7 @@ export default function AppRoutes() {
         <Route path="acca/:roundNumber" element={<AccaTab user={user} oddsFormat={oddsFormat} />} />
         <Route path="accas/:accaId" element={<AccaIdRedirect />} />
         <Route path="fixtures" element={<FixturesTab />} />
+        <Route path="team/:division/:name" element={<TeamDetail />} />
         <Route path="table" element={<TableTab />} />
         <Route path="members/:userId" element={<MemberPickHistory />} />
         {/* The More tab is gone; its contents live in the header menu. */}

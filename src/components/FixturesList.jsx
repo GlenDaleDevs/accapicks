@@ -34,7 +34,7 @@ function byDay(matches) {
   return days;
 }
 
-export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", picking = null }) {
+export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", picking = null, onTeam = null }) {
   const [week, setWeek] = useState(initialWeek);
   const [tracker, setTracker] = useState("results");
   const [venue, setVenue] = useState("overall");
@@ -190,6 +190,7 @@ export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", 
                     onPick={picking?.onPick}
                     submitting={picking?.submitting}
                     oddsFormat={picking?.oddsFormat}
+                    onTeam={onTeam}
                   />
                 );
               })}

@@ -155,6 +155,92 @@ def _team_stats(rows):
     return stats
 
 
+def _resolve_target(name):
+    """Normalised forms to match a row's team name against: the name as given,
+    and its alias-mapped form, so a raw odds-API name still matches
+    football-data's vocabulary even for a club with no fixture-list index
+    entry to resolve through (a promoted side with no games yet, say)."""
+    variants = {names.normalise(name)}
+    alias = names.ALIASES.get(name)
+    if alias:
+        variants.add(names.normalise(alias))
+    return variants
+
+
+def team_detail(season_code, div_code, name):
+    """One team's table line, results and form for a season.
+
+    Everything is derived from a single parse of that season's results, so the
+    table line, the fixture list and the form dots can't disagree with each
+    other the way reading table from one cache and fixtures from another
+    could. Mirrors `_team_stats`/`_last_five` above for the form shape.
+
+    A club with no rows this season (opening weekend, not yet promoted into
+    this division) returns a blank-but-valid shape -- table None, fixtures
+    empty, empty form trackers -- never an error.
+    """
+    try:
+        rows = fetch_results(season_code, div_code)
+    except Exception as exc:
+        # Same guard as `_fetch_rows`/`standings._build_league`: the season's
+        # file doesn't exist until its first results are published.
+        logger.info("No team detail for %s %s (%r): %s", season_code, div_code, name, exc)
+        rows = []
+
+    variants = _resolve_target(name)
+
+    def _side(row):
+        if names.normalise(row["home"]) in variants:
+            return "home"
+        if names.normalise(row["away"]) in variants:
+            return "away"
+        return None
+
+    played = []
+    fixtures = []
+    for row in sorted(rows, key=lambda r: r["played_on"] or date.min):
+        venue = _side(row)
+        if not venue:
+            continue
+        if venue == "home":
+            gf, ga, opponent = row["home_goals"], row["away_goals"], row["away"]
+        else:
+            gf, ga, opponent = row["away_goals"], row["home_goals"], row["home"]
+        result = _outcome(gf, ga)
+        btts = "Y" if row["home_goals"] > 0 and row["away_goals"] > 0 else "N"
+        over25 = "Y" if row["home_goals"] + row["away_goals"] > 2 else "N"
+        played.append((venue, result, btts, over25))
+        fixtures.append({
+            "date": row["played_on"].isoformat() if row["played_on"] else None,
+            "opponent": opponent,
+            "venue": venue,
+            "gf": gf,
+            "ga": ga,
+            "result": result,
+        })
+
+    # `played` stays oldest-first for `_last_five`; the fixture list itself
+    # reads newest first.
+    fixtures.reverse()
+
+    table = None
+    for entry in overall_table(rows):
+        if names.normalise(entry["team"]) in variants:
+            table = {field: entry[field] for field in
+                      ("pos", "played", "won", "drawn", "lost", "gf", "ga", "gd", "points")}
+            break
+
+    return {
+        "table": table,
+        "fixtures": fixtures,
+        "form": {
+            "overall": _last_five(played),
+            "home": _last_five([e for e in played if e[0] == "home"]),
+            "away": _last_five([e for e in played if e[0] == "away"]),
+        },
+    }
+
+
 def _played_matches(rows, div_code, buckets):
     """Bucket results by week.
 

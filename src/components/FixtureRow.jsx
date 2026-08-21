@@ -2,56 +2,29 @@
 // that file stays about fetching a week and choosing what to show.
 
 import { MoreBets, OddsChip } from "./FixtureOdds";
+import { Form } from "./FormDots";
+import { LEGENDS } from "../utils/formLegends";
 
 function kickoffTime(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 }
 
-// Dot meanings per tracker: [outcome letter, what it means]
-const LEGENDS = {
-  results: [["W", "Won"], ["D", "Drew"], ["L", "Lost"]],
-  btts: [["Y", "Both scored"], ["N", "Not both"]],
-  over25: [["Y", "3+ goals"], ["N", "2 or fewer"]],
-};
-
-function meanings(tracker) {
-  return Object.fromEntries(LEGENDS[tracker]);
-}
-
-// Oldest to newest, so the rightmost circle is the most recent match.
-function Form({ marks, tracker, emptyLabel }) {
-  // Early season a club can have no record at this venue at all — say so
-  // rather than rendering nothing, which reads as a broken row.
-  if (!marks?.length) {
-    return <span className="fixture-form-empty" title={emptyLabel}>–</span>;
-  }
-  const title = meanings(tracker);
-  return (
-    <span className="fixture-form">
-      {marks.map((mark, i) => (
-        <span
-          key={i}
-          className={`form-dot form-${mark.toLowerCase()}`}
-          title={title[mark]}
-        />
-      ))}
-      <span className="sr-only">
-        {marks.map((mark) => title[mark]).join(", ")}
-      </span>
-    </span>
-  );
-}
-
 // In "venue" mode each side shows its own half of the record — the home team's
 // home games, the away team's away games — a different last five from overall.
-function Team({ name, stats, tracker, venue, side, chip }) {
+function Team({ name, stats, tracker, venue, side, chip, onTeam }) {
   const byVenue = venue === "venue";
   const split = stats?.[byVenue ? side : "overall"];
   return (
     <div className="fixture-team">
       {stats?.pos ? <span className="fixture-pos">{stats.pos}</span> : null}
-      <span className="fixture-name">{name}</span>
+      {onTeam ? (
+        <button type="button" className="fixture-name fixture-name-tap" onClick={() => onTeam(name)}>
+          {name}
+        </button>
+      ) : (
+        <span className="fixture-name">{name}</span>
+      )}
       {chip}
       <Form
         marks={split?.[tracker]}
@@ -63,10 +36,10 @@ function Team({ name, stats, tracker, venue, side, chip }) {
 }
 
 export function MatchRow({
-  match, teams, tracker, venue,
+  match, teams, tracker, venue, onTeam,
   canPick = false, takenBy, onPick, submitting = false, oddsFormat = "decimal",
 }) {
-  const shared = { tracker, venue };
+  const shared = { tracker, venue, onTeam };
   const mid = match.played
     ? `${match.home_goals}–${match.away_goals}`
     : kickoffTime(match.kickoff);
