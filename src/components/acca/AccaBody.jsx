@@ -68,7 +68,9 @@ export default function AccaBody({
   });
 
   const ownBet = user ? betByUser[String(user.id)] : null;
-  const canPick = !readOnly && state === ACCA_STATE.OPEN;
+  // Editable right up to the deadline — COMPLETE only means everyone's picked,
+  // not that it's locked, so picks can still be changed until first kickoff.
+  const canPick = !readOnly && (state === ACCA_STATE.OPEN || state === ACCA_STATE.COMPLETE);
   const sentence = statusSentence(acca, members, state);
   const odds = combinedOdds(acca);
   const returns = potentialReturns(acca);
