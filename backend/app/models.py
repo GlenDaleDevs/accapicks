@@ -207,3 +207,21 @@ class Nudge(Base):
     target_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     nudged_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class PickNotification(Base):
+    """Marks that we've already sent the 'X made a pick' push for this
+    (acca, user). The unique constraint enforces one notification per picker
+    per acca, ever — so a re-pick (delete + re-create) never re-notifies.
+    The row deliberately survives bet deletion, which is why first-pick can't
+    be inferred from the bets table."""
+    __tablename__ = "pick_notifications"
+
+    __table_args__ = (
+        UniqueConstraint('acca_id', 'user_id', name='uq_pick_notif_acca_user'),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    acca_id = Column(Integer, ForeignKey("accas.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
