@@ -6,7 +6,8 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   /* Layer plan — keep these in sync with App.css:
-     backgrounds -2/-1 · content 0 · header/tabbar 900 · cookie 1000 · toasts 1100 */
+     backgrounds -2/-1 · content 0 · header/tabbar 900 · policy-update 950 ·
+     cookie 1000 · toasts 1100 */
   --z-chrome: 900;
 }
 

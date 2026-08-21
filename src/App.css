@@ -2280,6 +2280,105 @@
   color: var(--accent-primary);
 }
 
+/* ---- Policy Update Banner ----
+   Modeled on Cookie Consent above (same dark-card + slide animation
+   language) but kept in its own class prefix and anchored to the TOP of
+   the screen, below the global header, rather than the bottom. Cookie
+   Consent and the tab bar both live at bottom:0, so a second fixed banner
+   there would need dynamic height math to avoid covering one or the
+   other; putting this one at the top instead means the two banners can
+   never overlap even if both are visible at once. */
+.policy-update-banner {
+  position: fixed;
+  top: var(--header-h, 52px);
+  left: 0;
+  right: 0;
+  /* Below cookie/toasts (1000/1100) but above chrome (900) so it isn't
+     tucked under the header. */
+  z-index: 950;
+  background-color: #103D56;
+  border-bottom: 1px solid rgba(78, 235, 211, 0.2);
+  padding: 14px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.policy-update-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.policy-update-text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.policy-update-headline {
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.policy-update-detail {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.policy-update-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.policy-update-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.policy-update-link:hover {
+  color: var(--accent-primary);
+}
+
+.policy-update-button {
+  padding: 10px 24px;
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.policy-update-button:hover {
+  background-color: var(--accent-secondary);
+  box-shadow: 0 4px 12px rgba(78, 235, 211, 0.3);
+}
+
 /* ---- Dashboard Hero ---- */
 /* ---- Groups Page Background ---- */
 .groups-page {
