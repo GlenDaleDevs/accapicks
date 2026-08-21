@@ -7,7 +7,7 @@ function TermsOfService() {
       <div className="legal-header">
         <Link to="/" className="back-link">← Back to AccaPicks</Link>
         <h1>Terms of Service</h1>
-        <p className="legal-date">Last Updated: February 5, 2026</p>
+        <p className="legal-date">Last Updated: August 21, 2026</p>
       </div>
 
       <div className="legal-content">
@@ -127,16 +127,16 @@ function TermsOfService() {
 
         <section>
           <h2>8. ODDS DATA AND ACCURACY</h2>
-          <p><strong>8.1</strong> Odds displayed on AccaPicks are sourced from The-Odds-API and other third-party data providers.</p>
+          <p><strong>8.1</strong> Odds, match statistics, league standings, and team form data displayed on AccaPicks are sourced from The-Odds-API, football-data.co.uk, and other third-party data providers.</p>
           <p><strong>8.2</strong> While we make reasonable efforts to display accurate information, we do NOT guarantee:</p>
           <ul>
-            <li>The accuracy, completeness, or timeliness of odds data</li>
+            <li>The accuracy, completeness, or timeliness of odds, statistics, standings, or form data</li>
             <li>That odds displayed match current bookmaker odds</li>
             <li>That all bookmakers or markets are included</li>
           </ul>
           <p><strong>8.3</strong> Odds may change between viewing on AccaPicks and placing bets with bookmakers.</p>
           <p><strong>8.4</strong> Always verify odds directly with the bookmaker before placing bets.</p>
-          <p><strong>8.5</strong> We are not liable for any losses resulting from inaccurate or outdated odds data.</p>
+          <p><strong>8.5</strong> We are not liable for any losses resulting from inaccurate or outdated odds, statistics, standings, or form data.</p>
         </section>
 
         <section>
@@ -292,13 +292,50 @@ function TermsOfService() {
         </section>
 
         <section>
-          <h2>21. CONTACT INFORMATION</h2>
-          <p><strong>21.1</strong> If you have any questions about these Terms or the Service, please contact us at:</p>
+          <h2>21. WAIVER</h2>
+          <p><strong>21.1</strong> Our failure to enforce any right or provision of these Terms shall not constitute a waiver of that right or provision.</p>
+          <p><strong>21.2</strong> Any waiver must be in writing and signed by an authorized representative of AccaPicks.</p>
+        </section>
+
+        <section>
+          <h2>22. ENTIRE AGREEMENT</h2>
+          <p><strong>22.1</strong> These Terms, together with our Privacy Policy and any other legal notices published on the Website, constitute the entire agreement between you and AccaPicks regarding the Service.</p>
+          <p><strong>22.2</strong> These Terms supersede any prior agreements, communications, or understandings relating to the subject matter herein.</p>
+        </section>
+
+        <section>
+          <h2>23. ASSIGNMENT</h2>
+          <p><strong>23.1</strong> You may not assign or transfer your rights or obligations under these Terms without our prior written consent.</p>
+          <p><strong>23.2</strong> We may assign or transfer our rights and obligations under these Terms without restriction, including in connection with a merger, acquisition, or sale of assets.</p>
+        </section>
+
+        <section>
+          <h2>24. NO AGENCY RELATIONSHIP</h2>
+          <p><strong>24.1</strong> Nothing in these Terms creates a partnership, joint venture, employment, or agency relationship between you and AccaPicks.</p>
+          <p><strong>24.2</strong> You have no authority to bind AccaPicks or make representations on our behalf.</p>
+        </section>
+
+        <section>
+          <h2>25. FORCE MAJEURE</h2>
+          <p><strong>25.1</strong> We shall not be liable for any failure or delay in performing our obligations under these Terms due to circumstances beyond our reasonable control, including but not limited to:</p>
+          <ul>
+            <li>Acts of God, natural disasters, or severe weather</li>
+            <li>War, terrorism, or civil unrest</li>
+            <li>Government actions or regulatory changes</li>
+            <li>Strikes or labor disputes</li>
+            <li>Internet or telecommunications failures</li>
+            <li>Third-party service provider outages (including The-Odds-API and football-data.co.uk)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>26. CONTACT INFORMATION</h2>
+          <p><strong>26.1</strong> If you have any questions about these Terms or the Service, please contact us at:</p>
           <p>Email: glen.dev@outlook.com<br />Website: https://accapicks.com</p>
         </section>
 
         <section>
-          <h2>22. ACKNOWLEDGMENT</h2>
+          <h2>27. ACKNOWLEDGMENT</h2>
           <p>By creating an account and using AccaPicks, you acknowledge that:</p>
           <ul>
             <li>You have read and understood these Terms of Service</li>
@@ -312,7 +349,7 @@ function TermsOfService() {
         </section>
 
         <div className="legal-footer">
-          <p>Document Version: 1.0</p>
+          <p>Document Version: 1.1</p>
           <p>© 2026 AccaPicks. All rights reserved.</p>
         </div>
       </div>

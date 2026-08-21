@@ -7,7 +7,7 @@ function PrivacyPolicy() {
       <div className="legal-header">
         <Link to="/" className="back-link">← Back to AccaPicks</Link>
         <h1>Privacy Policy</h1>
-        <p className="legal-date">Effective Date: February 5, 2026</p>
+        <p className="legal-date">Effective Date: August 21, 2026</p>
       </div>
 
       <div className="legal-content">
@@ -73,6 +73,7 @@ function PrivacyPolicy() {
             <li>Device type and operating system</li>
             <li>Time zone settings</li>
             <li>Referring website addresses</li>
+            <li>Push notification subscription details (if you enable notifications), including your device's push endpoint and encryption keys</li>
           </ul>
           <p><strong>c) Cookies and Similar Technologies:</strong></p>
           <p>See Section 9 (Cookies) for detailed information</p>
@@ -128,6 +129,8 @@ function PrivacyPolicy() {
             <li>Create and manage your user account</li>
             <li>Authenticate your login sessions</li>
             <li>Display your username and betting picks to other group members</li>
+            <li>Send a push notification to other group members when you make a pick, naming you and your selection, so they see it on their device even when the app is closed (if they've enabled notifications)</li>
+            <li>Send a push notification when another member "nudges" you to make your pick, or when you nudge someone else</li>
             <li>Generate group leaderboards</li>
             <li>Track accumulator results</li>
             <li>Send verification codes and essential account emails</li>
@@ -184,6 +187,17 @@ function PrivacyPolicy() {
             <li>Data Shared: None - we only receive odds data, we don't send user data</li>
             <li>Privacy Policy: <a href="https://the-odds-api.com/privacy-policy" target="_blank" rel="noopener noreferrer">https://the-odds-api.com/privacy-policy</a></li>
           </ul>
+          <p><strong>d) football-data.co.uk (Match Statistics and Standings)</strong></p>
+          <ul>
+            <li>Purpose: Provides team form, league standings, and historic fixture data for display on the Platform</li>
+            <li>Data Shared: None - we only receive match data, we don't send user data</li>
+          </ul>
+          <p><strong>e) Push Notification Services (Apple APNs / Google FCM / Mozilla Autopush)</strong></p>
+          <ul>
+            <li>Purpose: Delivers push notifications (picks and nudges) to your browser or device</li>
+            <li>Data Shared: Your push subscription endpoint, and the content of the notification (e.g. a group member's username and pick) for messages addressed to you</li>
+            <li>Location: Depends on your browser or device platform (Apple, Google, or Mozilla infrastructure)</li>
+          </ul>
 
           <h3>6.2 Affiliate Partners (Bookmakers)</h3>
           <p>
@@ -207,6 +221,11 @@ function PrivacyPolicy() {
 
           <h3>6.5 With Your Consent</h3>
           <p>We may share your data for other purposes with your explicit consent.</p>
+
+          <h3>6.6 Public Invite Links</h3>
+          <p>
+            If you hold a valid invite link to a group, you can see that group's name and its member count before creating an account or signing in. No other group or member data is shown to unauthenticated visitors.
+          </p>
         </section>
 
         <section>
@@ -309,6 +328,11 @@ function PrivacyPolicy() {
             <li>Edge: Settings &gt; Cookies and Site Permissions</li>
           </ul>
           <p>Note: Blocking essential cookies will prevent you from logging in and using the Platform.</p>
+
+          <h3>9.5 Push Notifications</h3>
+          <p>
+            If you enable push notifications, we store a push subscription (a device- or browser-specific endpoint and encryption keys) so we can deliver alerts about picks and nudges in your groups, as described in Section 5.1. Push notifications are permission-based - your browser or device asks you before enabling them, and you can revoke permission at any time through your browser or device notification settings. Revoking permission stops future notifications; it doesn't otherwise affect your account.
+          </p>
         </section>
 
         <section>
@@ -428,14 +452,24 @@ function PrivacyPolicy() {
         </section>
 
         <section>
-          <h2>15. CONTACT INFORMATION</h2>
-          <h3>15.1 Data Controller</h3>
+          <h2>15. GLOSSARY</h2>
+          <p>"Personal Data" means any information relating to an identified or identifiable individual.</p>
+          <p>"Processing" means any operation performed on personal data, including collection, storage, use, disclosure, or deletion.</p>
+          <p>"Data Controller" means the entity that determines the purposes and means of processing personal data (AccaPicks).</p>
+          <p>"Data Processor" means an entity that processes personal data on behalf of the data controller (e.g., our hosting provider).</p>
+          <p>"UK GDPR" means the General Data Protection Regulation as it forms part of UK law by virtue of section 3 of the European Union (Withdrawal) Act 2018.</p>
+          <p>"Consent" means any freely given, specific, informed, and unambiguous indication of the data subject's agreement to processing of personal data.</p>
+        </section>
+
+        <section>
+          <h2>16. CONTACT INFORMATION</h2>
+          <h3>16.1 Data Controller</h3>
           <p>AccaPicks</p>
-          <h3>15.2 Contact Details</h3>
+          <h3>16.2 Contact Details</h3>
           <p>For privacy-related inquiries, data rights requests, or complaints:</p>
           <p>Email: glen.dev@outlook.com<br />Subject: Privacy Inquiry / Data Rights Request</p>
           <p>Response Time: We aim to respond to all inquiries within 5 business days and resolve data rights requests within one month.</p>
-          <h3>15.3 Supervisory Authority</h3>
+          <h3>16.3 Supervisory Authority</h3>
           <p>You have the right to lodge a complaint with the UK's supervisory authority for data protection:</p>
           <p>
             <strong>Information Commissioner's Office (ICO)</strong><br />
@@ -450,14 +484,14 @@ function PrivacyPolicy() {
         </section>
 
         <section>
-          <h2>16. ACKNOWLEDGMENT</h2>
+          <h2>17. ACKNOWLEDGMENT</h2>
           <p>By using AccaPicks, you acknowledge that you have read, understood, and agree to be bound by this Privacy Policy.</p>
           <p>If you do not agree with this Privacy Policy, you must not use the Platform.</p>
         </section>
 
         <div className="legal-footer">
-          <p>Document Version: 1.0</p>
-          <p>Effective Date: February 5, 2026</p>
+          <p>Document Version: 1.1</p>
+          <p>Effective Date: August 21, 2026</p>
           <p>© 2026 AccaPicks. All rights reserved.</p>
         </div>
       </div>
