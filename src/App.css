@@ -462,6 +462,17 @@
   margin: 0 1px;
 }
 
+/* Small "W–L" hint under the Picks header, spelling out what the two
+   numbers in each row mean. */
+.league-col-sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
 .league-col-stat {
   text-align: center;
   font-weight: 600;
