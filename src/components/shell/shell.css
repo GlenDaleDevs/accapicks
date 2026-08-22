@@ -505,6 +505,21 @@
   letter-spacing: 0.04em;
 }
 
+.group-settings-member-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.group-settings-promote {
+  border: none;
+  background: none;
+  color: var(--color-success);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .group-settings-remove {
   border: none;
   background: none;
@@ -512,6 +527,12 @@
   font: inherit;
   font-size: 13px;
   cursor: pointer;
+}
+
+.group-settings-promote:disabled,
+.group-settings-remove:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .group-settings-actions {
