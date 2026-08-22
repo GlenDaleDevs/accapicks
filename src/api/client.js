@@ -275,6 +275,11 @@ export const removeMember = async (groupId, userId) => {
   return response.data;
 };
 
+export const transferAdmin = async (groupId, newAdminId) => {
+  const response = await axios.post(`${API_URL}/groups/${groupId}/transfer-admin`, { new_admin_id: newAdminId });
+  return response.data;
+};
+
 // Push Notifications
 export const getVapidKey = async () => {
   const response = await axios.get(`${API_URL}/notifications/vapid-key`);
