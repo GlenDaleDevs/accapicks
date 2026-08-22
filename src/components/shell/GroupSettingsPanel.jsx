@@ -12,6 +12,9 @@ export default function GroupSettingsPanel({ groupId, onClose }) {
   const [members, setMembers] = useState([]);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(null);
+  const [transferring, setTransferring] = useState(null);
+
+  const isAdmin = members.find((m) => m.user_id === user?.id)?.role === "admin";
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +66,22 @@ export default function GroupSettingsPanel({ groupId, onClose }) {
     }
   };
 
+  const handleMakeAdmin = async (member) => {
+    if (transferring) return;
+    if (!window.confirm(`Make ${member.username} the admin? You'll become a regular member and lose admin controls.`)) return;
+    setTransferring(member.user_id);
+    try {
+      await api.transferAdmin(groupId, member.user_id);
+      showToast(`${member.username} is now the admin`, "success");
+      if (onRefreshGroups) onRefreshGroups();
+      onClose();
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Failed to transfer admin", "error");
+    } finally {
+      setTransferring(null);
+    }
+  };
+
   return (
     <form className="group-settings" onSubmit={handleSave}>
       <label className="group-settings-label" htmlFor="group-name">Group name</label>
@@ -97,16 +116,27 @@ export default function GroupSettingsPanel({ groupId, onClose }) {
               {m.username}
               {m.role === "admin" && <span className="group-settings-admin">admin</span>}
             </span>
-            {/* Admins can't be removed, and leaving is its own action */}
-            {m.role !== "admin" && m.user_id !== user?.id && (
-              <button
-                type="button"
-                className="group-settings-remove"
-                onClick={() => handleRemove(m)}
-                disabled={removing === m.user_id}
-              >
-                {removing === m.user_id ? "Removing…" : "Remove"}
-              </button>
+            {/* Admins can't be removed or promoted, and leaving is its own action.
+                Only the current admin sees these controls. */}
+            {isAdmin && m.role !== "admin" && m.user_id !== user?.id && (
+              <span className="group-settings-member-actions">
+                <button
+                  type="button"
+                  className="group-settings-promote"
+                  onClick={() => handleMakeAdmin(m)}
+                  disabled={transferring === m.user_id}
+                >
+                  {transferring === m.user_id ? "Transferring…" : "Make admin"}
+                </button>
+                <button
+                  type="button"
+                  className="group-settings-remove"
+                  onClick={() => handleRemove(m)}
+                  disabled={removing === m.user_id}
+                >
+                  {removing === m.user_id ? "Removing…" : "Remove"}
+                </button>
+              </span>
             )}
           </li>
         ))}

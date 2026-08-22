@@ -167,6 +167,10 @@ class GroupUpdate(BaseModel):
         return v
 
 
+class TransferAdmin(BaseModel):
+    new_admin_id: int
+
+
 class GroupResponse(BaseModel):
     id: int
     name: str

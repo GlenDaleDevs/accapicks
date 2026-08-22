@@ -444,6 +444,108 @@ def remove_member(
     return {"message": "Member removed successfully"}
 
 
+# Transfer admin endpoint (admin only)
+@router.post("/groups/{group_id}/transfer-admin")
+@limiter.limit("3/minute")
+def transfer_admin(
+    request: Request,
+    group_id: int,
+    payload: schemas.TransferAdmin,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user)
+):
+    """Hand the admin role to another member of the group (admin only)"""
+
+    target_user_id = payload.new_admin_id
+
+    try:
+        # Lock the requester's membership row to serialize concurrent transfers
+        requester_membership = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == group_id,
+            models.GroupMember.user_id == user_id
+        ).with_for_update().first()
+
+        if not requester_membership:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not a member of this group"
+            )
+
+        if requester_membership.role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only the group admin can transfer admin"
+            )
+
+        if target_user_id == user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You are already the admin"
+            )
+
+        # Lock the target's membership row — composite filter on group_id AND
+        # user_id prevents an IDOR where new_admin_id belongs to another group.
+        # If a concurrent leave/remove already committed, this returns None
+        # and we correctly 404 instead of silently updating zero rows.
+        target_membership = db.query(models.GroupMember).filter(
+            models.GroupMember.group_id == group_id,
+            models.GroupMember.user_id == target_user_id
+        ).with_for_update().first()
+
+        if not target_membership:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Target user is not a member of this group"
+            )
+
+        if target_membership.role == "admin":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="That member is already an admin"
+            )
+
+        requester_membership.role = "member"
+        target_membership.role = "admin"
+
+        # Transfer Group.created_by bookkeeping if needed (mirrors leave_group).
+        # This gates no authz — do NOT touch Acca.created_by: the old admin
+        # stays a member and legitimately created those accas.
+        group = db.query(models.Group).filter(models.Group.id == group_id).first()
+        if group and group.created_by == user_id:
+            group.created_by = target_user_id
+
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to transfer admin: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to transfer admin"
+        )
+
+    # Push is best-effort — the transfer stands whether or not the new admin
+    # has a subscribed device.
+    try:
+        from ..push import send_push
+        send_push(
+            db,
+            target_user_id,
+            {
+                "title": "You're now the group admin",
+                "body": f"You're now the admin of {group.name}",
+                "tag": f"admin-{group_id}",
+                "url": f"/g/{group_id}",
+            },
+        )
+    except Exception as e:
+        logger.warning(f"Transfer-admin push failed for user {target_user_id}: {e}")
+
+    return {"message": "Admin transferred successfully"}
+
+
 # Leave group endpoint
 @router.delete("/groups/{group_id}/leave")
 @limiter.limit("3/minute")
