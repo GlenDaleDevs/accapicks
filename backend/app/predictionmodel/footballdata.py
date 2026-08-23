@@ -19,6 +19,18 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://www.football-data.co.uk/mmz4281"
 CURRENT_SEASON_TTL = 6 * 60 * 60  # 6 hours
 
+# football-data.co.uk rejects the default python-requests User-Agent (non-200),
+# which this module treats as a failure and silently serves the stale cache for
+# — so a bot-looking request freezes results at the last good fetch. A real
+# browser UA is required to get a clean 200 with the CSV.
+_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/csv,text/plain,*/*",
+}
+
 
 def _cache_path(season, div_code):
     return CACHE_DIR / f"{season}_{div_code}.csv"
@@ -48,7 +60,7 @@ def fetch_results(season, div_code):
     else:
         url = f"{BASE_URL}/{season}/{div_code}.csv"
         try:
-            resp = requests.get(url, timeout=30)
+            resp = requests.get(url, timeout=30, headers=_HEADERS)
             # Not raise_for_status(): a missing file here returns 300 Multiple
             # Choices (Apache MultiViews) with an HTML body offering OTHER
             # LEAGUES as alternatives -- P1.csv, N1.csv, B1.csv. That is a 3xx,
@@ -72,7 +84,13 @@ def fetch_results(season, div_code):
             text = resp.text
             path.write_text(text, encoding="utf-8")
 
-    return parse_results(text, div_code, season)
+    rows = parse_results(text, div_code, season)
+    # Row count for the live season, so Railway logs make it obvious whether a
+    # thin table is our fetch failing (see the warning above) or football-data
+    # simply not having published the round yet.
+    if season != LADDER_SEASON:
+        logger.info("football-data %s/%s: %d played rows", season, div_code, len(rows))
+    return rows
 
 
 # Closing odds where available, pre-match otherwise. Carried through so the
