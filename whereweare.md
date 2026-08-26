@@ -20,6 +20,47 @@ Late development — deployed to production on Railway, security hardening compl
 - PWA support (installable app, service worker precaching, auto-reload on update)
 - Push notifications (subscribe/unsubscribe, bet creation + settlement triggers, security hardened)
 - npm audit clean (minimatch override, GitHub Actions --omit=dev)
+- **Season live & settling correctly (2026-08-23)** — opening PL weekend played; accas and bets
+  auto-settled correctly, leaderboard/ticks-crosses all correct. Settled bets show a green ✓ / red ✗ /
+  grey — at the top-right of each member's row (unchanged behaviour, relocated in the redesign).
+- **football-data feed unblocked (2026-08-23)** — results/form/standings had frozen at their early-August
+  state (fetches were failing silently and serving stale cache). Root cause: `requests.get` sent the
+  default python-requests User-Agent, which football-data.co.uk rejects. Added a browser UA + INFO row-count
+  logging. **Confirmed fixed in prod** — form dots refreshed. `predictionmodel/footballdata.py`.
+- **Notifications: one push per picker per acca (2026-08-24)** — every member's first pick pings the group
+  once (per-recipient wording: unpicked members get the "get your pick in" nudge), but a delete-and-re-pick
+  is now silent. Deduped via a new `pick_notifications` marker committed atomically with the bet
+  (`add_pick_notifications` migration), so a re-pick can't masquerade as a first pick.
+- **Picks editable while COMPLETE (2026-08-22)** — "everyone's picked" no longer locks the slip; picks stay
+  changeable right up to the first kickoff (`AccaBody` canPick includes COMPLETE; `delete_bet` already
+  allowed it).
+- **Team detail screen (2026-08-21)** — tap a team on the Fixtures tab **or** the league table to open its
+  season page: league position, P-W-D-L record, form dots (overall/home/away), and results list, with a
+  this/last-season toggle. Always 200 with a graceful empty state (opening-weekend zero-results case).
+  `GET /odds/team`, `fixturelist.team_detail`, `TeamDetail.jsx`, `FormDots` extracted from `FixtureRow`.
+  Tappable team names carry a straight white underline (Fixtures + Standings). Leaderboard "Picks" column
+  now labelled with a "W–L" sublabel.
+- **Head-to-head record (2026-08-26)** — a lazy "H2H Record" link in the pick panel pulls ~12 seasons of
+  football-data history (E0–E3) and shows an all-time W-D-L tally, a proportional record bar, and recent
+  scorelines with the winner emphasised. Free feed, no odds-API credits. History loads once in a background
+  warm-up task (off the request path, ready-flag cache); past seasons now cache permanently.
+  `h2h.py`, `GET /odds/h2h`, `H2HRecord.jsx`.
+- **Change admin (2026-08-26)** — the group admin can hand the role to another member from Group Settings
+  ("Make admin"). Atomic role swap with both membership rows locked FOR UPDATE, so concurrent transfers or a
+  racing leave can't strand a group with zero or two admins. Transfers `Group.created_by`; leaves each acca's
+  creator alone. `POST /groups/{id}/transfer-admin`.
+- **Legal docs refreshed for recent features (2026-08-21)** — Privacy Policy v1.1: discloses push
+  notifications sharing username+pick with the group, the nudge feature, push infra recipients (APNs/FCM),
+  the public invite-preview, and football-data as a source; added a Push Notifications subsection + Glossary
+  (CCPA consciously not ported — UK-only app). ToS v1.1: §8 broadened to cover stats/standings/form, and
+  restored Force Majeure/Waiver/Entire Agreement/Assignment/No Agency. Removed the stale unfilled `.txt`
+  templates — the `.jsx` components are now the single source of truth. Both dated 21 Aug 2026.
+- **Policy update banner (2026-08-21)** — a version-keyed, dismissible banner notifies logged-in members that
+  the Privacy Policy changed (the "material change" notice the policy itself promises). Bump `POLICY_VERSION`
+  to re-show on the next change. `PolicyUpdateBanner.jsx`.
+- **Affiliate disclosure on bookmaker links (2026-08-21)** — each outbound bookmaker link now carries an "Ad"
+  badge (with a screen-reader "Affiliate link" label) + a one-line disclosure when any affiliate link is
+  shown, satisfying the ASA/CMA point-of-link requirement. `BookmakerComparison.jsx`.
 - **Fixtures & Standings rebuild (2026-08-19)** — Favourable Matchups removed (it read as tipping) and
   replaced by two data views built from the football-data results the ladder already fetched: a **Form**
   tab (overall/home/away tables, this season or last) and a **Fixtures** list of one game week at a time,
@@ -61,7 +102,8 @@ Late development — deployed to production on Railway, security hardening compl
 ### Blocking / do first
 - [x] ~~Push the UI-overhaul commits~~ — shipped and deployed to accapicks.com (through `e5f687e`)
 - [x] ~~Fix the migration chain~~ — done in `b6a2f2c`, runnable from an empty database
-- [ ] Verify the overhaul on a real phone (iOS PWA safe areas, tab bar, modal, 360px column widths)
+- [x] ~~Verify the overhaul on a real phone~~ — in daily use on real phones (iOS included); opening weekend
+      ran and settled correctly on live traffic. Revisit only if a specific layout issue surfaces.
 
 ### Next season (PL kicks off w/c 2026-08-22) — natural clean-slate moment
 - [x] ~~**Auto-create weeks**~~ — done 2026-08-16. Anchored on the Saturday, spreading into Fri/Sun/Mon
@@ -119,11 +161,9 @@ Late development — deployed to production on Railway, security hardening compl
 - [x] ~~Push test~~ — **closed 2026-08-19 (pm): the iPhone received the push.** The full chain is
       confirmed live: re-subscribe after toggling, per-send VAPID claims, 12h TTL, and the
       run-at-startup autoweek pass recreating the week after a deploy
-- [ ] **Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd** — now a
-      30-second job in the new Group Settings (header menu, admin only). A week's
-      `first_match_date` is its Friday opener, so a boundary on the 22nd drops Week 1 out of the season.
-      Groups without a date now get one automatically from their first week's earliest date — which is
-      the Friday, deliberately — but any group that already had one keeps it unexamined
+- [x] ~~Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd~~ — confirmed
+      correct: the opening weekend's acca settled and the Table tab counted it, so the boundary includes
+      Week 1 as intended.
 - [ ] **Genuine midweek rounds group with the following weekend in the Fixtures tab.** `fixturelist.py`
       anchors each game week on the Tuesday (Tue→Mon), so a Thu/Fri/Sat/Sun/Mon round holds together —
       but a real Tue/Wed round falls at the start of the *next* window rather than standing alone.
@@ -151,7 +191,9 @@ Late development — deployed to production on Railway, security hardening compl
       contained in `main`) has been deleted
 
 ### Quick wins (1 session each)
-- [ ] **Pick-change notifications** — currently re-adding a pick re-notifies (and re-fires "First pick is in!" if you were the only picker, since is_first_pick recounts live at bets.py:231). Wanted: suppress an identical re-add, but on a *genuine* change send "mate changed their pick to X". Left as-is for now on purpose.
+- [ ] **Pick-change notifications** — ⚠️ *half-done (2026-08-24)*: a delete-and-re-pick is now silent
+      (deduped per picker per acca via the `pick_notifications` marker), so no more re-notify spam. Still
+      wanted (not built, on purpose): on a *genuine* change, send "mate changed their pick to X".
 - [x] ~~Install `eslint-plugin-react`~~ — done 2026-08-19 (pm). Lint is at **0 errors** (2 deliberate
       exhaustive-deps warnings left in App.jsx — the SW-registration and invite-join effects need a
       careful look, not a dep-array sweep). npm audit is clean again too: new advisories had landed
@@ -172,7 +214,8 @@ Late development — deployed to production on Railway, security hardening compl
 - [ ] Add Framer Motion micro-animations (page transitions, card entrances, leaderboard count-ups)
 - [ ] Desktop landing page polish (test background on wide viewports, possibly landscape variant)
 - [ ] Bookmaker comparison UI refresh (add logos, card-based redesign)
-- [ ] Affiliate link setup (research programs, sign up, populate BookmakerLink table, add disclosure)
+- [ ] Affiliate link setup — ⚠️ *disclosure done (2026-08-21)*: "Ad" badge + point-of-link disclosure on
+      bookmaker links (ASA/CMA). Still to do: research programs, sign up, populate BookmakerLink table.
 
 ### Large effort (2-4 sessions)
 - [x] ~~More bet types — Over/Under 2.5 and BTTS~~ — already live end-to-end, the backlog was stale:
@@ -195,10 +238,16 @@ Late development — deployed to production on Railway, security hardening compl
 - Last Man Standing: fully independent, no blockers — just needs dedicated sessions
 
 ## Next session
-Saturday 22 Aug is the opening weekend — first live run of auto-settlement for the new season
-(including BTTS/O-U picks if anyone uses More bets). Keep it light and watch: settlement results,
-odds-API credit usage (dashboard), and that nudges/pushes behave with real traffic. After that:
-affiliate research + comparison UI refresh, logo/palette, or start Last Man Standing.
+Season is live and settling correctly; the football-data feed is healthy again. Open decisions/threads:
+- **National League** — waiting on the user's API-Football check (does `/odds` return prices for the NL
+  on the free tier) and/or the football-data `fixtures.csv` EC experiment. Decision then.
+- **xG** — parked; user to check which site their old prediction model used (likely Understat → Prem-only).
+- **Pick-change "genuine change" notification** — the other half of the notifications work.
+Otherwise the open menu is polish: logo/palette (blocked on assets), comparison UI refresh, affiliate
+program signup, Framer Motion micro-animations, or start Last Man Standing.
 
 ## Last Updated
-2026-08-19 (evening) — session wrap; day log in whatwevedonetoday.md
+2026-08-26 — session wrap. Shipped since 19 Aug: legal-docs refresh + policy banner + affiliate
+disclosure, change-admin, team-detail screen + tappable team names, leaderboard W–L label, editable-when-
+COMPLETE, football-data User-Agent fix, per-picker notification dedupe, and the head-to-head record.
+Day log in whatwevedonetoday.md.
