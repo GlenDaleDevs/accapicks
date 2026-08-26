@@ -182,6 +182,12 @@ Late development — deployed to production on Railway, security hardening compl
 ### Future (multi-session projects)
 - [ ] Last Man Standing mode (new game mode: LMSGame, LMSRound, LMSPick models, elimination rounds)
 - [ ] Bet Builder feature (single-fixture multi-market bets, needs API research for SGM odds)
+- [ ] **xG data** — no feed currently carries it (neither The-Odds-API nor football-data.co.uk).
+      Free xG (Understat) is big-5 European leagues only → among ours, Premier League ONLY, blank
+      for Championship/L1/L2 (same coverage gap as National League). Revisit only if we find a
+      source with real lower-league coverage, or if a group goes Prem-only. If added, scope it
+      Prem-only and hide it elsewhere so it doesn't read as broken. (User to check which site they
+      used for their old prediction model — likely Understat.)
 
 ## Blockers / Open Questions
 - Affiliate programs: need manual research on which bookmakers accept low-traffic affiliates
