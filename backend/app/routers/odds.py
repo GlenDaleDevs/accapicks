@@ -1,6 +1,6 @@
 import re
 from fastapi import APIRouter, Depends, Request, HTTPException
-from .. import fixturelist, odds_api, standings
+from .. import fixturelist, h2h, odds_api, standings
 from ..schemas import VALID_SPORT_KEYS
 from .auth import get_current_user
 from ..limiter import limiter
@@ -145,6 +145,31 @@ def get_team_detail(
         "season": season,
         **detail,
     }
+
+
+@router.get("/odds/h2h")
+# Served from the background-warmed in-memory cache, not a live fetch, so it
+# carries the same headroom as /odds/fixtures and /odds/team.
+@limiter.limit("60/minute")
+def get_h2h_record(
+    request: Request,
+    home: str,
+    away: str,
+    user_id: int = Depends(get_current_user),
+):
+    """All-time head-to-head record between two teams.
+
+    `home`/`away` are matched in-memory against the cached history rows (no
+    SQL) -- either can be any string; unresolved names just render an empty
+    record, same as a club with no games yet. Always 200: while the
+    background warm-up is still loading (cold start after a deploy), the
+    cache isn't ready yet and the response comes back zeroed with
+    `ready: false` so the client can show a warming state instead of an
+    error.
+    """
+    home = home.strip()[:TEAM_NAME_MAX_LENGTH]
+    away = away.strip()[:TEAM_NAME_MAX_LENGTH]
+    return h2h.h2h_record(home, away)
 
 
 @router.get("/odds/matches/{event_id}/btts")
