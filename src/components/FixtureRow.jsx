@@ -2,6 +2,7 @@
 // that file stays about fetching a week and choosing what to show.
 
 import { MoreBets, OddsChip } from "./FixtureOdds";
+import { H2HRecord } from "./H2HRecord";
 import { Form } from "./FormDots";
 import { LEGENDS } from "../utils/formLegends";
 
@@ -69,6 +70,7 @@ export function MatchRow({
       {odds && canPick && (
         <MoreBets odds={odds} onPick={onPick} submitting={submitting} oddsFormat={oddsFormat} />
       )}
+      <H2HRecord home={match.home} away={match.away} />
       {takenBy && <span className="fixture-taken-note">Picked by {takenBy}</span>}
     </li>
   );

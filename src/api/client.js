@@ -222,6 +222,13 @@ export const getTeamDetail = async (division, name, season = "current") => {
   return response.data;
 };
 
+export const getH2H = async (home, away) => {
+  const response = await axios.get(`${API_URL}/odds/h2h`, {
+    params: { home, away },
+  });
+  return response.data;
+};
+
 export const getBttsOdds =async (eventId, sportKey) => {
   const response = await axios.get(`${API_URL}/odds/matches/${eventId}/btts`, {
     params: { sport_key: sportKey },

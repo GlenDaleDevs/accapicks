@@ -18,6 +18,7 @@ from .timeutils import as_utc
 from .fixturelist import refresh_fixture_list
 from .standings import refresh_standings
 from .autoweek import auto_create_weeks
+from .h2h import warm_h2h_history
 from . import models
 from .routers import auth, groups, groupstats, accas, bets, odds, affiliate, notifications, nudges
 from .limiter import limiter
@@ -42,6 +43,7 @@ async def lifespan(app):
     standings_task = asyncio.create_task(refresh_standings())
     fixtures_task = asyncio.create_task(refresh_fixture_list())
     week_task = asyncio.create_task(auto_create_weeks())
+    h2h_task = asyncio.create_task(warm_h2h_history())
     yield
     logger.info("Shutting down background tasks")
     lock_task.cancel()
@@ -51,6 +53,7 @@ async def lifespan(app):
     standings_task.cancel()
     fixtures_task.cancel()
     week_task.cancel()
+    h2h_task.cancel()
 
 # Custom rate limit handler
 def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):

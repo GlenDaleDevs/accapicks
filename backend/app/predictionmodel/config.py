@@ -21,7 +21,11 @@ CACHE_DIR = Path(
 
 # football-data.co.uk season codes: 2025/26 -> "2526"
 LADDER_SEASON = "2526"   # finished season -> the GW1-10 ladder
-CURRENT_SEASON = "2627"  # populates as the season runs -> the post-GW10 switch
+# Populates as the season runs -> the post-GW10 switch. Also load-bearing for
+# cache freshness: footballdata._is_fresh treats every OTHER season as
+# permanently cached, so a stale value here would freeze the live season's
+# results at whatever was fetched under the old code.
+CURRENT_SEASON = "2627"
 
 # Tier order defines the ladder. Ladder offsets are derived from the ACTUAL
 # number of teams in each table at runtime, never hardcoded, so a division

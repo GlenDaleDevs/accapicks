@@ -12,7 +12,7 @@ from datetime import datetime
 
 import requests
 
-from .config import CACHE_DIR, LADDER_SEASON
+from .config import CACHE_DIR, CURRENT_SEASON, LADDER_SEASON
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +39,10 @@ def _cache_path(season, div_code):
 def _is_fresh(path, season):
     if not path.exists():
         return False
-    # A completed season is immutable -- never refetch.
-    if season == LADDER_SEASON:
+    # Any season other than the current one is finished and therefore
+    # immutable -- never refetch it, not just the ladder's LADDER_SEASON.
+    # Only the season still being played carries a TTL.
+    if season != CURRENT_SEASON:
         return True
     return (time.time() - path.stat().st_mtime) < CURRENT_SEASON_TTL
 
