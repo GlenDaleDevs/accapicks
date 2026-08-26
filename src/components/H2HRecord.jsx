@@ -51,17 +51,50 @@ export function H2HRecord({ home, away }) {
           )}
           {!loading && record && record.ready && record.summary.played > 0 && (
             <>
-              <p className="h2h-summary">
-                All-time since 2015/16: {record.team_a} {record.summary.a_wins}W ·{" "}
-                {record.summary.draws}D · {record.summary.b_wins}L, {record.summary.played} played
+              {/* Tally: a number per outcome with the team it belongs to named
+                  underneath, so it reads at a glance instead of "3W · 1D · 2L". */}
+              <div className="h2h-tally">
+                <div className="h2h-tally-col">
+                  <span className="h2h-tally-num h2h-num-a">{record.summary.a_wins}</span>
+                  <span className="h2h-tally-label">{record.team_a}</span>
+                </div>
+                <div className="h2h-tally-col">
+                  <span className="h2h-tally-num h2h-num-d">{record.summary.draws}</span>
+                  <span className="h2h-tally-label">{record.summary.draws === 1 ? "Draw" : "Draws"}</span>
+                </div>
+                <div className="h2h-tally-col">
+                  <span className="h2h-tally-num h2h-num-b">{record.summary.b_wins}</span>
+                  <span className="h2h-tally-label">{record.team_b}</span>
+                </div>
+              </div>
+              <div className="h2h-bar" aria-hidden="true">
+                {record.summary.a_wins > 0 && (
+                  <span className="h2h-bar-seg h2h-seg-a" style={{ flexGrow: record.summary.a_wins }} />
+                )}
+                {record.summary.draws > 0 && (
+                  <span className="h2h-bar-seg h2h-seg-d" style={{ flexGrow: record.summary.draws }} />
+                )}
+                {record.summary.b_wins > 0 && (
+                  <span className="h2h-bar-seg h2h-seg-b" style={{ flexGrow: record.summary.b_wins }} />
+                )}
+              </div>
+              <p className="h2h-caption">
+                {record.summary.played} {record.summary.played === 1 ? "meeting" : "meetings"} since 2015/16
               </p>
               <p className="h2h-recent-heading">Recent meetings</p>
               <ul className="h2h-meetings">
-                {record.meetings.map((m, i) => (
-                  <li key={`${m.date}-${i}`} className="h2h-meeting">
-                    {formatDate(m.date)} — {m.home} {m.home_goals}-{m.away_goals} {m.away}
-                  </li>
-                ))}
+                {record.meetings.slice(0, 8).map((m, i) => {
+                  const homeWon = m.home_goals > m.away_goals;
+                  const awayWon = m.away_goals > m.home_goals;
+                  return (
+                    <li key={`${m.date}-${i}`} className="h2h-meeting">
+                      <span className={`h2h-side h2h-side-home${homeWon ? " h2h-side-win" : ""}`}>{m.home}</span>
+                      <span className="h2h-meeting-score">{m.home_goals}–{m.away_goals}</span>
+                      <span className={`h2h-side h2h-side-away${awayWon ? " h2h-side-win" : ""}`}>{m.away}</span>
+                      <span className="h2h-meeting-date">{formatDate(m.date)}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </>
           )}
