@@ -66,7 +66,7 @@ Rules derived from security audits. Follow these when writing any new code.
 
 ## Frontend
 
-- JWT stored in localStorage (acceptable given no XSS vectors, 30-min expiry)
+- JWT stored in localStorage (acceptable given no XSS vectors + blacklist revocation on logout/password change). Expiry is 30 days (`auth.ACCESS_TOKEN_EXPIRE_MINUTES`) — chosen for UX over the original 30 min; tighten via a refresh-token scheme if the risk profile ever changes
 - Call backend logout endpoint BEFORE clearing localStorage on logout
 - React JSX auto-escapes — never use `dangerouslySetInnerHTML`
 - Always use `type="email"` only on email-only fields, not mixed input fields
