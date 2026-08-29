@@ -231,6 +231,9 @@ Late development — deployed to production on Railway, security hardening compl
       (`CACHE_TTL_SECONDS`) so they lag live movement even pre-pick. Options if we act: surface which
       bookmaker the price is from; use best/average across books instead of "first"; shorten the cache
       (all cost more odds-API credits). Compare Bookmakers panel already shows the live-ish spread.
+      ⚠️ *partly addressed (2026-08-29)*: opening Compare now refreshes the acca's leagues if their odds
+      are >30 min old (`COMPARE_REFRESH_MAX_AGE`, bounded to one refetch per league per window), which also
+      freshens the shared fixture odds. Still open: which-bookmaker transparency + best/average selection.
 
 ### Future (multi-session projects)
 - [ ] Last Man Standing mode (new game mode: LMSGame, LMSRound, LMSPick models, elimination rounds)
