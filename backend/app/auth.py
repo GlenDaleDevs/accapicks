@@ -17,7 +17,12 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY environment variable is not set. Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\"")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# 30 days — keeps people signed in between visits rather than every 30 minutes.
+# Trade-off: a longer-lived token in localStorage is exposed for longer if ever
+# leaked. Accepted for a no-money social app with no XSS vectors and a blacklist
+# that revokes on logout/password change. A refresh-token scheme is the proper
+# fix if this ever needs tightening (see whereweare.md backlog).
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30
 
 # Argon2id password hasher (OWASP recommended)
 ph = PasswordHasher(time_cost=2, memory_cost=65536, parallelism=2)
