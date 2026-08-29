@@ -280,16 +280,19 @@ async def compare_bookmakers(
     # Extract bets with odds to compare
     bets_with_odds = [(bet.description, float(bet.odds)) for bet in bets]
 
-    # Try comparison with cached odds first
-    comparison = bookmakers.compare_bookmakers_for_acca(bets_with_odds)
-
-    # If no cached odds found, fetch fresh odds for the acca's leagues
-    if not comparison and acca.leagues:
+    # Refresh the acca's leagues before comparing, so the comparison reflects
+    # near-live prices rather than odds up to the full 4h cache old. Bounded:
+    # get_football_matches only makes a paid call when the cache is older than
+    # COMPARE_REFRESH_MAX_AGE, so repeated opens / many members cost at most one
+    # refetch per league per window. Picked-bet odds stay locked either way —
+    # this only freshens the market shown in the comparison.
+    if acca.leagues:
         for league in acca.leagues:
-            await asyncio.to_thread(odds_api.get_football_matches, league)
+            await asyncio.to_thread(
+                odds_api.get_football_matches, league, odds_api.COMPARE_REFRESH_MAX_AGE
+            )
 
-        # Try comparison again with fresh odds
-        comparison = bookmakers.compare_bookmakers_for_acca(bets_with_odds)
+    comparison = bookmakers.compare_bookmakers_for_acca(bets_with_odds)
 
     if not comparison:
         raise HTTPException(

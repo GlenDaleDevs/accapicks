@@ -14,6 +14,11 @@ ODDS_API_BASE_URL = 'https://api.the-odds-api.com/v4'
 _cache = {}
 _scores_cache = {}  # Separate cache for scores
 CACHE_TTL_SECONDS = int(os.getenv('ODDS_CACHE_TTL', '14400'))  # 4 hours default — the results market barely moves inside that
+# Opening Compare Bookmakers refreshes the acca's leagues if the cached odds are
+# older than this, so the comparison is near-live. Bounded on purpose: at most
+# one refetch per league per window, however many people open Compare, so it
+# can't run the odds-API credits down. Tunable via env.
+COMPARE_REFRESH_MAX_AGE = int(os.getenv('COMPARE_ODDS_MAX_AGE', '1800'))  # 30 min
 SCORES_CACHE_TTL_SECONDS = 600  # 10 minutes for scores
 ODDS_REGIONS = os.getenv('ODDS_REGIONS', 'uk')
 ODDS_MARKETS = os.getenv('ODDS_MARKETS', 'h2h,totals')
@@ -26,10 +31,15 @@ EVENTS_CACHE_TTL_SECONDS = 3600  # fixture lists move slowly
 
 COMPARISON_ESTIMATE_HAIRCUT = 0.97  # 3% reduction on estimated odds
 
-def get_football_matches(sport='soccer_epl'):
+def get_football_matches(sport='soccer_epl', max_age=None):
     """
-    Get upcoming football matches with odds.
-    Results are cached for 5 minutes to reduce API usage.
+    Get upcoming football matches with odds, cached to reduce API usage.
+
+    max_age: override the cache freshness threshold (seconds) for this call.
+    Defaults to CACHE_TTL_SECONDS (4h). The Compare path passes the shorter
+    COMPARE_REFRESH_MAX_AGE so an open there refetches odds older than the
+    compare window while still being served from cache within it — a paid call
+    happens only when the cache is genuinely older than the threshold asked for.
 
     sport options:
     - soccer_epl (Premier League)
@@ -38,10 +48,11 @@ def get_football_matches(sport='soccer_epl'):
     - soccer_italy_serie_a (Serie A)
     - soccer_france_ligue_one (Ligue 1)
     """
+    ttl = CACHE_TTL_SECONDS if max_age is None else max_age
     # Check cache
     if sport in _cache:
         age = time.time() - _cache[sport]["timestamp"]
-        if age < CACHE_TTL_SECONDS:
+        if age < ttl:
             return _cache[sport]["data"]
 
     url = f'{ODDS_API_BASE_URL}/sports/{sport}/odds/'
@@ -59,6 +70,8 @@ def get_football_matches(sport='soccer_epl'):
         data = response.json()
         # Store in cache
         _cache[sport] = {"data": data, "timestamp": time.time()}
+        # A paid call landed — log it so credit burn stays visible in Railway.
+        logger.info("odds-API fetch: %s (%d matches)", sport, len(data))
         return data
     except Exception as e:
         logger.error(f"Error fetching odds for {sport}: {e}")
