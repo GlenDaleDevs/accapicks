@@ -222,6 +222,16 @@ Late development — deployed to production on Railway, security hardening compl
       both are pickable under "More bets" on a fixture row, priced (totals from the bulk call, BTTS
       lazily at 1 credit/event, 24h cache), and settlement.py settles all four pick types
 
+### To look into (noted 2026-08-29)
+- [ ] **Displayed odds look inaccurate vs bet365** (e.g. app 5.75 for Forest win, bet365 6.5). NOT a bug in
+      the lock behaviour: picked odds are stamped at pick time by `verify_pick` and never update — correct
+      for a bet slip (you're scored on the odds you took). The gap has two causes: (1) the feed price is the
+      **first bookmaker** The-Odds-API returns (Unibet-ish, `odds_api.py:104`), **not bet365** — books
+      differ, bet365 often more generous on outsiders; (2) displayed odds are cached up to **4h**
+      (`CACHE_TTL_SECONDS`) so they lag live movement even pre-pick. Options if we act: surface which
+      bookmaker the price is from; use best/average across books instead of "first"; shorten the cache
+      (all cost more odds-API credits). Compare Bookmakers panel already shows the live-ish spread.
+
 ### Future (multi-session projects)
 - [ ] Last Man Standing mode (new game mode: LMSGame, LMSRound, LMSPick models, elimination rounds)
 - [ ] Bet Builder feature (single-fixture multi-market bets, needs API research for SGM odds)
