@@ -116,11 +116,16 @@ def _notify(db, acca, block):
         from .push import send_push_to_group
         from .season import label
         anchor = block["anchor"]
+        # Name the group: a member in several groups opens the same-dated week
+        # in each at once, so without the group name the pushes read as spammy
+        # duplicates rather than one-per-group.
+        group = db.query(models.Group).filter(models.Group.id == acca.group_id).first()
+        group_name = group.name if group else "your group"
         send_push_to_group(
             db,
             acca.group_id,
             {
-                "title": f"{label(db, acca)} is open",
+                "title": f"{label(db, acca)} is open · {group_name}",
                 "body": f"{anchor.strftime('%a')} {anchor.day} {anchor.strftime('%b')} — get your pick in",
                 "tag": f"week-{acca.id}",
                 "url": f"/g/{acca.group_id}/acca/{acca.round_number}",
