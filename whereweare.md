@@ -164,11 +164,13 @@ Late development — deployed to production on Railway, security hardening compl
 - [x] ~~Confirm the group's `season_start_date` is 21 Aug 2026 or earlier, not the 22nd~~ — confirmed
       correct: the opening weekend's acca settled and the Table tab counted it, so the boundary includes
       Week 1 as intended.
-- [ ] **Genuine midweek rounds group with the following weekend in the Fixtures tab.** `fixturelist.py`
-      anchors each game week on the Tuesday (Tue→Mon), so a Thu/Fri/Sat/Sun/Mon round holds together —
-      but a real Tue/Wed round falls at the start of the *next* window rather than standing alone.
-      No midweek rounds until the cups start, so it can wait. `weekblocks._midweek_blocks` already
-      distinguishes a round (4+ PL fixtures) from a rearranged game — reuse that rather than a new rule
+- [x] ~~**Genuine midweek rounds group with the following weekend in the Fixtures tab.**~~ — fixed
+      2026-09-04. `_week_start` now splits weekend (Fri–Mon, keyed on the Friday) from midweek (Tue–Thu,
+      keyed on the Tuesday), so a midweek EFL round no longer shares a bucket with the weekend (was
+      showing each team twice). Mirrored in `FixturesTab.weekKeyFor` via a getDay()→weekday() conversion,
+      FE/BE parity verified across 70 days. Thursday sits with midweek (display-only; never pickable in a
+      weekend acca). ALSO: auto-create moved to Friday morning (`LEAD_DAYS` 3→1 + `OPEN_HOUR=7`) and
+      midweek Prem rounds are no longer auto-created (`is_saturday` filter) — make those by hand.
 - [ ] **Home/Away form dots are mostly blank until ~week 5.** Not a bug: the home side of a round-2
       fixture is usually a club that played away in round 1, so it has no home record yet. An empty
       record renders a dash. Self-resolving; revisit only if it still looks sparse in late September
