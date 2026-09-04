@@ -54,6 +54,8 @@ export default function TeamDetail() {
   const table = data?.table;
   const fixtures = data?.fixtures || [];
   const formSplit = data?.form?.[split];
+  const move = data?.move;
+  const shownDivisionName = data?.shown_division_name;
 
   return (
     <div className="page-content team-detail">
@@ -73,6 +75,12 @@ export default function TeamDetail() {
       ) : (
         <>
           <h2 className="section-title">{teamName}</h2>
+
+          {move ? (
+            <div className={`team-move-badge team-move-badge-${move}`}>
+              {move === "relegated" ? "Relegated from" : "Promoted from"} {shownDivisionName}
+            </div>
+          ) : null}
 
           <div className="team-header">
             {table ? (

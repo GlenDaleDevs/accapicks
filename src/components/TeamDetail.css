@@ -69,6 +69,31 @@
   text-transform: uppercase;
 }
 
+/* ---- Promoted/relegated status badge ---- */
+
+.team-move-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.team-move-badge-relegated {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--color-danger);
+}
+
+.team-move-badge-promoted {
+  background-color: rgba(81, 210, 24, 0.1);
+  border: 1px solid rgba(81, 210, 24, 0.3);
+  color: var(--color-success);
+}
+
 .team-no-table {
   margin: 0;
   padding: 0;
