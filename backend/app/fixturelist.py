@@ -33,6 +33,11 @@ logger = logging.getLogger(__name__)
 TUESDAY = 1
 FORM_LENGTH = 5
 
+# The four covered divisions plus the National League, in ladder order, for
+# hunting down a moved club's actual last-season division. Index in this list
+# doubles as tier (0 = top), which is all `classify_move` needs.
+SEARCH_DIVISIONS = list(TARGET_DIVISIONS) + ["EC"]
+
 REFRESH_INTERVAL_SECONDS = 60 * 60  # the events cache has the same TTL
 RETRY_INTERVAL_SECONDS = 10 * 60
 
@@ -248,6 +253,67 @@ def team_detail(season_code, div_code, name):
     }
 
 
+def locate_team_division(season_code, name, prefer):
+    """Which division a club's rows actually live in for a season.
+
+    Tries `prefer` (usually the club's current division) first, since that is
+    the common case and avoids extra fetches. Falls through the rest of
+    `SEARCH_DIVISIONS` in ladder order for a club that has moved. Mirrors
+    `team_detail`'s per-division fetch guard -- a missing/unpublished season
+    file for one division just means "not there", not an error.
+    """
+    order = [prefer] + [d for d in SEARCH_DIVISIONS if d != prefer]
+    variants = _resolve_target(name)
+
+    for div_code in order:
+        if div_code not in SEARCH_DIVISIONS:
+            continue
+        try:
+            rows = fetch_results(season_code, div_code)
+        except Exception as exc:
+            logger.info("No rows for %s %s while locating %r: %s",
+                        season_code, div_code, name, exc)
+            continue
+        if any(names.normalise(entry["team"]) in variants for entry in overall_table(rows)):
+            return div_code
+
+    return None
+
+
+def classify_move(prev_div, current_div):
+    """None if unchanged (or either division isn't one we track), else
+    "relegated"/"promoted" for the direction from `prev_div` to `current_div`.
+
+    `SEARCH_DIVISIONS` is ordered top-to-bottom, so a lower index is a higher
+    tier -- moving to a higher index means the club dropped a division.
+    """
+    if prev_div == current_div:
+        return None
+    if prev_div not in SEARCH_DIVISIONS or current_div not in SEARCH_DIVISIONS:
+        return None
+    return ("relegated"
+            if SEARCH_DIVISIONS.index(prev_div) < SEARCH_DIVISIONS.index(current_div)
+            else "promoted")
+
+
+def team_detail_resolved(season_code, current_div, name):
+    """`team_detail`, but for a season where the club may have played in a
+    different division than the one it's in now -- resolves that division
+    first and flags the move so the client can label it.
+
+    `shown` is where the club actually played that season; it only differs
+    from `current_div` when the club has since been promoted or relegated.
+    """
+    shown = locate_team_division(season_code, name, current_div) or current_div
+    detail = team_detail(season_code, shown, name)
+    return {
+        **detail,
+        "shown_division": shown,
+        "shown_division_name": DIVISION_BY_CODE.get(shown, {}).get("name", shown),
+        "move": classify_move(shown, current_div),
+    }
+
+
 def _played_matches(rows, div_code, buckets):
     """Bucket results by week.
 
@@ -433,3 +499,20 @@ async def refresh_fixture_list():
             logger.error("Fixture list refresh failed: %s", exc)
         delay = REFRESH_INTERVAL_SECONDS if _cache["ready"] else RETRY_INTERVAL_SECONDS
         await asyncio.sleep(delay)
+
+
+if __name__ == "__main__":
+    # classify_move direction check -- the bug-prone bit is inverting
+    # relegated/promoted, so pin the concrete cases from the spec.
+    cases = [
+        ("E0", "E1", "relegated"),  # came down from the Prem into the Champ
+        ("E1", "E0", "promoted"),   # went up from the Champ into the Prem
+        ("EC", "E3", "promoted"),   # went up from the National League into L2
+        ("E1", "E1", None),         # stayed put
+    ]
+    for prev_div, current_div, expected in cases:
+        actual = classify_move(prev_div, current_div)
+        assert actual == expected, (
+            f"classify_move({prev_div!r}, {current_div!r}) = {actual!r}, expected {expected!r}")
+        print(f"classify_move({prev_div!r}, {current_div!r}) = {actual!r}  OK")
+    print("All classify_move cases passed.")

@@ -137,7 +137,7 @@ def get_team_detail(
 
     name = name.strip()[:TEAM_NAME_MAX_LENGTH]
     season_code = standings.SEASONS[season]
-    detail = fixturelist.team_detail(season_code, division, name)
+    detail = fixturelist.team_detail_resolved(season_code, division, name)
 
     return {
         "team": name,
