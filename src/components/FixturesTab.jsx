@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import FixturesList from "./FixturesList";
 import FormTab from "./FormTab";
 import * as api from "../api/client";
@@ -31,6 +31,7 @@ export default function FixturesTab() {
   const { groupId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, oddsFormat } = useApp();
   const acca = useCurrentAcca(groupId);
 
@@ -38,8 +39,24 @@ export default function FixturesTab() {
   // League lives here rather than in each view, so switching between fixtures
   // and the table keeps you in the league you were looking at. The list itself
   // is reported up by whichever view loaded, so the names still come from the
-  // backend's division config rather than a second copy over here.
-  const [leagueCode, setLeagueCode] = useState(null);
+  // backend's division config rather than a second copy over here. Seeded from
+  // (and written back to) the URL so tapping a team and pressing back returns
+  // to the league you were on, not the default.
+  const [leagueCode, setLeagueCode] = useState(() => searchParams.get("league"));
+
+  // Keep the URL in step with the selected league (replace, so flicking through
+  // leagues doesn't stack history entries), so browser-back restores it.
+  const selectLeague = (code) => {
+    setLeagueCode(code);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("league", code);
+        return next;
+      },
+      { replace: true },
+    );
+  };
   const [leagues, setLeagues] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -119,7 +136,7 @@ export default function FixturesTab() {
             role="tab"
             aria-selected={l.code === selected?.code}
             className={`league-chip${l.code === selected?.code ? " league-chip-active" : ""}`}
-            onClick={() => setLeagueCode(l.code)}
+            onClick={() => selectLeague(l.code)}
           >
             {l.name}
           </button>
