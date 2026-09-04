@@ -41,15 +41,22 @@ _cache = {"generated_at": None, "weeks": [], "by_week": {}, "teams": {},
 
 
 def _week_start(day):
-    """The Tuesday that opens this day's game week.
+    """The date that opens this day's game week.
 
-    A round is Thu/Fri/Sat/Sun/Mon around its Saturday — the same shape
-    weekblocks.WEEKEND_OFFSETS uses for accas — so the window has to run
-    Tuesday to Monday. A calendar week would split a round in two, putting a
-    Monday night game with the following Saturday's fixtures instead of the
-    one it was played alongside.
+    Two kinds of week, kept apart so a midweek round and the following weekend
+    don't share a bucket (which showed a team twice):
+      - Fri/Sat/Sun/Mon → the weekend's Friday. A Monday-night game stays with
+        the weekend it was played alongside, not the next one.
+      - Tue/Wed/Thu → the midweek round's Tuesday.
+    Thursday sits with midweek here — a weekend acca never includes a Thursday
+    (weekblocks.WEEKEND_OFFSETS is Fri/Sun/Mon), so it's display-only either way.
+
+    MIRRORED in src/components/FixturesTab.jsx weekKeyFor — change both together
+    (JS getDay() is Sun=0..Sat=6, so it converts to this Mon=0 convention first).
     """
-    return day - timedelta(days=(day.weekday() - TUESDAY) % 7)
+    wd = day.weekday()  # Mon=0 .. Sun=6
+    back = 3 if wd == 0 else wd - 4 if wd >= 4 else wd - 1
+    return day - timedelta(days=back)
 
 
 def _day_label(day):
