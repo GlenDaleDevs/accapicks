@@ -35,10 +35,15 @@ logger = logging.getLogger(__name__)
 
 REFRESH_INTERVAL_SECONDS = 30 * 60
 
-# How far ahead a week opens. Three days puts the Saturday week up on Wednesday —
-# late enough that the API is listing the whole weekend, early enough that
-# there's a week to pick in well before kickoff.
-LEAD_DAYS = 3
+# How far ahead a week opens. One day puts the Saturday week up on its Friday.
+# (Trade-off: if the task is down BOTH Friday and Saturday the week is missed
+# with no backfill — accepted, given the 30-min tick + run-on-every-deploy.)
+# Midweek Prem rounds are never auto-created — make those by hand.
+LEAD_DAYS = 1
+
+# On the opening Friday, hold off until the morning so the "week is open" push
+# doesn't land in the small hours. Saturday (or later) opens regardless.
+OPEN_HOUR = 7  # 07:00 UK
 
 ACTIVE_STATUSES = ("open", "locked")
 
@@ -152,8 +157,13 @@ def _start_season(group, block):
     )
 
 
-def create_auto_weeks(db: Session, blocks, today):
-    """Open the next week for every group."""
+def create_auto_weeks(db: Session, blocks, today, now):
+    """Open the next weekend week for every group.
+
+    Weekend (Saturday-anchored) blocks only; midweek Prem rounds are left for
+    manual creation. Opens on the block's Friday from OPEN_HOUR, so the push
+    lands Friday morning rather than at midnight.
+    """
     groups = db.query(models.Group).all()
 
     created = []
@@ -166,6 +176,10 @@ def create_auto_weeks(db: Session, blocks, today):
         for block in blocks:
             if (block["anchor"] - today).days > LEAD_DAYS:
                 break  # blocks are sorted, so nothing later qualifies either
+            if not is_saturday(block["anchor"]):
+                continue  # never auto-create a midweek round
+            if (block["anchor"] - today).days == 1 and now.hour < OPEN_HOUR:
+                break  # the opening Friday, but too early — wait for the morning
             if taken & set(block["dates"]):
                 continue
             _start_season(group, block)
@@ -254,7 +268,8 @@ def cleanup_lapsed_weeks(db: Session, today):
 
 
 def run_once(db: Session):
-    today = _today()
+    now = datetime.now(UK_TZ)  # one clock read — today and the hour can't straddle midnight
+    today = now.date()
     cleanup_lapsed_weeks(db, today)
 
     events = fetch_events()
@@ -262,7 +277,7 @@ def run_once(db: Session):
     blocks = find_week_blocks(events, today)
 
     extend_weeks(db, all_counts, today)
-    create_auto_weeks(db, blocks, today)
+    create_auto_weeks(db, blocks, today, now)
 
 
 async def auto_create_weeks():

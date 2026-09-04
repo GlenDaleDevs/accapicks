@@ -15,11 +15,15 @@ const VIEWS = [
   { key: "standings", label: "Standings" },
 ];
 
-// The Tuesday that opens a date's game week — mirrors fixturelist._week_start,
-// so "land on the acca's week" agrees with the server's bucketing.
+// The date that opens a date's game week — mirrors fixturelist._week_start
+// EXACTLY, so "land on the acca's week" agrees with the server's bucketing.
+// Weekend (Fri–Mon) and midweek (Tue–Thu) get separate keys. getDay() is
+// Sun=0..Sat=6, so convert to Python's Mon=0..Sun=6 first, then use the same map.
 function weekKeyFor(dateIso) {
   const d = new Date(`${dateIso}T12:00:00`);
-  d.setDate(d.getDate() - ((d.getDay() - 2 + 7) % 7));
+  const wd = (d.getDay() + 6) % 7; // Mon=0 .. Sun=6
+  const back = wd === 0 ? 3 : wd >= 4 ? wd - 4 : wd - 1;
+  d.setDate(d.getDate() - back);
   return d.toISOString().slice(0, 10);
 }
 
