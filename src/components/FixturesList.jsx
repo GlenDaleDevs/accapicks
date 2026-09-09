@@ -206,7 +206,7 @@ export default function FixturesList({ leagueCode, onLeagues, initialWeek = "", 
           <p className="placeholder-text">
             {data?.ready === false
               ? "The fixture list is still being built. Check back in a moment."
-              : "No fixtures for this league that week — an international break, most likely."}
+              : "No fixtures in this league this week — try another week or league."}
           </p>
         </div>
       )}

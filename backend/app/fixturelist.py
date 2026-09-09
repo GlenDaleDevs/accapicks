@@ -425,17 +425,39 @@ def refresh_once():
     logger.info("Fixture list refreshed: %d weeks", len(weeks))
 
 
+PREM_CODE = TARGET_DIVISIONS[0]  # E0
+FRIDAY = 4  # a weekend bucket is keyed on its Friday; midweek on its Tuesday
+
+
+def _week_has_prem(key):
+    return any(
+        lg.get("code") == PREM_CODE and lg.get("matches")
+        for lg in _cache.get("by_week", {}).get(key, [])
+    )
+
+
 def default_week():
-    """This week if it has anything on, otherwise the next week that does —
-    landing on an empty week during an international break helps nobody."""
+    """The week the tab opens on.
+
+    Weekend-first: now that midweek and weekend are separate buckets, an upcoming
+    midweek EFL round would otherwise hide the coming weekend's fixtures (the Prem
+    plays weekends), so skip a midweek round with no Premier League games in
+    favour of the next weekend. A real Prem midweek round (has E0 games) is landed
+    on normally. Falls back to the nearest week then the last, so an international
+    break lands on the resumption weekend rather than an empty page.
+    """
     weeks = _cache["weeks"]
     if not weeks:
         return None
     this_week = _week_start(datetime.now(UK_TZ).date()).isoformat()
-    for week in weeks:
-        if week["key"] >= this_week:
-            return week["key"]
-    return weeks[-1]["key"]
+    upcoming = [w for w in weeks if w["key"] >= this_week]
+    if not upcoming:
+        return weeks[-1]["key"]
+    for w in upcoming:
+        key = w["key"]
+        if date.fromisoformat(key).weekday() == FRIDAY or _week_has_prem(key):
+            return key
+    return upcoming[0]["key"]
 
 
 def get_week(key=None):
