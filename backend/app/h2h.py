@@ -9,6 +9,7 @@ already loaded, so a slow cold warm-up can never turn into a slow request.
 
 import asyncio
 import logging
+import time
 
 from .predictionmodel import names
 from .predictionmodel.config import CURRENT_SEASON, TARGET_DIVISIONS
@@ -18,6 +19,13 @@ logger = logging.getLogger(__name__)
 
 SEASON_COUNT = 12
 MAX_MEETINGS = 15
+
+# The warm-up fetches ~48 files. football-data.co.uk rate-limits bursts, and a
+# burst there gets the whole IP throttled — which then fails the CURRENT-season
+# fetches the form dots, standings and team pages depend on. So trickle: wait
+# before starting (let the essential feeds fetch first) and space each fetch out.
+WARM_START_DELAY_SECONDS = 60
+FETCH_SPACING_SECONDS = 3
 
 _cache = {"rows": [], "known": set(), "ready": False}
 _unresolved_logged = set()
@@ -47,8 +55,15 @@ def load_history():
     fixturelist._fetch_rows.
     """
     rows = []
+    first = True
     for season in SEASON_CODES:
         for div in TARGET_DIVISIONS:
+            # Space out the fetches so the burst can't get football-data to
+            # throttle the IP (which would take the current-season feeds down
+            # with it). The first cell goes immediately; the rest trickle.
+            if not first:
+                time.sleep(FETCH_SPACING_SECONDS)
+            first = False
             try:
                 season_rows = fetch_results(season, div)
             except Exception as exc:
@@ -70,7 +85,12 @@ async def warm_h2h_history():
     Finished seasons are immutable once cached to disk and the current
     season's slice is tiny, so a single load is enough -- there is nothing
     to gain from re-looping the way standings/fixtures do on a TTL.
+
+    Waits before starting so the essential fixtures/standings fetches (which the
+    form dots and tables need) get to football-data first and are cached before
+    this trickle begins.
     """
+    await asyncio.sleep(WARM_START_DELAY_SECONDS)
     rows = await asyncio.to_thread(load_history)
     _cache["rows"] = rows
     _cache["known"] = {names.normalise(r["home"]) for r in rows} | {
