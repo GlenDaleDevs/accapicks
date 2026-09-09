@@ -9,6 +9,7 @@ already loaded, so a slow cold warm-up can never turn into a slow request.
 
 import asyncio
 import logging
+import os
 import time
 
 from .predictionmodel import names
@@ -26,6 +27,12 @@ MAX_MEETINGS = 15
 # before starting (let the essential feeds fetch first) and space each fetch out.
 WARM_START_DELAY_SECONDS = 60
 FETCH_SPACING_SECONDS = 3
+
+# Kill switch: set H2H_WARM_ENABLED=0 in Railway to stop ALL H2H football-data
+# fetching, so the core feeds (form dots, standings, team pages) have the site
+# to themselves if it has rate-limited the IP. H2H just shows "still loading"
+# until re-enabled.
+WARM_ENABLED = os.getenv("H2H_WARM_ENABLED", "1") != "0"
 
 _cache = {"rows": [], "known": set(), "ready": False}
 _unresolved_logged = set()
@@ -90,6 +97,9 @@ async def warm_h2h_history():
     form dots and tables need) get to football-data first and are cached before
     this trickle begins.
     """
+    if not WARM_ENABLED:
+        logger.warning("H2H warm-up disabled (H2H_WARM_ENABLED=0); no history loaded")
+        return
     await asyncio.sleep(WARM_START_DELAY_SECONDS)
     rows = await asyncio.to_thread(load_history)
     _cache["rows"] = rows
