@@ -27,6 +27,10 @@ MAX_MEETINGS = 15
 # before starting (let the essential feeds fetch first) and space each fetch out.
 WARM_START_DELAY_SECONDS = 60
 FETCH_SPACING_SECONDS = 3
+# If a warm-up loads nothing (feed temporarily blocked/down), retry rather than
+# leaving H2H stuck empty — the one-shot load could otherwise run during an
+# outage and never recover, the way the dots do on their own timer.
+WARM_RETRY_SECONDS = 15 * 60
 
 # Kill switch: set H2H_WARM_ENABLED=0 in Railway to stop ALL H2H football-data
 # fetching, so the core feeds (form dots, standings, team pages) have the site
@@ -87,11 +91,14 @@ def get_history():
 
 
 async def warm_h2h_history():
-    """Background task: load the whole grid once into the cache.
+    """Background task: load the whole grid into the cache, retrying until it
+    actually gets data.
 
-    Finished seasons are immutable once cached to disk and the current
-    season's slice is tiny, so a single load is enough -- there is nothing
-    to gain from re-looping the way standings/fixtures do on a TTL.
+    Finished seasons are immutable once cached to disk, so once a full load
+    succeeds there's nothing to re-fetch. But a single one-shot load could run
+    while football-data is temporarily down/blocked, load nothing, and leave
+    H2H stuck empty forever (the dots recover on their own timer; H2H didn't).
+    So retry on an empty load until one comes back with rows.
 
     Waits before starting so the essential fixtures/standings fetches (which the
     form dots and tables need) get to football-data first and are cached before
@@ -101,16 +108,24 @@ async def warm_h2h_history():
         logger.warning("H2H warm-up disabled (H2H_WARM_ENABLED=0); no history loaded")
         return
     await asyncio.sleep(WARM_START_DELAY_SECONDS)
-    rows = await asyncio.to_thread(load_history)
-    _cache["rows"] = rows
-    _cache["known"] = {names.normalise(r["home"]) for r in rows} | {
-        names.normalise(r["away"]) for r in rows
-    }
-    _cache["ready"] = True
-    logger.info(
-        "H2H history warmed: %d rows across %d seasons x %d divisions",
-        len(rows), len(SEASON_CODES), len(TARGET_DIVISIONS),
-    )
+    while True:
+        rows = await asyncio.to_thread(load_history)
+        if rows:
+            _cache["rows"] = rows
+            _cache["known"] = {names.normalise(r["home"]) for r in rows} | {
+                names.normalise(r["away"]) for r in rows
+            }
+            _cache["ready"] = True
+            logger.info(
+                "H2H history warmed: %d rows across %d seasons x %d divisions",
+                len(rows), len(SEASON_CODES), len(TARGET_DIVISIONS),
+            )
+            return
+        logger.warning(
+            "H2H warm-up loaded no history (feed down/blocked?); retrying in %ds",
+            WARM_RETRY_SECONDS,
+        )
+        await asyncio.sleep(WARM_RETRY_SECONDS)
 
 
 def _variants(name):
