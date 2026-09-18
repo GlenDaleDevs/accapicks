@@ -353,6 +353,18 @@ def delete_acca(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only the group admin can delete a week that's already in play"
                 )
+            # Legs settle one by one, so a locked week with any result already in
+            # could be deleted to erase a losing leg from the leaderboard. Only
+            # allow the delete while no result has landed.
+            settled_bet = db.query(models.Bet).filter(
+                models.Bet.acca_id == acca_id,
+                models.Bet.result.isnot(None)
+            ).first()
+            if settled_bet:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="This week already has results in — it can't be deleted"
+                )
         elif acca.status != "open":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
