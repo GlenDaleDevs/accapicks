@@ -146,9 +146,12 @@ export default function AccaTab({ user, oddsFormat }) {
     if (!detail) return;
     const label = detail.week_number ? `Week ${detail.week_number}` : "this week";
     const picks = (detail.bets || []).length;
-    const warning = picks
-      ? `Delete ${label}? ${picks} pick${picks === 1 ? "" : "s"} will go with it.`
-      : `Delete ${label}?`;
+    const warning =
+      detail.status === "locked"
+        ? `${label} is already in play — deleting it removes ${picks} pick${picks === 1 ? "" : "s"} and this week won't count. You can start a fresh week after.`
+        : picks
+        ? `Delete ${label}? ${picks} pick${picks === 1 ? "" : "s"} will go with it.`
+        : `Delete ${label}?`;
     if (!window.confirm(warning)) return;
     setDeleting(true);
     try {
@@ -234,11 +237,16 @@ export default function AccaTab({ user, oddsFormat }) {
   const currentIndex = current ? accas.findIndex((a) => a.id === current.id) : -1;
   const hasLiveWeek = accas.some((a) => a.status === "open" && !isExpired(a));
 
-  // Deleting is only possible while a week is still open — once it locks, the
-  // backend refuses. Auto-created weeks have no creator, so for those it's the
-  // group admin or nobody.
+  // Open: creator or admin can delete. Locked (in play): admin only, so a
+  // week locked by one early kickoff can be binned and restarted. Settled:
+  // nobody — the backend refuses.
   const isGroupAdmin = members.some((m) => m.user_id === user?.id && m.role === "admin");
-  const canDelete = detail?.status === "open" && (isGroupAdmin || detail?.created_by === user?.id);
+  const canDelete =
+    detail?.status === "open"
+      ? isGroupAdmin || detail?.created_by === user?.id
+      : detail?.status === "locked"
+      ? isGroupAdmin
+      : false;
   return (
     <div className="acca-tab">
       <PushPrompt />
