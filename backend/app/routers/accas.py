@@ -312,7 +312,7 @@ def delete_acca(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user)
 ):
-    """Delete an acca (only if open and user is creator or group admin)"""
+    """Delete an acca. Open: creator or group admin. Locked (in play): group admin only. Settled: never."""
 
     try:
         # Get acca
@@ -344,15 +344,28 @@ def delete_acca(
                 detail="Only the acca creator or group admin can delete this acca"
             )
 
-        # Verify acca is open
-        if acca.status != "open":
+        # A locked week means one member's early kickoff passed before the rest of the
+        # group had picked, shutting picking for everyone. Let the admin bin it and
+        # start a fresh one instead of leaving the group stuck for the whole week.
+        if acca.status == "locked":
+            if not is_admin:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Only the group admin can delete a week that's already in play"
+                )
+        elif acca.status != "open":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Can only delete accas with 'open' status"
+                detail="Settled weeks can't be deleted"
             )
 
         # Delete all bets in the acca
-        db.query(models.Bet).filter(models.Bet.acca_id == acca_id).delete(synchronize_session=False)
+        deleted_bets = db.query(models.Bet).filter(models.Bet.acca_id == acca_id).delete(synchronize_session=False)
+
+        logger.info(
+            "Acca %s (group %s, status %s) deleted by user %s, removing %s bets",
+            acca.id, acca.group_id, acca.status, user_id, deleted_bets
+        )
 
         # Delete the acca
         db.delete(acca)
