@@ -12,6 +12,11 @@ manually created accas, where the chosen dates are a deliberate decision.
 Every group gets weeks — there is no opt-out. A group that has never had one
 also gets its season boundary set here, to the first date of the first week
 that opens, so the table starts counting from the group's real first week.
+
+`groups.skipped_saturday` is the one deliberate exception: an admin deleting
+an *open* auto-created week records its anchor Saturday there, and
+`create_auto_weeks` refuses to recreate that block. Deleting a *locked* week
+does not set it — that's the restart path, not a skip.
 """
 
 import asyncio
@@ -178,6 +183,8 @@ def create_auto_weeks(db: Session, blocks, today, now):
                 break  # blocks are sorted, so nothing later qualifies either
             if not is_saturday(block["anchor"]):
                 continue  # never auto-create a midweek round
+            if group.skipped_saturday and block["anchor"] == group.skipped_saturday:
+                continue  # the admin deleted this weekend's week on purpose
             if (block["anchor"] - today).days == 1 and now.hour < OPEN_HOUR:
                 break  # the opening Friday, but too early — wait for the morning
             if taken & set(block["dates"]):
