@@ -146,12 +146,13 @@ export default function AccaTab({ user, oddsFormat }) {
     if (!detail) return;
     const label = detail.week_number ? `Week ${detail.week_number}` : "this week";
     const picks = (detail.bets || []).length;
+    const skipNote = detail.created_by == null ? " It won't reopen by itself — start one manually if you change your mind." : "";
     const warning =
       detail.status === "locked"
         ? `${label} is already in play — deleting it removes ${picks} pick${picks === 1 ? "" : "s"} and this week won't count. You can start a fresh week after.`
         : picks
-        ? `Delete ${label}? ${picks} pick${picks === 1 ? "" : "s"} will go with it.`
-        : `Delete ${label}?`;
+        ? `Delete ${label}? ${picks} pick${picks === 1 ? "" : "s"} will go with it.${skipNote}`
+        : `Delete ${label}?${skipNote}`;
     if (!window.confirm(warning)) return;
     setDeleting(true);
     try {
