@@ -10,6 +10,7 @@ from ..database import get_db
 from .auth import get_current_user
 from ..limiter import limiter
 from ..normalization import normalize
+from ..weekblocks import saturday_in
 
 logger = logging.getLogger(__name__)
 
@@ -370,6 +371,23 @@ def delete_acca(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Settled weeks can't be deleted"
             )
+
+        # An auto-created week deleted while still open is a "skip this
+        # weekend": without this the 30-min auto-week tick recreates it (and
+        # re-pushes "week is open"). A locked week stays recreatable — deleting
+        # one is the restart path, not a skip.
+        if acca.created_by is None and acca.status == "open":
+            saturday = saturday_in(acca.match_dates)
+            if saturday is not None:
+                group = db.query(models.Group).filter(
+                    models.Group.id == acca.group_id
+                ).first()
+                if group:
+                    group.skipped_saturday = saturday
+                    logger.info(
+                        "Group %s skipping auto week of %s (acca %s deleted by user %s)",
+                        group.id, saturday, acca.id, user_id,
+                    )
 
         # Delete all bets in the acca
         deleted_bets = db.query(models.Bet).filter(models.Bet.acca_id == acca_id).delete(synchronize_session=False)
