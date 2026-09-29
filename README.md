@@ -9,6 +9,12 @@ A social football accumulator game for groups of mates. Every week, each member 
 
 No money is staked through the app: picks are tracked against a notional stake, and bookmaker price comparisons carry clear affiliate/18+ disclosure. UK-focused (Premier League, Championship, League One, League Two).
 
+<p align="center">
+  <img src="docs/screenshots/acca-week.jpg" alt="The weekly acca slip — one pick per member, locks at first kickoff" width="30%" />
+  <img src="docs/screenshots/fixtures.jpg" alt="Fixtures with live odds, form dots and head-to-head records" width="30%" />
+  <img src="docs/screenshots/leaderboard.jpg" alt="Season leaderboard with streaks and weekly movement" width="30%" />
+</p>
+
 ## How it works
 
 1. **Create or join a group** with a 6-character invite code (shareable via WhatsApp/Messenger).
