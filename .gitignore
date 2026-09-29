@@ -33,6 +33,7 @@ __pycache__/
 
 # Notes and plans
 *.txt
+!backend/requirements*.txt
 nul
 
 # Editor directories and files
