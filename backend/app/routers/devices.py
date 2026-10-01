@@ -56,10 +56,14 @@ def _device_key(request: Request) -> str:
 
 
 def _membership(db, group_id, user_id):
-    return db.query(models.GroupMember).filter(
+    member = db.query(models.GroupMember).filter(
         models.GroupMember.group_id == group_id,
         models.GroupMember.user_id == user_id,
     ).first()
+    if member is None:
+        # Vanishingly small race: left the group after _group_or_404 passed.
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not a member of this group")
+    return member
 
 
 @router.post("/groups/{group_id}/device-token", status_code=status.HTTP_201_CREATED)
@@ -112,18 +116,26 @@ def count_devices(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user),
 ):
-    """How many members in the group have a display connected."""
+    """Device tokens in use in the group, and how many polled recently."""
     _group_or_404(db, group_id, user_id)
-    connected = db.query(models.GroupMember).filter(
+    holders = db.query(models.GroupMember).filter(
         models.GroupMember.group_id == group_id,
         models.GroupMember.device_token_hash.isnot(None),
-    ).count()
-    return {"connected": connected}
+    ).all()
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=10)
+    online = sum(
+        1 for m in holders
+        if m.device_last_seen_at and as_utc(m.device_last_seen_at) > cutoff
+    )
+    return {"connected": len(holders), "online": online}
 
 
 def _unauthorized(request: Request, reason: str):
-    # Never log the Authorization header or anything derived from it.
-    logger.warning(f"Device auth failed: {reason} ip={get_real_ip(request)}")
+    # Never log the Authorization header or anything derived from it. The IP
+    # comes from X-Forwarded-For (client-controlled), so strip it to IP
+    # characters and cap at IPv6 length before it reaches the logs.
+    ip = re.sub(r"[^0-9a-fA-F.:]", "", get_real_ip(request) or "")[:45]
+    logger.warning(f"Device auth failed: {reason} ip={ip}")
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid device token",

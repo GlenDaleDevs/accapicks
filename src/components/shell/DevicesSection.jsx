@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import * as api from "../../api/client";
 import { showToast } from "../../utils/toast";
 
-const countLabel = (n) => {
-  if (n === null) return "";
-  if (n === 0) return "No displays connected";
-  return `${n} ${n === 1 ? "display" : "displays"} connected`;
+const countLabel = (count) => {
+  if (count === null) return "";
+  if (count.connected === 0) return "No devices connected";
+  const tokens = `${count.connected} device token${count.connected === 1 ? "" : "s"} in use`;
+  return count.online ? `${tokens} · ${count.online} online now` : tokens;
 };
 
 // The device token is held in component state only: never context, never
@@ -20,7 +21,7 @@ export default function DevicesSection({ groupId }) {
   const refreshCount = useCallback(async () => {
     try {
       const data = await api.getDeviceCount(groupId);
-      setCount(data.connected);
+      setCount(data);
     } catch {
       showToast("Failed to load connected displays", "error");
     }
@@ -29,7 +30,7 @@ export default function DevicesSection({ groupId }) {
   useEffect(() => {
     let cancelled = false;
     api.getDeviceCount(groupId)
-      .then((data) => { if (!cancelled) setCount(data.connected); })
+      .then((data) => { if (!cancelled) setCount(data); })
       .catch(() => {
         if (!cancelled) showToast("Failed to load connected displays", "error");
       });
@@ -44,6 +45,7 @@ export default function DevicesSection({ groupId }) {
       const data = await api.createDeviceToken(groupId);
       setToken(data.token);
       setCopyNote("");
+      await refreshCount();
     } catch (err) {
       showToast(err.response?.data?.detail || "Failed to generate device token", "error");
     } finally {

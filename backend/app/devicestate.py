@@ -45,11 +45,16 @@ def pick_current(accas, now: datetime):
     for acca in ordered:
         if acca.status == "open" and not is_expired(acca, now):
             return acca
+    # chronological() sorts legacy accas (null first_match_date) LAST, so a
+    # bare [-1] could prefer a pre-numbering relic over the newest real week.
+    def _latest(pool):
+        dated = [a for a in pool if a.first_match_date is not None]
+        return (dated or pool)[-1] if pool else None
+
     locked = [a for a in ordered if a.status == "locked"]
     if locked:
-        return locked[-1]
-    done = [a for a in ordered if a.status in SETTLED_STATUSES]
-    return done[-1] if done else None
+        return _latest(locked)
+    return _latest([a for a in ordered if a.status in SETTLED_STATUSES])
 
 
 def derive_state(acca, bets, member_count: int, now: datetime) -> str:
