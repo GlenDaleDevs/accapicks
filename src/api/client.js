@@ -287,6 +287,22 @@ export const transferAdmin = async (groupId, newAdminId) => {
   return response.data;
 };
 
+// Display devices (the token is returned once; minting again replaces it)
+export const createDeviceToken = async (groupId) => {
+  const response = await axios.post(`${API_URL}/groups/${groupId}/device-token`);
+  return response.data;
+};
+
+export const revokeDeviceToken = async (groupId) => {
+  const response = await axios.delete(`${API_URL}/groups/${groupId}/device-token`);
+  return response.data;
+};
+
+export const getDeviceCount = async (groupId) => {
+  const response = await axios.get(`${API_URL}/groups/${groupId}/devices`);
+  return response.data;
+};
+
 // Push Notifications
 export const getVapidKey = async () => {
   const response = await axios.get(`${API_URL}/notifications/vapid-key`);
