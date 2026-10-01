@@ -130,6 +130,11 @@ class GroupMember(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     role = Column(String, default="member")  # member or admin
     joined_at = Column(DateTime(timezone=True), server_default=func.now())
+    # One IoT display token per membership (sha256 hex of an `apk_...` token).
+    # Living on this row means the token dies with the membership — leaving,
+    # removal or account deletion revokes it with no extra bookkeeping.
+    device_token_hash = Column(String(64), unique=True, nullable=True, index=True)
+    device_last_seen_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="memberships")

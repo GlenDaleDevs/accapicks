@@ -20,7 +20,7 @@ from .standings import refresh_standings
 from .autoweek import auto_create_weeks
 from .h2h import warm_h2h_history
 from . import models
-from .routers import auth, groups, groupstats, accas, bets, odds, affiliate, notifications, nudges
+from .routers import auth, groups, groupstats, accas, bets, odds, affiliate, notifications, nudges, devices
 from .limiter import limiter
 from .logging_config import setup_logging
 
@@ -137,6 +137,7 @@ app.include_router(nudges.router, prefix="/api", tags=["nudges"])
 app.include_router(odds.router, prefix="/api", tags=["odds"])
 app.include_router(affiliate.router, prefix="/api", tags=["affiliate"])
 app.include_router(notifications.router, prefix="/api", tags=["notifications"])
+app.include_router(devices.router, prefix="/api", tags=["devices"])
 
 # Background task: auto-lock accas when locks_at time has passed
 async def auto_lock_accas():

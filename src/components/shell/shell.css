@@ -540,3 +540,54 @@
   gap: 8px;
   margin-top: 14px;
 }
+
+.group-settings-device-count {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.group-settings-token {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.group-settings-token-row {
+  display: flex;
+  gap: 8px;
+}
+
+.group-settings-token-input {
+  flex: 1;
+  min-width: 0;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.group-settings-token-warning {
+  margin: 0;
+  color: var(--color-warning, #fbbf24);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.group-settings-link {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.group-settings-link:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import * as api from "../../api/client";
 import { useApp } from "../../context/AppContext";
 import { showToast } from "../../utils/toast";
+import DevicesSection from "./DevicesSection";
 
 // The admin surface lost with the More tab: rename the group, set or clear
 // the season boundary, remove a member. Lives in a modal off the header menu.
@@ -141,6 +142,8 @@ export default function GroupSettingsPanel({ groupId, onClose }) {
           </li>
         ))}
       </ul>
+
+      <DevicesSection key={groupId} groupId={groupId} />
 
       <div className="group-settings-actions">
         <button type="submit" className="btn btn-primary" disabled={saving}>
