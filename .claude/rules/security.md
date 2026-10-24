@@ -70,3 +70,23 @@ Rules derived from security audits. Follow these when writing any new code.
 - Call backend logout endpoint BEFORE clearing localStorage on logout
 - React JSX auto-escapes — never use `dangerouslySetInnerHTML`
 - Always use `type="email"` only on email-only fields, not mixed input fields
+
+## Incident Log
+
+### 2026-10-21 — Railway platform breach (host env-var exposure)
+
+**What happened (upstream, not our code):** Railway — our hosting platform — disclosed that an unauthorized third party accessed systems storing customer environment variables, and decrypted a subset using compromised credentials. Reported as part of a campaign to harvest AI-provider API keys ("LLMjacking"). Our workspace was flagged as **not** higher-risk, but all secrets live in Railway env vars, so they were potentially in scope.
+
+**Response (2026-10-24, precautionary — no evidence our app was hit):** rotated every secret and revoked the old ones at source:
+- `SECRET_KEY` (JWT) — regenerated. One-time logout wave is expected and acceptable.
+- VAPID keypair (`VAPID_PRIVATE_KEY`/`VAPID_PUBLIC_KEY`) — regenerated.
+- `ODDS_API_KEY`, `RESEND_API_KEY` — regenerated in each provider dashboard, old keys revoked.
+- Postgres password — rotated via Railway's Regenerate; Railway also rotated its own storage/GitHub-integration creds and invalidated API tokens/OAuth sessions.
+- Railway account: password changed + 2FA.
+
+**Side effects handled:**
+- Rotating VAPID invalidated every existing push subscription (each is bound to the old public key). Added `ensureFreshSubscription()` (re-subscribes on sign-in when the key no longer matches) + backend now drops subscriptions on HTTP 403, not just 410. So future key rotations self-heal.
+
+**Open follow-up:** during the rotation, `postgres.railway.internal` (private networking) stopped resolving, so the app's `DATABASE_URL` was temporarily pointed at `DATABASE_PUBLIC_URL` (public proxy, same new password — works, slightly less private). Revert to the internal/reference URL once private networking is confirmed healthy.
+
+**Lesson:** storing secrets in env vars (not in code/git) is correct and necessary, but it does not remove supply-chain risk from the platform holding them. The mitigation is being able to rotate fast. Keep secrets rotatable, prefer least-privilege keys (e.g. Resend "sending only"), and watch provider usage dashboards after any such incident.
