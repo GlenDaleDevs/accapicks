@@ -55,9 +55,12 @@ def send_push(db: Session, user_id: int, payload: dict):
             )
             sub.last_used_at = datetime.now(timezone.utc)
         except WebPushException as e:
-            if e.response and e.response.status_code == 410:
-                # Subscription expired/unsubscribed — clean up
-                logger.info(f"Removing expired push subscription {sub.id} for user {user_id}")
+            if e.response and e.response.status_code in (403, 404, 410):
+                # 410 Gone / 404 unknown = unsubscribed; 403 = the subscription
+                # was signed for a different VAPID key (e.g. after a key
+                # rotation) and will never accept our pushes. Drop it — the
+                # client re-subscribes with the current key on next load.
+                logger.info(f"Removing dead push subscription {sub.id} for user {user_id} (HTTP {e.response.status_code})")
                 db.delete(sub)
             else:
                 logger.warning(f"Push failed for subscription {sub.id}: {e}")

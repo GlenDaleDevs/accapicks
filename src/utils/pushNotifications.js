@@ -85,6 +85,36 @@ export async function isSubscribedToPush() {
   }
 }
 
+/**
+ * Self-heal after a VAPID key rotation. A push subscription is bound to the
+ * server's public key at creation; if the server's key changes, the old
+ * subscription still exists in the browser (so the user looks subscribed) but
+ * the push service rejects every send — push silently dies. On load, if the
+ * existing subscription's key no longer matches the server's, swap it for a
+ * fresh one. Silent: only runs when permission is already granted, and does
+ * nothing if the user isn't subscribed (the prompt handles brand-new subs).
+ */
+export async function ensureFreshSubscription() {
+  if (!isPushSupported() || getPushPermission() !== "granted") return;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (!subscription) return;
+    const { vapid_key } = await getVapidKey();
+    const existing = subscription.options?.applicationServerKey;
+    if (existing && bufferToBase64url(existing) === vapid_key) return; // already current
+    // Stale key (or the browser won't expose it) — resubscribe with the current one.
+    await subscription.unsubscribe();
+    const fresh = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapid_key),
+    });
+    await subscribePush(fresh.toJSON());
+  } catch {
+    // Best-effort — if it fails, push just stays as-is until the next load.
+  }
+}
+
 // Helper: convert base64url string to Uint8Array (for applicationServerKey)
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -95,4 +125,13 @@ function urlBase64ToUint8Array(base64String) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
+}
+
+// Helper: ArrayBuffer -> base64url, to compare a subscription's stored key
+// against the server's current VAPID key.
+function bufferToBase64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }

@@ -18,6 +18,7 @@ import ComplianceFooter from "./components/ComplianceFooter";
 import { AppContext } from "./context/AppContext";
 import useAuthSession from "./hooks/useAuthSession";
 import useGroups from "./hooks/useGroups";
+import { ensureFreshSubscription } from "./utils/pushNotifications";
 import usePwaUpdate from "./hooks/usePwaUpdate";
 
 // Composition only — session, groups and the PWA update cycle live in hooks.
@@ -53,6 +54,12 @@ function App() {
       .then(setBookmakerLinks)
       .catch((err) => console.error("Failed to fetch bookmaker links:", err));
   }, []);
+
+  // After a VAPID key rotation, existing push subscriptions are bound to the
+  // old key and silently stop receiving — re-subscribe them on sign-in.
+  useEffect(() => {
+    if (isLoggedIn) ensureFreshSubscription();
+  }, [isLoggedIn]);
 
   // An invite link can arrive before login — park the code for useGroups to
   // consume once the user is signed in, and resolve the group's name so the
