@@ -20,7 +20,11 @@ def _redact_email(email: str) -> str:
 
 
 def send_verification_email(to_email: str, code: str, username: str) -> Optional[dict]:
-    """Send a verification email with the 6-digit code."""
+    """Send a verification email with the 6-digit code. Raises on failure,
+    so signup/resend report an error instead of "check your email"."""
+    if not resend.api_key:
+        logger.error("Cannot send verification email - RESEND_API_KEY is not set")
+        raise RuntimeError("Email delivery is not configured")
     try:
         response = resend.Emails.send({
             "from": "AccaPicks <noreply@accapicks.com>",
@@ -43,7 +47,7 @@ def send_verification_email(to_email: str, code: str, username: str) -> Optional
         return response
     except Exception as e:
         logger.error(f"Failed to send verification email to {_redact_email(to_email)}: {e}")
-        return None
+        raise
 
 
 def send_password_reset_email(to_email: str, code: str, username: str) -> Optional[dict]:

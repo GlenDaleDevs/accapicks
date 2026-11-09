@@ -320,8 +320,9 @@ if DIST_DIR.is_dir():
     @app.get("/{path:path}")
     async def serve_spa(path: str):
         # If the path points to an actual file in dist, serve it
-        file_path = DIST_DIR / path
-        if file_path.is_file():
+        file_path = (DIST_DIR / path).resolve()
+        # Only serve files inside dist/ — blocks ../ path traversal
+        if file_path.is_relative_to(DIST_DIR) and file_path.is_file():
             media_type = None
             if path.endswith(".webp"):
                 media_type = "image/webp"

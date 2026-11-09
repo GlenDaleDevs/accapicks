@@ -118,7 +118,7 @@ def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(get
     try:
         send_verification_email(user.email, verification_code, user.username)
     except Exception as e:
-        logger.error(f"Failed to send verification email to {user.email}: {e}")
+        logger.error(f"Failed to send verification email: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send verification email. Please try again."
@@ -392,7 +392,7 @@ def resend_code(request: Request, data: schemas.ResendCodeRequest, db: Session =
     try:
         send_verification_email(user.email, verification_code, user.username)
     except Exception as e:
-        logger.error(f"Failed to send verification email to {user.email}: {e}")
+        logger.error(f"Failed to send verification email: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send verification email. Please try again."
@@ -431,7 +431,7 @@ def forgot_password(request: Request, data: schemas.ForgotPasswordRequest, db: S
     try:
         send_password_reset_email(user.email, reset_code, user.username)
     except Exception as e:
-        logger.error(f"Failed to send password reset email to {user.email}: {e}")
+        logger.error(f"Failed to send password reset email: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send reset email. Please try again."

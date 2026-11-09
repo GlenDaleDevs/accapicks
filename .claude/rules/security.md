@@ -31,7 +31,7 @@ Rules derived from security audits. Follow these when writing any new code.
 
 ## Rate Limiting
 
-- Rate limiter must use FIRST IP in X-Forwarded-For (`split(",")[0]`), not last — last is the proxy
+- Rate limiter must NOT use the first IP in X-Forwarded-For — the client controls it, so a fake header bypasses every limit. Use the entry appended by our proxy, counted from the right (`TRUSTED_PROXY_COUNT`, default 1 for Railway)
 - All auth endpoints must be rate-limited (signup: 5/min, login: 10/min, logout: 10/min)
 - Destructive endpoints (delete account, leave group) should be rate-limited
 - Admin-only endpoints still need rate limits — don't skip just because auth is required
@@ -55,6 +55,10 @@ Rules derived from security audits. Follow these when writing any new code.
 - Include user_id in security logs where available
 - Never log passwords, tokens, or full email addresses
 - Settlement: log at INFO for <72h missing scores, WARNING for 72h+ stale matches
+
+## Static Files
+
+- The SPA catch-all must `resolve()` the requested path and check `is_relative_to(DIST_DIR)` before serving — `DIST_DIR / path` alone allows `../` traversal to any readable file
 
 ## Production
 
