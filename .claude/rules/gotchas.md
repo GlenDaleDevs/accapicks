@@ -59,3 +59,10 @@ Historical: `.groups-page`/`.group-detail-page` used `position: fixed; inset: 0`
 photo backgrounds (removed 2026-08-20 — photo lives on the landing page only now). If a fixed
 full-bleed background comes back anywhere, sibling elements (e.g. footer) need
 `position: relative; z-index: 1` or they get covered.
+
+## Blanket `npm audit fix` silently empties the PWA precache
+In Nov 2026 a plain `npm audit fix` bumped vite-plugin-pwa to 1.3.0 and minimatch to 11. The build still
+passed, but the injectManifest service worker went from 17 precached files to 4 entries of 0 KiB, so the
+installed app would have lost offline support with no error. Upgrade flagged packages individually
+(`npm install pkg@x` / `npm update pkg`), and after any dependency change check the `precache N entries`
+line in `npm run build` output against the previous build.
