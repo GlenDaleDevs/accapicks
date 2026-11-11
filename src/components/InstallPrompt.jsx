@@ -7,6 +7,9 @@ function detectPlatform() {
     /iPad|iPhone|iPod/.test(ua) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   if (isIOS) return "ios";
+  // Samsung Internet builds its own Android package for installed web apps, which Play Protect blocks on
+  // Android 14+ ("built for an older version of Android"). Chrome installs the same app cleanly.
+  if (/Android/.test(ua) && /SamsungBrowser/.test(ua)) return "android-samsung";
   if (/Android/.test(ua)) return "android";
   return "desktop";
 }
@@ -22,6 +25,10 @@ const INSTRUCTIONS = {
     "Tap “Install app” or “Add to Home screen”.",
     "Confirm — AccaPicks will appear on your home screen.",
   ],
+  "android-samsung": [
+    "Tap “Open in Chrome” below.",
+    "In Chrome, tap “Add to Home Screen” — AccaPicks will appear on your home screen.",
+  ],
   desktop: [
     "Look for the install icon in your browser's address bar.",
     "Or open the browser menu and choose “Install AccaPicks”.",
@@ -29,6 +36,13 @@ const INSTRUCTIONS = {
 };
 
 const DISMISS_KEY = "installPromptDismissed";
+
+// Opens this page in Chrome on Android; without Chrome, Android opens its Play Store page instead.
+const CHROME_STORE = encodeURIComponent("https://play.google.com/store/apps/details?id=com.android.chrome");
+function chromeLink() {
+  const { host, pathname, search } = window.location;
+  return `intent://${host}${pathname}${search}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${CHROME_STORE};end`;
+}
 
 // Whether we're already running as the installed app.
 function isStandalone() {
@@ -70,7 +84,8 @@ export default function InstallPrompt({ dismissible = false }) {
   // so no event means nothing to offer; iOS gives no signal at all from
   // Safari — which is what the dismiss cross is for.
   if (isStandalone()) return null;
-  if (platform !== "ios" && !deferredPrompt) return null;
+  const alwaysShowHelp = platform === "ios" || platform === "android-samsung";
+  if (!alwaysShowHelp && !deferredPrompt) return null;
   if (dismissible && dismissed) return null;
 
   const dismiss = () => {
@@ -79,7 +94,8 @@ export default function InstallPrompt({ dismissible = false }) {
   };
 
   const handleClick = async () => {
-    if (!deferredPrompt) {
+    // Never start Samsung Internet's own install: Play Protect blocks what it builds
+    if (!deferredPrompt || platform === "android-samsung") {
       setShowHelp(true);
       return;
     }
@@ -127,18 +143,31 @@ export default function InstallPrompt({ dismissible = false }) {
         >
           <div className="install-help" onClick={(e) => e.stopPropagation()}>
             <h3>Add AccaPicks to your home screen</h3>
+            {platform === "android-samsung" && (
+              <p className="install-help-note">
+                Samsung Internet's install gets blocked by Google Play Protect on newer Android, so
+                install from Chrome instead.
+              </p>
+            )}
             <ol>
               {INSTRUCTIONS[platform].map((step) => (
                 <li key={step}>{step}</li>
               ))}
             </ol>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => setShowHelp(false)}
-            >
-              Got it
-            </button>
+            <div className="install-help-actions">
+              {platform === "android-samsung" && (
+                <a className="btn btn-primary" href={chromeLink()}>
+                  Open in Chrome
+                </a>
+              )}
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setShowHelp(false)}
+              >
+                Got it
+              </button>
+            </div>
           </div>
         </div>
       )}
